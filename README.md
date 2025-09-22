@@ -2,6 +2,7 @@
 
 ## 📚 Table Of Contents
 - 🚀 [Quick Start Windows](#quick-start-windows)
+- 🚀 [Quick Start Ubuntu](#quick-start-linux)
 - ℹ️ [About](#about)
 - ❓ [Why I Built Image Perfect](#why-i-built-image-perfect)
 - 📚 [Tech Stack And Notable Dependencies](#tech-stack-and-notable-dependencies)
@@ -34,6 +35,11 @@
 3. Run `ImagePerfect.exe` from the build output folder.
 
 > See the [User Guide](#user-guide) to begin organizing your images.
+
+<a id="quick-start-linux"></a>
+## 🚀 Quick Start Ubuntu
+
+### .deb installer coming soon. For now Linux users have to build and install manually.
 
 <a id="about"></a>
 ## ℹ️ About
@@ -129,6 +135,7 @@ I created Image Perfect both as a way to learn desktop application development a
 - GIF view support (Possible Pro Feature)
 - GIF creation support (Possible Pro Feature)
 - Restore images and folders from trash
+- Backup and restore MySQL database assist (Possible Pro Feature)
 
 <a id="screen-shots"></a>
 ## 📷 Screen Shots
