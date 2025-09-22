@@ -356,9 +356,6 @@ git clone https://github.com/BitForgeCraftedCode/ImagePerfect.git
 	- Deployment mode: Self-contained
 	- Target runtime: win-x64
 
-<a id="download-windows-build"></a>	
-Or just download and use the publish files from [here](https://github.com/ARogala/ImagePerfectWinX64Build)
-
 Then to run the application double click on ImagePerfect.exe or you could also right click the exe and send to desktop as a shortcut.
 
 > 📌 **Note**: If your MySql password (pwd) and user (uid) differs from what is in the appsettings.json file in this repository. You must change it.
