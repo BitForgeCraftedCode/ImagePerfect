@@ -144,19 +144,19 @@ I created Image Perfect both as a way to learn desktop application development a
 
 ### Images Page
 
-![Image](AppScreenShotImageView2025-09-10.png)
+![Image](Screenshots/AppScreenShotImageView2025-09-10.png)
 
 ### Image Close Up
 
-![Image](AppScreenShotImageCloseUp2025-09-10.png)
+![Image](Screenshots/AppScreenShotImageCloseUp2025-09-10.png)
 
 ### Folders Page
 
-![Image](AppScreenShotFolderView2025-09-10.png)
+![Image](Screenshots/AppScreenShotFolderView2025-09-10.png)
 
 ### Folder Close Up
 
-![Image](AppScreenShotFolderCloseUp2025-09-10.png)
+![Image](Screenshots/AppScreenShotFolderCloseUp2025-09-10.png)
 
 <a id="mysql-server-setup-windows"></a>
 ## 🖥️ MySQL Server Setup Windows
