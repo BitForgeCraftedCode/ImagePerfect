@@ -19,9 +19,13 @@
 
 <a id="quick-start-windows"></a>
 ## 🚀 Quick Start Windows
+1. Download and install with the [installer](https://github.com/BitForgeCraftedCode/ImagePerfect/releases/tag/v1.0-beta).
+2. Because Image Perfect requires a MySql Server after install your firewall may prompt with "Allow mysqld.exe" click yes.
+
+OR
 
 1. Follow the [MySQL setup instructions](#mysql-server-setup-windows-end-user) and execute the schema commands.
-2. [Download the Windows build](https://github.com/ARogala/ImagePerfectWinX64Build)
+2. [Follow The Build And Install Directions](#build-and-install-directions)
 3. Run `ImagePerfect.exe`
 
 > See the [User Guide](#user-guide) to begin organizing your images.
@@ -329,7 +333,7 @@ SET PERSIST local_infile = 1;
 ---
 
 > ✅ Once MySQL is installed, open **MySQL Command Line Client** and run the [database setup commands](#create-database-commands).  
-> ✅ When that's complete, you're ready to [run Image Perfect](#download-windows-build)!
+> ✅ When that's complete, you're ready to run Image Perfect!
 
 
 <a id="build-and-install-directions"></a>
@@ -339,7 +343,7 @@ SET PERSIST local_infile = 1;
 
 - Clone this repository
 ```
-git clone https://github.com/ARogala/ImagePerfect.git
+git clone https://github.com/BitForgeCraftedCode/ImagePerfect.git
 ```
 
 ### Windows
