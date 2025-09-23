@@ -32,6 +32,7 @@
 					<MenuItem Header="Settings" Command="{Binding ToggleSettingsCommand}" />
 					<MenuItem Header="Total Images" Command="{Binding ToggleGetTotalImagesCommand}" />
 					<MenuItem Header="Modify Tags" Command="{Binding ToggleListAllTagsCommand}" />
+					<v:PickExternalImageViewerExeView DataContext="{Binding #Root.((vm:MainWindowViewModel)DataContext).PickExternalImageViewerExe}"/>
 				</MenuItem>
 				<MenuItem Header="_File Management">
 					<v:PickNewFoldersView DataContext="{Binding PickNewFolders}"/>
