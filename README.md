@@ -10,7 +10,8 @@
 - 👀 [Core Features](#core-features)
 - 🧰 [Planned Improvements](#planned-improvements)
 - 📷 [Screen Shots](#screen-shots)
-- 🖥️ [MySQL Server Setup](#mysql-server-setup)
+- 🖥️ [MySQL Server Setup Windows](#mysql-server-setup-windows)
+- 🖥️ [MySQL Server Setup Ubuntu](#mysql-server-setup-linux)
 - 📋 [Build And Install Directions](#build-and-install-directions)
 - 📊 [Backing Up And Restoring The MySQL Database](#backing-up-and-restoring-the-mysql-database)
 - 📦 [Migrating To A New Computer](#migrating-to-a-new-computer)
@@ -39,7 +40,8 @@
 <a id="quick-start-linux"></a>
 ## 🚀 Quick Start Ubuntu
 
-### .deb installer coming soon. For now Linux users have to build and install manually.
+> 🐧 **Heads up**: A .deb installer is coming soon!
+For now, Linux users will need to build and install manually by following the [Build And Install Directions](#build-and-install-directions).
 
 <a id="about"></a>
 ## ℹ️ About
@@ -156,8 +158,8 @@ I created Image Perfect both as a way to learn desktop application development a
 
 ![Image](AppScreenShotFolderCloseUp2025-09-10.png)
 
-<a id="mysql-server-setup"></a>
-## 🖥️ MySQL Server Setup
+<a id="mysql-server-setup-windows"></a>
+## 🖥️ MySQL Server Setup Windows
 
 Image Perfect requires a local MySQL 8.0+ server. Follow the instructions below based on whether you’re a **developer** or an **end user**.
 
@@ -351,6 +353,36 @@ SET PERSIST local_infile = 1;
 > ✅ Once MySQL is installed, open **MySQL Command Line Client** and run the [database setup commands](#create-database-commands).  
 > ✅ When that's complete, you're ready to run Image Perfect!
 
+<a id="mysql-server-setup-linux"></a>
+## 🖥️ MySQL Server Setup Ubuntu
+
+Image Perfect requires a local MySQL 8.0+ server.
+
+---
+
+📋 Temporary Instructions
+
+Full step-by-step setup directions for Ubuntu are coming soon.
+For now, here’s the basic outline:
+
+1. **Install MySQL**:
+```
+sudo apt update
+sudo apt install mysql-server
+
+```
+2. **Set up users**
+	- Configure your root password.
+	- Create a dedicated ImagePerfect user with full access to the imageperfect database.
+3. Run the [database setup commands](#create-database-commands).
+
+📚 **Helpful Resource**:
+
+
+I recommend following this guide:
+[How To Install MySQL on Ubuntu 22.04 (DigitalOcean)](https://www.digitalocean.com/community/tutorials/how-to-install-mysql-on-ubuntu-22-04)
+
+> This guide is written for Ubuntu Server, but the steps are nearly identical on a regular desktop install.
 
 <a id="build-and-install-directions"></a>
 ## 📋 Build And Install Directions
