@@ -382,8 +382,6 @@ Then to run the application double click on ImagePerfect.exe or you could also r
 	
 Copy the publish files from your Windows PC to your Linux one. Or just use JetBrains Rider in Linux. The steps will be almost the same.
 
-Publish files are not provided for Linux. Too many permissions issues trying to run from downloaded publish files. It is best to just compile yourself.
-
 Then to run just open terminal in the build folder and run this command
 ```
 ./ImagePerfect
