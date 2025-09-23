@@ -18,5 +18,11 @@ namespace ImagePerfect.Models
 
         [Column("ImagePageSize")]
         public int ImagePageSize { get; set; }
+
+        [Column("ExternalImageViewerExePath")]
+        public string? ExternalImageViewerExePath { get; set; }
+
+        [Column("FileExplorerExePath")]
+        public string? FileExplorerExePath { get; set; }
     }
 }
