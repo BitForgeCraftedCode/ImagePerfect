@@ -29,6 +29,25 @@
 
 > See the [User Guide](#user-guide) to begin organizing your images.
 
+> ⚠️ **Unsigned Installer Notice**
+> 
+> The current Windows installer is **unsigned**, which may trigger warnings during download or installation.
+> To ensure the installer has not been tampered with, please verify its integrity using the SHA-256 hash listed on the [release page](https://github.com/BitForgeCraftedCode/ImagePerfect/releases).
+> 
+> Example on Windows PowerShell:
+> 
+> ```powershell
+> Get-FileHash ImagePerfectInstaller-v1.0-beta.exe -Algorithm SHA256
+> ```
+> 
+> Compare the output to the hash shown in the release notes. If they match, the installer is safe to run.
+
+>💡 Additional Security Notes:
+>
+>**Built from Source**: The installer is generated directly from the source code in this repository, so you can inspect the code yourself before running the installer.
+>
+>**Official Releases Only**: Always download installers from the official GitHub [release page](https://github.com/BitForgeCraftedCode/ImagePerfect/releases) to avoid tampered copies.
+
 ### Option 2: Manual Setup (Advanced Users)
 
 1. **Install and Configure MySQL**: Follow the [MySQL setup instructions](#mysql-server-setup-windows-end-user) and execute the schema commands.
