@@ -19,14 +19,19 @@
 
 <a id="quick-start-windows"></a>
 ## 🚀 Quick Start Windows
-1. Download and install with the [installer](https://github.com/BitForgeCraftedCode/ImagePerfect/releases/tag/v1.0-beta).
-2. Because Image Perfect requires a MySql Server after install your firewall may prompt with "Allow mysqld.exe" click yes.
+### Option 1: Easiest Install (Recommended)
+1. **Download the Installer**: 📥 Get [ImagePerfect v1.0-beta](https://github.com/BitForgeCraftedCode/ImagePerfect/releases/tag/v1.0-beta)
+2. **Run the Installer** and follow the prompts.
+3. When prompted by Windows Firewall with "**Allow mysqld.exe**", click Allow (required for the built-in MySQL server to run).
+4. Launch **ImagePerfect** from the Start Menu or Desktop shortcut.
 
-OR
+> See the [User Guide](#user-guide) to begin organizing your images.
 
-1. Follow the [MySQL setup instructions](#mysql-server-setup-windows-end-user) and execute the schema commands.
-2. [Follow The Build And Install Directions](#build-and-install-directions)
-3. Run `ImagePerfect.exe`
+### Option 2: Manual Setup (Advanced Users)
+
+1. **Install and Configure MySQL**: Follow the [MySQL setup instructions](#mysql-server-setup-windows-end-user) and execute the schema commands.
+2. **Build and Install ImagePerfect**: [Follow The Build And Install Directions](#build-and-install-directions)
+3. Run `ImagePerfect.exe` from the build output folder.
 
 > See the [User Guide](#user-guide) to begin organizing your images.
 
@@ -43,6 +48,11 @@ Instead of small, hard-to-see thumbnails and long import times, Image Perfect of
 - Fast performance on large libraries
 - Rich tagging and folder organization
 - Direct image viewing (no thumbnails written to disk)
+
+> 💡 Future Plans:
+Image Perfect is — and will always be — free and open source at its core.
+In the future, I may offer an optional Pro version with extra features like duplicate detection or AI-powered facial recognition to help fund development.
+Your feedback now helps shape what both the free and Pro versions might look like — so please share your thoughts!
 
 <a id="why-i-built-image-perfect"></a>
 ## ❓Why I Built Image Perfect
@@ -111,14 +121,13 @@ I created Image Perfect both as a way to learn desktop application development a
 <a id="planned-improvements"></a>
 ## 🧰 Planned Improvements
 
-- Find duplicate images
-- Facial recognition
-- Image enhancement tools
-- Improved UI design
-- Scan for new folders in file system
+- Find duplicate images (Possible Pro Feature)
+- Facial recognition (Possible Pro Feature)
+- Image enhancement tools (Possible Pro Feature)
+- Scan for new folders in file system (Possible Pro Feature)
 - Tagging improvements (bulk edit)
-- GIF view support
-- GIF creation support
+- GIF view support (Possible Pro Feature)
+- GIF creation support (Possible Pro Feature)
 - Restore images and folders from trash
 
 <a id="screen-shots"></a>
@@ -657,6 +666,10 @@ You are free to use, modify, and distribute this software under the terms of the
 ## 📢 Feedback And Contributions
 
 I'm always open to feedback, feature suggestions, or contributions. Please feel free to open issues or pull requests.
+
+> 🙌 Support Development
+If you find Image Perfect helpful, consider starring the repository ⭐, opening issues with feedback, or contributing code.
+As the project grows, I may offer a paid Pro tier to support sustainable development — but the core project will remain free and open source for everyone.
 
 
 
