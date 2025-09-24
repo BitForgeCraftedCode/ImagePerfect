@@ -12,6 +12,8 @@ using Avalonia.Controls;
 using Image = ImagePerfect.Models.Image;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Models;
 
 namespace ImagePerfect.ViewModels
 {
@@ -34,8 +36,20 @@ namespace ImagePerfect.ViewModels
             bool success = await _imageMethods.UpdateImage(image);
             if (!success)
             {
-                var box = MessageBoxManager.GetMessageBoxStandard($"Add {fieldUpdated}", $"Image {fieldUpdated} update error. Try again.", ButtonEnum.Ok);
-                await box.ShowAsync();
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = $"Add {fieldUpdated}",
+                        ContentMessage = $"Image {fieldUpdated} update error. Try again.",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
             //write rating to image metadata
@@ -124,9 +138,23 @@ namespace ImagePerfect.ViewModels
             //nothing selected just return
             if (selectedTag == null)
                 return;
-            var boxYesNo = MessageBoxManager.GetMessageBoxStandard("Remove Tag", "CAUTION you are about to remove a tag this could take a long time are you sure?", ButtonEnum.YesNo);
-            var boxResult = await boxYesNo.ShowAsync();
-            if (boxResult != ButtonResult.Yes)
+            var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
+                new MessageBoxCustomParams
+                {
+                    ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Yes", },
+                            new ButtonDefinition { Name = "No", },
+                        },
+                    ContentTitle = "Remove Tag",
+                    ContentMessage = $"CAUTION you are about to remove a tag this could take a long time are you sure?",
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                    MinWidth = 500  // optional, so it doesn’t wrap too soon
+                }
+            );
+            var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
+            if (boxResult != "Yes")
                 return;
             
             _mainWindowViewModel.ShowLoading = true;
