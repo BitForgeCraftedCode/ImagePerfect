@@ -7,6 +7,10 @@ using ImagePerfect.Models;
 using ImagePerfect.Helpers;
 using System.Threading.Tasks;
 using ReactiveUI;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Models;
+using System.Collections.Generic;
+using Avalonia.Controls;
 
 namespace ImagePerfect.ViewModels
 {
@@ -53,8 +57,20 @@ namespace ImagePerfect.ViewModels
             string newFolderPath = PathHelper.GetNewFolderPath(_mainWindowViewModel.CurrentDirectory, NewFolderName);
             if (Directory.Exists(newFolderPath))
             {
-                var box = MessageBoxManager.GetMessageBoxStandard("New Folder", "A folder with this name already exists.", ButtonEnum.Ok);
-                await box.ShowAsync();
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = "New Folder",
+                        ContentMessage = $"A folder with this name already exists.",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
             //add dir to database -- also need to update parent folders HasChildren bool value
@@ -85,8 +101,20 @@ namespace ImagePerfect.ViewModels
                 }
                 catch (Exception e)
                 {
-                    var box = MessageBoxManager.GetMessageBoxStandard("New Folder", $"Error {e}.", ButtonEnum.Ok);
-                    await box.ShowAsync();
+                    await MessageBoxManager.GetMessageBoxCustom(
+                        new MessageBoxCustomParams
+                        {
+                            ButtonDefinitions = new List<ButtonDefinition>
+                            {
+                                new ButtonDefinition { Name = "Ok", },
+                            },
+                            ContentTitle = "New Folder",
+                            ContentMessage = $"Error {e}.",
+                            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                            SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                            MinWidth = 500  // optional, so it doesn’t wrap too soon
+                        }
+                    ).ShowWindowDialogAsync(Globals.MainWindow);
                     return;
                 }
             }
