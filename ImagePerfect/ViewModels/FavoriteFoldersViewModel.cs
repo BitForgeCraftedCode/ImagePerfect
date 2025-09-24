@@ -6,6 +6,9 @@ using ImagePerfect.Repository.IRepository;
 using MsBox.Avalonia.Enums;
 using MsBox.Avalonia;
 using ReactiveUI;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Models;
+using Avalonia.Controls;
 
 namespace ImagePerfect.ViewModels
 {
@@ -27,9 +30,23 @@ namespace ImagePerfect.ViewModels
 
         public async Task RemoveAllFavoriteFolders()
         {
-            var box = MessageBoxManager.GetMessageBoxStandard("Remove Favorite Folders", "Are you sure you want to remove your favorite folders from the data base? The folders on the file system will remain.", ButtonEnum.YesNo);
-            var result = await box.ShowAsync();
-            if (result == ButtonResult.Yes)
+            var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
+                new MessageBoxCustomParams
+                {
+                    ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Yes", },
+                            new ButtonDefinition { Name = "No", },
+                        },
+                    ContentTitle = "Remove Favorite Folders",
+                    ContentMessage = $"Are you sure you want to remove your favorite folders from the data base? The folders on the file system will remain.",
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                    MinWidth = 500  // optional, so it doesn’t wrap too soon
+                }
+            );
+            var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
+            if (boxResult == "Yes")
             {
                 await _folderMethods.RemoveAllFavoriteFolders();
             }

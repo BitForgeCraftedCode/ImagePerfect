@@ -7,7 +7,9 @@ using ImagePerfect.Models;
 using ImagePerfect.ObjectMappers;
 using ImagePerfect.Repository.IRepository;
 using MsBox.Avalonia;
+using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Enums;
+using MsBox.Avalonia.Models;
 using ReactiveUI;
 using System;
 using System.Collections;
@@ -735,8 +737,20 @@ namespace ImagePerfect.ViewModels
             }
             catch (Exception ex)
             {
-                var box = MessageBoxManager.GetMessageBoxStandard("Error", $"Something went wrong click ok to reload current directory. {ex}", ButtonEnum.Ok);
-                await box.ShowAsync();
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = "Error",
+                        ContentMessage = $"Something went wrong click ok to reload current directory. \n {ex}",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
                 await LoadCurrentDirectory();
             }
         }
@@ -858,8 +872,20 @@ namespace ImagePerfect.ViewModels
             }
             catch (Exception ex)
             {
-                var box = MessageBoxManager.GetMessageBoxStandard("Error", $"Something went wrong click ok to reload current directory. {ex}", ButtonEnum.Ok);
-                await box.ShowAsync();
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = "Error",
+                        ContentMessage = $"Something went wrong click ok to reload current directory. \n {ex}",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
                 await LoadCurrentDirectory();
             }
         }
@@ -959,8 +985,20 @@ namespace ImagePerfect.ViewModels
             }
             catch (Exception ex)
             {
-                var box = MessageBoxManager.GetMessageBoxStandard("Error", $"Something went wrong click ok to reload current directory. {ex}", ButtonEnum.Ok);
-                await box.ShowAsync();
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = "Error",
+                        ContentMessage = $"Something went wrong click ok to reload current directory. \n {ex}",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
                 await LoadCurrentDirectory();
             }
         }
@@ -1105,10 +1143,23 @@ namespace ImagePerfect.ViewModels
         }
         private async void DeleteLibrary()
         {
-            var box = MessageBoxManager.GetMessageBoxStandard("Delete Library", "Are you sure you want to delete your library? The images on the file system will remain.", ButtonEnum.YesNo);
-            var result = await box.ShowAsync();
-
-            if (result == ButtonResult.Yes)
+            var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
+                new MessageBoxCustomParams
+                {
+                    ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Yes", },
+                            new ButtonDefinition { Name = "No", },
+                        },
+                    ContentTitle = "Delete Library",
+                    ContentMessage = $"Are you sure you want to delete your library? The images on the file system will remain.",
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                    MinWidth = 500  // optional, so it doesn’t wrap too soon
+                }
+            );
+            var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
+            if (boxResult == "Yes")
             {
                 //remove all folders -- this will drop images as well. 
                 bool success = await _folderMethods.DeleteAllFolders();
