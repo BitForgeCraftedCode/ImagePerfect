@@ -12,6 +12,8 @@ using MsBox.Avalonia.Enums;
 using MsBox.Avalonia;
 using ImagePerfect.Helpers;
 using System.IO;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Models;
 
 namespace ImagePerfect.ViewModels
 {
@@ -33,14 +35,38 @@ namespace ImagePerfect.ViewModels
         {
             if (PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath) == _mainWindowViewModel.InitializeVm.RootFolderLocation)
             {
-                var box = MessageBoxManager.GetMessageBoxStandard("Copy Cover", "Cannot copy from root folder.", ButtonEnum.Ok);
-                await box.ShowAsync();
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = "Copy Cover",
+                        ContentMessage = $"Cannot copy cover image from root folder.",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
             if (folderVm.CoverImagePath == "" || folderVm.CoverImagePath == null)
             {
-                var box = MessageBoxManager.GetMessageBoxStandard("Copy Cover", "The folder must have a cover selected to copy.", ButtonEnum.Ok);
-                await box.ShowAsync();
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = "Copy Cover",
+                        ContentMessage = $"The folder must have a cover selected to copy.",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
 
@@ -50,17 +76,43 @@ namespace ImagePerfect.ViewModels
             Folder containingFolder = await _folderMethods.GetFolderAtDirectory(PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath));
             if (containingFolder.CoverImagePath != "")
             {
-                var boxYesNo = MessageBoxManager.GetMessageBoxStandard("Copy Cover", "Containing folder already has a cover. Do you want to copy another?", ButtonEnum.YesNo);
-                var boxResult = await boxYesNo.ShowAsync();
-                if (boxResult == ButtonResult.No)
+                var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                            {
+                                new ButtonDefinition { Name = "Yes", },
+                                new ButtonDefinition { Name = "No", },
+                            },
+                        ContentTitle = "Copy Cover",
+                        ContentMessage = $"Containing folder already has a cover. Do you want to copy another?",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                );
+                var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
+                if (boxResult == "No")
                 {
                     return;
                 }
             }
             if (File.Exists(coverImageNewPath))
             {
-                var box = MessageBoxManager.GetMessageBoxStandard("Copy Cover", "A cover image in the destination has the same file name. Pick a different cover", ButtonEnum.Ok);
-                await box.ShowAsync();
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = "Copy Cover",
+                        ContentMessage = $"A cover image in the destination has the same file name. Pick a different cover.",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
             //add cover image path to containing folder
