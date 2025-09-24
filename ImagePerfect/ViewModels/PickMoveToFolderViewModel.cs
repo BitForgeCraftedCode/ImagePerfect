@@ -12,6 +12,10 @@ using ImagePerfect.Repository.IRepository;
 using System.IO;
 using System.Diagnostics;
 using System.Linq;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Models;
+using Avalonia.Controls;
+using Image = ImagePerfect.Models.Image;
 
 namespace ImagePerfect.ViewModels
 {
@@ -45,8 +49,20 @@ namespace ImagePerfect.ViewModels
             Folder? rootFolder = await _folderMethods.GetRootFolder();
             if (rootFolder == null)
             {
-                var box = MessageBoxManager.GetMessageBoxStandard("Move Folder", "You need to add a root library folder first before you can move a folder in it.", ButtonEnum.Ok);
-                await box.ShowAsync();
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = "Move Folder",
+                        ContentMessage = $"You need to add a root library folder first before you can move a folder in it.",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
             //pull current folder and sub folders from db
@@ -54,8 +70,20 @@ namespace ImagePerfect.ViewModels
             List<Image> images = await _imageMethods.GetAllImagesInDirectoryTree(folderVm.FolderPath);
             if (!images.Any()) 
             {
-                var box = MessageBoxManager.GetMessageBoxStandard("Move Folder", "The folder must have images imported to move it.", ButtonEnum.Ok);
-                await box.ShowAsync();
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = "Move Folder",
+                        ContentMessage = $"The folder must have images imported to move it.",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
 
@@ -69,23 +97,59 @@ namespace ImagePerfect.ViewModels
             string pathCheck = PathHelper.FormatPathFromFolderPicker(_MoveToFolderPath[0]);
             if (!pathCheck.Contains(rootFolder.FolderPath))
             {
-                var box = MessageBoxManager.GetMessageBoxStandard("Move Folder", "You can only move folders that are within your root library folder.", ButtonEnum.Ok);
-                await box.ShowAsync();
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = "Move Folder",
+                        ContentMessage = $"You can only move folders that are within your root library folder.",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
             //Cannot move folder to one of its subfolders
             if (pathCheck.Contains(folderVm.FolderPath))
             {
-                var box = MessageBoxManager.GetMessageBoxStandard("Move Folder", "The destination folder is a subfolder of the source folder. Cannot do this.", ButtonEnum.Ok);
-                await box.ShowAsync();
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = "Move Folder",
+                        ContentMessage = $"The destination folder is a subfolder of the source folder. Cannot do this.",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
             //move folder in db
             string newFolderPath = PathHelper.FormatPathFromFolderPicker(_MoveToFolderPath[0]);
             if (PathHelper.AddNewFolderNameToPathForDirectoryMoveFolder(newFolderPath, folderVm.FolderName) == folderVm.FolderPath)
             {
-                var box = MessageBoxManager.GetMessageBoxStandard("Move Folder", "The folder is already in this location.", ButtonEnum.Ok);
-                await box.ShowAsync();
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = "Move Folder",
+                        ContentMessage = $"The folder is already in this location.",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
             _mainWindowViewModel.ShowLoading = true;
@@ -119,16 +183,40 @@ namespace ImagePerfect.ViewModels
                 }
                 catch (Exception e)
                 {
-                    var box = MessageBoxManager.GetMessageBoxStandard("Move Folder", "Sorry something went wrong", ButtonEnum.Ok);
-                    await box.ShowAsync();
+                    await MessageBoxManager.GetMessageBoxCustom(
+                        new MessageBoxCustomParams
+                        {
+                            ButtonDefinitions = new List<ButtonDefinition>
+                            {
+                                new ButtonDefinition { Name = "Ok", },
+                            },
+                            ContentTitle = "Move Folder",
+                            ContentMessage = $"Sorry something went wrong. \n {e}",
+                            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                            SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                            MinWidth = 500  // optional, so it doesn’t wrap too soon
+                        }
+                    ).ShowWindowDialogAsync(Globals.MainWindow);
                     _mainWindowViewModel.ShowLoading = false;
                     return;
                 }
             }
             else
             {
-                var box = MessageBoxManager.GetMessageBoxStandard("Move Folder", "Sorry something went wrong", ButtonEnum.Ok);
-                await box.ShowAsync();
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = "Move Folder",
+                        ContentMessage = $"Sorry something went wrong",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
                 _mainWindowViewModel.ShowLoading = false;
                 return;
             }
