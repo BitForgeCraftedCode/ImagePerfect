@@ -34,9 +34,23 @@ namespace ImagePerfect.ViewModels
 
         public async Task MoveImageToTrash(ImageViewModel imageVm) 
         {
-            var boxYesNo = MessageBoxManager.GetMessageBoxStandard("Delete Image", "Are you sure you want to delete your image?", ButtonEnum.YesNo);
-            var boxResult = await boxYesNo.ShowAsync();
-            if (boxResult == ButtonResult.Yes)
+            var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
+            new MessageBoxCustomParams
+                {
+                    ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Yes", },
+                            new ButtonDefinition { Name = "No", },
+                        },
+                    ContentTitle = "Delete Image",
+                    ContentMessage = $"Are you sure you want to delete your image?",
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                    MinWidth = 500  // optional, so it doesn’t wrap too soon
+                }
+            );
+            var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
+            if (boxResult == "Yes")
             {
                 _mainWindowViewModel.ShowLoading = true;
                 (List<Folder> folders, List<FolderTag> tags) folderResult = await _folderMethods.GetFoldersInDirectory(imageVm.ImageFolderPath);
@@ -45,8 +59,20 @@ namespace ImagePerfect.ViewModels
                 _mainWindowViewModel.displayImages = imageResultA.images;
                 if (_mainWindowViewModel.displayImages.Count == 1 && _mainWindowViewModel.displayFolders.Count == 0)
                 {
-                    var box = MessageBoxManager.GetMessageBoxStandard("Delete Image", "This is the last image in the folder go back and delete the folder", ButtonEnum.Ok);
-                    await box.ShowAsync();
+                    await MessageBoxManager.GetMessageBoxCustom(
+                        new MessageBoxCustomParams
+                        {
+                            ButtonDefinitions = new List<ButtonDefinition>
+                            {
+                                new ButtonDefinition { Name = "Ok", },
+                            },
+                            ContentTitle = "Delete Image",
+                            ContentMessage = $"This is the last image in the folder go back and delete the folder.",
+                            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                            SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                            MinWidth = 500  // optional, so it doesn’t wrap too soon
+                        }
+                    ).ShowWindowDialogAsync(Globals.MainWindow);
                     return;
                 }
                 Folder? rootFolder = await _folderMethods.GetRootFolder();
@@ -84,13 +110,39 @@ namespace ImagePerfect.ViewModels
 
             if (imagesToDelete.Count == 0)
             {
-                var box = MessageBoxManager.GetMessageBoxStandard("Delete Images", "You need to select images to delete.", ButtonEnum.Ok);
-                await box.ShowAsync();
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = "Delete Images",
+                        ContentMessage = $"You need to select images to delete.",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
-            var boxYesNo = MessageBoxManager.GetMessageBoxStandard("Delete Images", "Are you sure you want to delete these images?", ButtonEnum.YesNo);
-            var boxResult = await boxYesNo.ShowAsync();
-            if (boxResult == ButtonResult.Yes)
+            var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
+                new MessageBoxCustomParams
+                {
+                    ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Yes", },
+                            new ButtonDefinition { Name = "No", },
+                        },
+                    ContentTitle = "Delete Images",
+                    ContentMessage = $"Are you sure you want to delete these images?",
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                    MinWidth = 500  // optional, so it doesn’t wrap too soon
+                }
+            );
+            var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
+            if (boxResult == "Yes")
             {
                 _mainWindowViewModel.ShowLoading = true;
                 Folder imagesFolder = await _folderMethods.GetFolderAtDirectory(imagesToDelete[0].ImageFolderPath);
@@ -136,8 +188,20 @@ namespace ImagePerfect.ViewModels
         {
             if (selectedImages is null || selectedImages.Count == 0)
             {
-                var box = MessageBoxManager.GetMessageBoxStandard("Move Images", "You need to select images to move.", ButtonEnum.Ok);
-                await box.ShowAsync();
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = "Move Images",
+                        ContentMessage = $"You need to select images to move.",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
             _mainWindowViewModel.SelectedImagesNewDirectory = PathHelper.RemoveOneFolderFromPath(_mainWindowViewModel.CurrentDirectory);
@@ -158,32 +222,56 @@ namespace ImagePerfect.ViewModels
             Folder imagesNewFolder = await _folderMethods.GetFolderAtDirectory(_mainWindowViewModel.SelectedImagesNewDirectory);
             if (imagesNewFolder.FolderPath == imagesCurrentFolder.FolderPath)
             {
-                var box = MessageBoxManager.GetMessageBoxStandard("Move Images", "New folder path cannot be the same as the current folder path.", ButtonEnum.Ok);
-                await box.ShowAsync();
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = "Move Images",
+                        ContentMessage = $"New folder path cannot be the same as the current folder path.",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
             //prevent a double import and only allow move to folders that are already imported
             if (imagesNewFolder.HasFiles == true && imagesNewFolder.AreImagesImported == false)
             {
-                var box = MessageBoxManager.GetMessageBoxStandard("Move Images", "The move to folder has to have its current images imported first.", ButtonEnum.Ok);
-                await box.ShowAsync();
-                return;
-            }
-            var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
-                new MessageBoxCustomParams
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
                     {
                         ButtonDefinitions = new List<ButtonDefinition>
                         {
-                            new ButtonDefinition { Name = "Yes", },
-                            new ButtonDefinition { Name = "No", },
+                            new ButtonDefinition { Name = "Ok", },
                         },
                         ContentTitle = "Move Images",
-                        ContentMessage = $"Are you sure you want to move these images to: \n{_mainWindowViewModel.SelectedImagesNewDirectory}?",
+                        ContentMessage = $"The move to folder has to have its current images imported first.",
                         WindowStartupLocation = WindowStartupLocation.CenterOwner,
                         SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
                         MinWidth = 500  // optional, so it doesn’t wrap too soon
                     }
-                );
+                ).ShowWindowDialogAsync(Globals.MainWindow);
+                return;
+            }
+            var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
+                new MessageBoxCustomParams
+                {
+                    ButtonDefinitions = new List<ButtonDefinition>
+                    {
+                        new ButtonDefinition { Name = "Yes", },
+                        new ButtonDefinition { Name = "No", },
+                    },
+                    ContentTitle = "Move Images",
+                    ContentMessage = $"Are you sure you want to move these images to: \n{_mainWindowViewModel.SelectedImagesNewDirectory}?",
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                    MinWidth = 500  // optional, so it doesn’t wrap too soon
+                }
+            );
             var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
             if (boxResult == "Yes")
             {
