@@ -8,6 +8,9 @@ using ReactiveUI;
 using ImagePerfect.ObjectMappers;
 using System.Linq;
 using System.Threading.Tasks;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Models;
+using Avalonia.Controls;
 
 namespace ImagePerfect.ViewModels
 {
@@ -29,8 +32,20 @@ namespace ImagePerfect.ViewModels
             bool success = await _folderMethods.UpdateFolder(folder);
             if (!success)
             {
-                var box = MessageBoxManager.GetMessageBoxStandard($"Add {fieldUpdated}", $"Folder {fieldUpdated} update error. Try again.", ButtonEnum.Ok);
-                await box.ShowAsync();
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = $"Add {fieldUpdated}",
+                        ContentMessage = $"Folder {fieldUpdated} update error. Try again",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
         }
@@ -92,9 +107,23 @@ namespace ImagePerfect.ViewModels
             //nothing selected just return
             if (selectedTag == null)
                 return;
-            var boxYesNo = MessageBoxManager.GetMessageBoxStandard("Remove Tag", "CAUTION you are about to remove a tag this could take a long time are you sure?", ButtonEnum.YesNo);
-            var boxResult = await boxYesNo.ShowAsync();
-            if (boxResult != ButtonResult.Yes)
+            var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
+            new MessageBoxCustomParams
+                {
+                    ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Yes", },
+                            new ButtonDefinition { Name = "No", },
+                        },
+                    ContentTitle = "Remove Tag",
+                    ContentMessage = $"CAUTION you are about to remove a tag this could take a long time are you sure?",
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                    MinWidth = 500  // optional, so it doesn’t wrap too soon
+                }
+            );
+            var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
+            if (boxResult != "Yes")
                 return;
 
             _mainWindowViewModel.ShowLoading = true;
