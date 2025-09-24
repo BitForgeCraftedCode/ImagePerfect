@@ -16,19 +16,19 @@ Bool is tinyint(1) 1 = true 0 = false
 
 */
 CREATE TABLE `folders` (
-	`FolderId` bigint unsigned NOT NULL AUTO_INCREMENT,
-	`FolderName` Varchar(200) NOT NULL,
-  	`FolderPath` Varchar(2000) NOT NULL,
-  	`HasChildren` Bool,
-	`CoverImagePath` Varchar(2000),
-	`FolderDescription` Varchar(3000),
-	`FolderRating` tinyint unsigned,
-	`HasFiles` Bool,
-	`IsRoot` Bool,
-	`FolderContentMetaDataScanned` Bool,
-	`AreImagesImported` Bool,
-	PRIMARY KEY (`FolderId`),
-	FULLTEXT KEY `fulltext` (`FolderName`,`FolderPath`, `FolderDescription`)
+  `FolderId` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `FolderName` varchar(200) NOT NULL,
+  `FolderPath` varchar(2000) NOT NULL,
+  `HasChildren` tinyint(1) DEFAULT NULL,
+  `CoverImagePath` varchar(2000) DEFAULT NULL,
+  `FolderDescription` varchar(3000) DEFAULT NULL,
+  `FolderRating` tinyint unsigned DEFAULT NULL,
+  `HasFiles` tinyint(1) DEFAULT NULL,
+  `IsRoot` tinyint(1) DEFAULT NULL,
+  `FolderContentMetaDataScanned` tinyint(1) DEFAULT NULL,
+  `AreImagesImported` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`FolderId`),
+  FULLTEXT KEY `fulltext` (`FolderName`,`FolderPath`,`FolderDescription`)
 );
 
 /*
@@ -43,68 +43,55 @@ ON DELETE CASCADE to delete all images if a folder is deleted
 */
 
 CREATE TABLE `images` (
-    `ImageId` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `ImagePath` VARCHAR(2000) NOT NULL,
-    `FileName` VARCHAR(500) NOT NULL,
-    `ImageRating` TINYINT UNSIGNED,
-    `ImageFolderPath` VARCHAR(2000) NOT NULL,
-    `ImageMetaDataScanned` BOOL,
-    `FolderId` BIGINT UNSIGNED DEFAULT NULL,
-    
-    -- New columns for date taken and breakdown
-    `DateTaken` DATE DEFAULT NULL,
-    `DateTakenYear` SMALLINT GENERATED ALWAYS AS (YEAR(DateTaken)) STORED,
-    `DateTakenMonth` TINYINT GENERATED ALWAYS AS (MONTH(DateTaken)) STORED,
-    `DateTakenDay` TINYINT GENERATED ALWAYS AS (DAY(DateTaken)) STORED,
-
-    PRIMARY KEY (`ImageId`),
-    KEY `FolderId` (`FolderId`),
-    FULLTEXT KEY `fulltext` (`ImagePath`),
-    KEY `idx_date_parts` (`DateTakenYear`, `DateTakenMonth`, `DateTakenDay`),
-    CONSTRAINT `images_ibfk_1` FOREIGN KEY (`FolderId`) REFERENCES `folders` (`FolderId`) ON DELETE CASCADE ON UPDATE CASCADE
+  `ImageId` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `ImagePath` varchar(2000) NOT NULL,
+  `FileName` varchar(500) NOT NULL,
+  `ImageRating` tinyint unsigned DEFAULT NULL,
+  `ImageFolderPath` varchar(2000) NOT NULL,
+  `ImageMetaDataScanned` tinyint(1) DEFAULT NULL,
+  `FolderId` bigint unsigned DEFAULT NULL,
+  `DateTaken` date DEFAULT NULL,
+  `DateTakenYear` smallint GENERATED ALWAYS AS (year(`DateTaken`)) STORED,
+  `DateTakenMonth` tinyint GENERATED ALWAYS AS (month(`DateTaken`)) STORED,
+  `DateTakenDay` tinyint GENERATED ALWAYS AS (dayofmonth(`DateTaken`)) STORED,
+  PRIMARY KEY (`ImageId`),
+  KEY `FolderId` (`FolderId`),
+  KEY `idx_date_parts` (`DateTakenYear`,`DateTakenMonth`,`DateTakenDay`),
+  FULLTEXT KEY `fulltext` (`ImagePath`),
+  CONSTRAINT `images_ibfk_1` FOREIGN KEY (`FolderId`) REFERENCES `folders` (`FolderId`) ON DELETE CASCADE ON UPDATE CASCADE
 );
-
-/*adding date to image on 8/7/25 -- use this to update live images table -- updated my home db with this already*/
-ALTER TABLE images
-  ADD COLUMN DateTaken DATE DEFAULT NULL,
-  ADD COLUMN DateTakenYear SMALLINT GENERATED ALWAYS AS (YEAR(DateTaken)) STORED,
-  ADD COLUMN DateTakenMonth TINYINT GENERATED ALWAYS AS (MONTH(DateTaken)) STORED,
-  ADD COLUMN DateTakenDay TINYINT GENERATED ALWAYS AS (DAY(DateTaken)) STORED;
-
-CREATE INDEX idx_date_parts ON images(DateTakenYear, DateTakenMonth, DateTakenDay);
 
 /*to reset the scann state on all folders and images use this -- not done on my home db yet*/
 UPDATE folders SET FolderContentMetaDataScanned = 0 WHERE FolderId >= 1;
 
 UPDATE images SET ImageMetaDataScanned = 0 WHERE ImageId >= 1;
 
-/*will need to add to home db -- updated my home db with this already*/
 CREATE TABLE image_dates (
-    DateTaken DATE PRIMARY KEY,           
-    Year SMALLINT NOT NULL,            
-    Month TINYINT NOT NULL,         
-    Day TINYINT NOT NULL,            
-    YearMonth CHAR(7) GENERATED ALWAYS AS (CONCAT(Year, '-', LPAD(Month,2,'0'))) STORED,
-    INDEX idx_year (Year),
-    INDEX idx_month (Month),
-    INDEX idx_year_month (YearMonth)
+  `DateTaken` date NOT NULL,
+  `Year` smallint NOT NULL,
+  `Month` tinyint NOT NULL,
+  `Day` tinyint NOT NULL,
+  `YearMonth` char(7) GENERATED ALWAYS AS (concat(`Year`,_utf8mb4'-',lpad(`Month`,2,_utf8mb4'0'))) STORED,
+  PRIMARY KEY (`DateTaken`),
+  KEY `idx_year` (`Year`),
+  KEY `idx_month` (`Month`),
+  KEY `idx_year_month` (`YearMonth`)
 );
-
-/**/
 
 CREATE TABLE `tags`(
 	`TagId` bigint unsigned NOT NULL AUTO_INCREMENT,
-	`TagName` Varchar(100) NOT NULL,
-	PRIMARY KEY (`TagId`),
-	CONSTRAINT `tags_uq` UNIQUE (`TagName`)
+  `TagName` varchar(100) NOT NULL,
+  PRIMARY KEY (`TagId`),
+  UNIQUE KEY `tags_uq` (`TagName`)
 );
 
 CREATE TABLE `folder_tags_join`(
 	`FolderId` bigint unsigned NOT NULL,
-	`TagId` bigint unsigned NOT NULL,
-	PRIMARY KEY (`FolderId`, `TagId`),
-	CONSTRAINT `folder_tags_join_idfk_1` FOREIGN KEY (`FolderId`) REFERENCES `folders` (`FolderId`) ON DELETE CASCADE ON UPDATE CASCADE,
-	CONSTRAINT `folder_tags_join_idfk_2` FOREIGN KEY (`TagId`) REFERENCES `tags` (`TagId`) ON DELETE CASCADE ON UPDATE CASCADE
+  `TagId` bigint unsigned NOT NULL,
+  PRIMARY KEY (`FolderId`,`TagId`),
+  KEY `folder_tags_join_idfk_2` (`TagId`),
+  CONSTRAINT `folder_tags_join_idfk_1` FOREIGN KEY (`FolderId`) REFERENCES `folders` (`FolderId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `folder_tags_join_idfk_2` FOREIGN KEY (`TagId`) REFERENCES `tags` (`TagId`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 /*
@@ -113,11 +100,11 @@ ON DELETE CASCADE to delete all image_tags_join when an tag is deleted
 */
 CREATE TABLE `image_tags_join`(
 	`ImageId` bigint unsigned NOT NULL,
-	`TagId` bigint unsigned NOT NULL,
-	PRIMARY KEY (`ImageId`, `TagId`),
-	CONSTRAINT `image_tags_join_ibfk_1` FOREIGN KEY (`ImageId`) REFERENCES `images` (`ImageId`) ON DELETE CASCADE ON UPDATE CASCADE,
-	CONSTRAINT `image_tags_join_ibfk_2` FOREIGN KEY (`TagId`) REFERENCES `tags` (`TagId`) ON DELETE CASCADE ON UPDATE CASCADE
-
+  `TagId` bigint unsigned NOT NULL,
+  PRIMARY KEY (`ImageId`,`TagId`),
+  KEY `image_tags_join_ibfk_2` (`TagId`),
+  CONSTRAINT `image_tags_join_ibfk_1` FOREIGN KEY (`ImageId`) REFERENCES `images` (`ImageId`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `image_tags_join_ibfk_2` FOREIGN KEY (`TagId`) REFERENCES `tags` (`TagId`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 /*
@@ -125,33 +112,38 @@ https://stackoverflow.com/questions/4715183/how-can-i-ensure-that-there-is-one-a
 enum to ensure a single row settings table.
 */
 CREATE TABLE `settings` (
-	`SettingsId` enum('1') NOT NULL,
-	`MaxImageWidth` int unsigned NOT NULL,
-	`FolderPageSize` int unsigned NOT NULL,
-	`ImagePageSize` int unsigned NOT NULL,
-	PRIMARY KEY (`SettingsId`)
+  `SettingsId` enum('1') NOT NULL,
+  `MaxImageWidth` int unsigned NOT NULL,
+  `FolderPageSize` int unsigned NOT NULL,
+  `ImagePageSize` int unsigned NOT NULL,
+  `ExternalImageViewerExePath` varchar(2000) DEFAULT NULL,
+  `FileExplorerExePath` varchar(2000) DEFAULT NULL,
+  PRIMARY KEY (`SettingsId`)
 );
 
 INSERT INTO settings (MaxImageWidth, FolderPageSize, ImagePageSize) VALUES (500, 20, 60); 
-UPDATE settings SET MaxImageWidth = 550 WHERE SettingsId = 1;
+
+/*will need to add to home db*/
+ALTER TABLE `settings` ADD `ExternalImageViewerExePath` varchar(2000) DEFAULT NULL;
+ALTER TABLE `settings` ADD `FileExplorerExePath` varchar(2000) DEFAULT NULL;
 
 CREATE TABLE `folder_saved_favorites` (
 	`SavedId` bigint unsigned NOT NULL AUTO_INCREMENT,
-	`FolderId` bigint unsigned,
-	PRIMARY KEY (`SavedId`),
-	CONSTRAINT `folderid_uq` UNIQUE (`FolderId`)
+  `FolderId` bigint unsigned DEFAULT NULL,
+  PRIMARY KEY (`SavedId`),
+  UNIQUE KEY `folderid_uq` (`FolderId`)
 );
 
 CREATE TABLE `saved_directory` (
 	`SavedDirectoryId` enum('1') NOT NULL,
-	`SavedDirectory` Varchar(2000) NOT NULL,
-	`SavedFolderPage` int unsigned NOT NULL,
-	`SavedTotalFolderPages` int unsigned NOT NULL,
-	`SavedImagePage` int unsigned NOT NULL,
-	`SavedTotalImagePages` int unsigned NOT NULL,
-	`XVector` double NOT NULL,
-	`YVector` double NOT NULL,
-	PRIMARY KEY (`SavedDirectoryId`)
+  `SavedDirectory` varchar(2000) NOT NULL,
+  `SavedFolderPage` int unsigned NOT NULL,
+  `SavedTotalFolderPages` int unsigned NOT NULL,
+  `SavedImagePage` int unsigned NOT NULL,
+  `SavedTotalImagePages` int unsigned NOT NULL,
+  `XVector` double NOT NULL,
+  `YVector` double NOT NULL,
+  PRIMARY KEY (`SavedDirectoryId`)
 );
 
 INSERT INTO saved_directory (SavedDirectory, SavedFolderPage, SavedTotalFolderPages, SavedImagePage, SavedTotalImagePages, XVector, YVector) VALUES ("",1,1,1,1,0,0);
@@ -316,98 +308,3 @@ with recursive
         where locate(',', rest) > 0
 )
 select distinct word from words order by word
-
-
-
-/*From table inspect 8-7-25*/
-
-CREATE TABLE `folders` (
-  `FolderId` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `FolderName` varchar(200) NOT NULL,
-  `FolderPath` varchar(2000) NOT NULL,
-  `HasChildren` tinyint(1) DEFAULT NULL,
-  `CoverImagePath` varchar(2000) DEFAULT NULL,
-  `FolderDescription` varchar(3000) DEFAULT NULL,
-  `FolderRating` tinyint unsigned DEFAULT NULL,
-  `HasFiles` tinyint(1) DEFAULT NULL,
-  `IsRoot` tinyint(1) DEFAULT NULL,
-  `FolderContentMetaDataScanned` tinyint(1) DEFAULT NULL,
-  `AreImagesImported` tinyint(1) DEFAULT NULL,
-  PRIMARY KEY (`FolderId`),
-  FULLTEXT KEY `fulltext` (`FolderName`,`FolderPath`,`FolderDescription`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-
-CREATE TABLE `images` (
-  `ImageId` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `ImagePath` varchar(2000) NOT NULL,
-  `FileName` varchar(500) NOT NULL,
-  `ImageRating` tinyint unsigned DEFAULT NULL,
-  `ImageFolderPath` varchar(2000) NOT NULL,
-  `ImageMetaDataScanned` tinyint(1) DEFAULT NULL,
-  `FolderId` bigint unsigned DEFAULT NULL,
-  `DateTaken` date DEFAULT NULL,
-  `DateTakenYear` smallint GENERATED ALWAYS AS (year(`DateTaken`)) STORED,
-  `DateTakenMonth` tinyint GENERATED ALWAYS AS (month(`DateTaken`)) STORED,
-  `DateTakenDay` tinyint GENERATED ALWAYS AS (dayofmonth(`DateTaken`)) STORED,
-  PRIMARY KEY (`ImageId`),
-  KEY `FolderId` (`FolderId`),
-  KEY `idx_date_parts` (`DateTakenYear`,`DateTakenMonth`,`DateTakenDay`),
-  FULLTEXT KEY `fulltext` (`ImagePath`),
-  CONSTRAINT `images_ibfk_1` FOREIGN KEY (`FolderId`) REFERENCES `folders` (`FolderId`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-
-CREATE TABLE `tags` (
-  `TagId` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `TagName` varchar(100) NOT NULL,
-  PRIMARY KEY (`TagId`),
-  UNIQUE KEY `tags_uq` (`TagName`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-
-CREATE TABLE `folder_tags_join` (
-  `FolderId` bigint unsigned NOT NULL,
-  `TagId` bigint unsigned NOT NULL,
-  PRIMARY KEY (`FolderId`,`TagId`),
-  KEY `folder_tags_join_idfk_2` (`TagId`),
-  CONSTRAINT `folder_tags_join_idfk_1` FOREIGN KEY (`FolderId`) REFERENCES `folders` (`FolderId`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `folder_tags_join_idfk_2` FOREIGN KEY (`TagId`) REFERENCES `tags` (`TagId`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-
-CREATE TABLE `image_tags_join` (
-  `ImageId` bigint unsigned NOT NULL,
-  `TagId` bigint unsigned NOT NULL,
-  PRIMARY KEY (`ImageId`,`TagId`),
-  KEY `image_tags_join_ibfk_2` (`TagId`),
-  CONSTRAINT `image_tags_join_ibfk_1` FOREIGN KEY (`ImageId`) REFERENCES `images` (`ImageId`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `image_tags_join_ibfk_2` FOREIGN KEY (`TagId`) REFERENCES `tags` (`TagId`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-
-CREATE TABLE `settings` (
-  `SettingsId` enum('1') NOT NULL,
-  `MaxImageWidth` int unsigned NOT NULL,
-  `FolderPageSize` int unsigned NOT NULL,
-  `ImagePageSize` int unsigned NOT NULL,
-  PRIMARY KEY (`SettingsId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-
-INSERT INTO settings (MaxImageWidth, FolderPageSize, ImagePageSize) VALUES (500, 20, 60);
-
-CREATE TABLE `folder_saved_favorites` (
-  `SavedId` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `FolderId` bigint unsigned DEFAULT NULL,
-  PRIMARY KEY (`SavedId`),
-  UNIQUE KEY `folderid_uq` (`FolderId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-
-CREATE TABLE `saved_directory` (
-  `SavedDirectoryId` enum('1') NOT NULL,
-  `SavedDirectory` varchar(2000) NOT NULL,
-  `SavedFolderPage` int unsigned NOT NULL,
-  `SavedTotalFolderPages` int unsigned NOT NULL,
-  `SavedImagePage` int unsigned NOT NULL,
-  `SavedTotalImagePages` int unsigned NOT NULL,
-  `XVector` double NOT NULL,
-  `YVector` double NOT NULL,
-  PRIMARY KEY (`SavedDirectoryId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-
-INSERT INTO saved_directory (SavedDirectory, SavedFolderPage, SavedTotalFolderPages, SavedImagePage, SavedTotalImagePages, XVector, YVector) VALUES ("",1,1,1,1,0,0);

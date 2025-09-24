@@ -493,6 +493,8 @@ namespace ImagePerfect.ViewModels
 
         public PickFolderCoverImageViewModel PickCoverImage { get => new PickFolderCoverImageViewModel(_unitOfWork, this); }
 
+        public PickExternalImageViewerExeViewModel PickExternalImageViewerExe { get => new PickExternalImageViewerExeViewModel(_unitOfWork, this); }
+
         public ObservableCollection<FolderViewModel> LibraryFolders { get; } = new ObservableCollection<FolderViewModel>();
 
         public ObservableCollection<ImageViewModel> Images { get; } = new ObservableCollection<ImageViewModel>();
