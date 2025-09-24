@@ -15,6 +15,9 @@ namespace ImagePerfect.ViewModels
         private int _folderPageSize = 20;
         private int _imagePageSize = 20;
 
+        private string? _externalImageViewerExePath;
+        private string? _fileExplorerExePath;
+
         private readonly IUnitOfWork _unitOfWork;
         
         private readonly SettingsMethods _settingsMethods;
@@ -26,6 +29,16 @@ namespace ImagePerfect.ViewModels
             _settingsMethods = new SettingsMethods(_unitOfWork);
         }
 
+        public string? ExternalImageViewerExePath
+        {
+            get => _externalImageViewerExePath;
+            set => _externalImageViewerExePath = value;
+        }
+        public string? FileExplorerExePath
+        {
+            get => _fileExplorerExePath;
+            set => _fileExplorerExePath = value;
+        }
         public int ImagePageSize
         {
             get => _imagePageSize;
@@ -42,6 +55,11 @@ namespace ImagePerfect.ViewModels
             set => this.RaiseAndSetIfChanged(ref _maxImageWidth, value);
         }
 
+        public async Task UpdateExternalImageViewerExePath(string externalImageViewerExePath)
+        {
+            ExternalImageViewerExePath = externalImageViewerExePath;
+            await UpdateSettings();
+        }
         private async Task UpdateSettings()
         {
             //update database
@@ -51,6 +69,8 @@ namespace ImagePerfect.ViewModels
                 MaxImageWidth = MaxImageWidth,
                 FolderPageSize = FolderPageSize,
                 ImagePageSize = ImagePageSize,
+                ExternalImageViewerExePath = ExternalImageViewerExePath,
+                FileExplorerExePath = FileExplorerExePath,
             };
             await _settingsMethods.UpdateSettings(settings);
         }
@@ -61,6 +81,8 @@ namespace ImagePerfect.ViewModels
             MaxImageWidth = settings.MaxImageWidth;
             FolderPageSize = settings.FolderPageSize;
             ImagePageSize = settings.ImagePageSize;
+            ExternalImageViewerExePath = settings.ExternalImageViewerExePath;
+            FileExplorerExePath = settings.FileExplorerExePath;
         }
 
         public async Task PickImagePageSize(string size)

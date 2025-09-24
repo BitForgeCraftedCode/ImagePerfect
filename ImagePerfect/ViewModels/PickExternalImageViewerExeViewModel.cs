@@ -39,7 +39,10 @@ namespace ImagePerfect.ViewModels
                 return;
             }
 
-            Debug.WriteLine(PathHelper.FormatPathFromFilePicker(_ExternalImageViewerExePath[0]));
+            string path = PathHelper.FormatPathFromFilePicker(_ExternalImageViewerExePath[0]);
+            
+            //save selected path to db
+            await _mainWindowViewModel.SettingsVm.UpdateExternalImageViewerExePath(path);
         }
     }
 }

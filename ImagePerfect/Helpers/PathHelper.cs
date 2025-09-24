@@ -238,6 +238,7 @@ namespace ImagePerfect.Helpers
         }
 
         //this needs obvious improvement -- maybe have user select path and store in db. 
+        //remove this method after some more testing
         public static string GetExternalImageViewerExePath()
         {
             #if WINDOWS 
