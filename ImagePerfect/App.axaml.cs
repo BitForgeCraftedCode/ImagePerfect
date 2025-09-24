@@ -26,10 +26,13 @@ namespace ImagePerfect
             var vm = services.GetRequiredService<MainWindowViewModel>();
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.MainWindow = new MainWindow
+                MainWindow mainWindow = new MainWindow
                 {
                     DataContext = vm,
                 };
+
+                Globals.MainWindow = mainWindow; //store global reference for message dialogs
+                desktop.MainWindow = mainWindow;
             }
 
             base.OnFrameworkInitializationCompleted();
