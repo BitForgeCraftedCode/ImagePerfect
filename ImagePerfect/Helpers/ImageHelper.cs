@@ -1,5 +1,9 @@
-﻿using Avalonia.Media.Imaging;
+﻿using Avalonia.Controls;
+using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Models;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SkiaSharp;
@@ -11,6 +15,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Image = SixLabors.ImageSharp.Image;
 
 namespace ImagePerfect.Helpers
 {
@@ -53,19 +58,27 @@ namespace ImagePerfect.Helpers
                 {
                     return LoadFromResource(new Uri("avares://ImagePerfect/Assets/missing_image.png"));
                 }
-                using (MemoryStream ms = new MemoryStream())
-                using (var image = await Image.LoadAsync(path))
+                //this will fail if an image is corrupted
+                try
                 {
-                    image.Mutate(x => {
-                        x.AutoOrient();
-                        x.Resize(600, 0);
-                    });
-                    await image.SaveAsBmpAsync(ms);
-                    //set stream to begining after writing
-                    ms.Seek(0, SeekOrigin.Begin);
-                    Bitmap img = new Bitmap(ms);
-                    ms.Close();
-                    return img;
+                    using (MemoryStream ms = new MemoryStream())
+                    using (var image = await Image.LoadAsync(path))
+                    {
+                        image.Mutate(x => {
+                            x.AutoOrient();
+                            x.Resize(600, 0);
+                        });
+                        await image.SaveAsBmpAsync(ms);
+                        //set stream to begining after writing
+                        ms.Seek(0, SeekOrigin.Begin);
+                        Bitmap img = new Bitmap(ms);
+                        ms.Close();
+                        return img;
+                    }
+                }
+                catch
+                {
+                    return LoadFromResource(new Uri("avares://ImagePerfect/Assets/missing_image.png"));
                 }
             }
             else

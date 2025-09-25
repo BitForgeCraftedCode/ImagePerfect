@@ -712,47 +712,26 @@ namespace ImagePerfect.ViewModels
 
         private async Task MapTagsToFoldersAddToObservable()
         {
-            try
-            {
-                //Parallel.ForEachAsync does not iterate in order. Need order preserved. 
-                //so iterate over the correct count and store the results in order -- correct slot/index.
-                //then re-iterate in order on the UIThread to display ordered results.
-                FolderViewModel[] results = new FolderViewModel[displayFolders.Count];
-                await Parallel.ForEachAsync(
-                        Enumerable.Range(0, displayFolders.Count),
-                        new ParallelOptions { MaxDegreeOfParallelism = 4 },
-                        async(i, ct) => {
-                            Folder taggedFolder = FolderMapper.MapTagsToFolder(displayFolders[i], displayFolderTags);
-                            FolderViewModel folderViewModel = await FolderMapper.GetFolderVm(taggedFolder);
-                            results[i] = folderViewModel;
-                        });
+            //Parallel.ForEachAsync does not iterate in order. Need order preserved. 
+            //so iterate over the correct count and store the results in order -- correct slot/index.
+            //then re-iterate in order on the UIThread to display ordered results.
+            FolderViewModel[] results = new FolderViewModel[displayFolders.Count];
+            await Parallel.ForEachAsync(
+                    Enumerable.Range(0, displayFolders.Count),
+                    new ParallelOptions { MaxDegreeOfParallelism = 4 },
+                    async(i, ct) => {
+                        Folder taggedFolder = FolderMapper.MapTagsToFolder(displayFolders[i], displayFolderTags);
+                        FolderViewModel folderViewModel = await FolderMapper.GetFolderVm(taggedFolder);
+                        results[i] = folderViewModel;
+                    });
 
-                // This must be on the UI thread
-                await Dispatcher.UIThread.InvokeAsync(() => {
-                    foreach (FolderViewModel folderViewModel in results) 
-                    { 
-                        LibraryFolders.Add(folderViewModel);
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = "Error",
-                        ContentMessage = $"Something went wrong click ok to reload current directory. \n {ex}",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                        MinWidth = 500  // optional, so it doesn’t wrap too soon
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
-                await LoadCurrentDirectory();
-            }
+            // This must be on the UI thread
+            await Dispatcher.UIThread.InvokeAsync(() => {
+                foreach (FolderViewModel folderViewModel in results) 
+                { 
+                    LibraryFolders.Add(folderViewModel);
+                }
+            });
         }
 
         //public so we can call from other view models
@@ -852,41 +831,20 @@ namespace ImagePerfect.ViewModels
         }
         private async Task MapTagsToSingleFolderUpdateObservable(FolderViewModel folderVm)
         {
-            try
+            for (int i = 0; i < displayFolders.Count; i++)
             {
-                for (int i = 0; i < displayFolders.Count; i++)
+                //only map the one that is being updated
+                if (displayFolders[i].FolderId == folderVm.FolderId)
                 {
-                    //only map the one that is being updated
-                    if (displayFolders[i].FolderId == folderVm.FolderId)
-                    {
-                        //need to map tags to folders 
-                        displayFolders[i] = FolderMapper.MapTagsToFolder(displayFolders[i], displayFolderTags);
-                        FolderViewModel folderViewModel = await FolderMapper.GetFolderVm(displayFolders[i]);
-                        //will be in the same order unless delete/move or next back folder
-                        //Any non destructive operation that does not affect the number or order of items returned from
-                        //the sql query will be in the same order so just modify props for a much cleaner UI refresh
-                        LibraryFolders[i] = folderViewModel;
-                        return;
-                    }
+                    //need to map tags to folders 
+                    displayFolders[i] = FolderMapper.MapTagsToFolder(displayFolders[i], displayFolderTags);
+                    FolderViewModel folderViewModel = await FolderMapper.GetFolderVm(displayFolders[i]);
+                    //will be in the same order unless delete/move or next back folder
+                    //Any non destructive operation that does not affect the number or order of items returned from
+                    //the sql query will be in the same order so just modify props for a much cleaner UI refresh
+                    LibraryFolders[i] = folderViewModel;
+                    return;
                 }
-            }
-            catch (Exception ex)
-            {
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = "Error",
-                        ContentMessage = $"Something went wrong click ok to reload current directory. \n {ex}",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                        MinWidth = 500  // optional, so it doesn’t wrap too soon
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
-                await LoadCurrentDirectory();
             }
         }
 
@@ -958,49 +916,28 @@ namespace ImagePerfect.ViewModels
         
         private async Task MapTagsToImagesAddToObservable()
         {
-            try
-            {
-                //DB pull displayImages in the correct order I want to keep it
-                //Parallel.ForEachAsync does not iterate in order. Need order preserved. 
-                //so iterate over the correct count and store the results in order -- correct slot/index.
-                //then re-iterate in order on the UIThread to display ordered results.
-                ImageViewModel[] results = new ImageViewModel[displayImages.Count];
-                await Parallel.ForEachAsync(
-                    Enumerable.Range(0, displayImages.Count),
-                    new ParallelOptions { MaxDegreeOfParallelism = 4 },
-                    async (i, ct) =>
-                    {
-                        Image taggedImage = ImageMapper.MapTagsToImage(displayImages[i], displayImageTags);
-                        ImageViewModel imageViewModel = await ImageMapper.GetImageVm(taggedImage);
-                        results[i] = imageViewModel;
-                    });
-                // This must be on the UI thread
-                await Dispatcher.UIThread.InvokeAsync(() =>
+            //DB pull displayImages in the correct order I want to keep it
+            //Parallel.ForEachAsync does not iterate in order. Need order preserved. 
+            //so iterate over the correct count and store the results in order -- correct slot/index.
+            //then re-iterate in order on the UIThread to display ordered results.
+            ImageViewModel[] results = new ImageViewModel[displayImages.Count];
+            await Parallel.ForEachAsync(
+                Enumerable.Range(0, displayImages.Count),
+                new ParallelOptions { MaxDegreeOfParallelism = 4 },
+                async (i, ct) =>
                 {
-                    foreach (ImageViewModel imageViewModel in results)
-                    {
-                        Images.Add(imageViewModel);
-                    }
+                    Image taggedImage = ImageMapper.MapTagsToImage(displayImages[i], displayImageTags);
+                    ImageViewModel imageViewModel = await ImageMapper.GetImageVm(taggedImage);
+                    results[i] = imageViewModel;
                 });
-            }
-            catch (Exception ex)
+            // This must be on the UI thread
+            await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = "Error",
-                        ContentMessage = $"Something went wrong click ok to reload current directory. \n {ex}",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                        MinWidth = 500  // optional, so it doesn’t wrap too soon
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
-                await LoadCurrentDirectory();
-            }
+                foreach (ImageViewModel imageViewModel in results)
+                {
+                    Images.Add(imageViewModel);
+                }
+            }); 
         }
         public async Task RefreshImages(string path = "", int folderId = 0)
         {
