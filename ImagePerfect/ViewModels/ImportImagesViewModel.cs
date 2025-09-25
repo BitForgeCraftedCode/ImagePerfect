@@ -9,6 +9,8 @@ using MsBox.Avalonia.Enums;
 using MsBox.Avalonia;
 using ReactiveUI;
 using System.Linq;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Models;
 
 namespace ImagePerfect.ViewModels
 {
@@ -67,9 +69,23 @@ namespace ImagePerfect.ViewModels
 
         public async Task ImportAllFoldersOnCurrentPage(ItemsControl foldersItemsControl)
         {
-            var boxYesNo = MessageBoxManager.GetMessageBoxStandard("Import All Folders", "CAUTION this could take a long time are you sure?", ButtonEnum.YesNo);
-            var boxResult = await boxYesNo.ShowAsync();
-            if (boxResult == ButtonResult.Yes)
+            var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
+                new MessageBoxCustomParams
+                {
+                    ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Yes", },
+                            new ButtonDefinition { Name = "No", },
+                        },
+                    ContentTitle = "Import All Folders",
+                    ContentMessage = $"CAUTION this could take a long time are you sure?",
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                    MinWidth = 500  // optional, so it doesn’t wrap too soon
+                }
+            );
+            var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
+            if (boxResult == "Yes")
             {
                 _mainWindowViewModel.ShowLoading = true;
                 List<FolderViewModel> allFolders = foldersItemsControl.Items.OfType<FolderViewModel>().ToList();
