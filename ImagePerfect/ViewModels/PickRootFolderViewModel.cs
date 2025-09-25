@@ -1,15 +1,18 @@
+using Avalonia.Controls;
+using ImagePerfect.Helpers;
+using ImagePerfect.Models;
+using ImagePerfect.ObjectMappers;
+using ImagePerfect.Repository.IRepository;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Enums;
+using MsBox.Avalonia.Models;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
-using System.Reactive.Linq;
 using System.Reactive;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
-using ReactiveUI;
-using ImagePerfect.Models;
-using ImagePerfect.Repository.IRepository;
-using MsBox.Avalonia.Enums;
-using MsBox.Avalonia;
-using ImagePerfect.ObjectMappers;
-using ImagePerfect.Helpers;
 
 namespace ImagePerfect.ViewModels
 {
@@ -43,8 +46,20 @@ namespace ImagePerfect.ViewModels
             Folder? rootFolder = await _folderMethods.GetRootFolder();
             if (rootFolder != null)
             {
-                var box = MessageBoxManager.GetMessageBoxStandard("Add Library", "You already have a root library folder. You have to delete your library to add different one.", ButtonEnum.Ok);
-                await box.ShowAsync();
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = "Add Library",
+                        ContentMessage = $"You already have a root library folder. You have to delete your library to add different one.",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
 
