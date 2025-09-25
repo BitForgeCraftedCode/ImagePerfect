@@ -1,11 +1,12 @@
-using System;
-using System.Collections.Generic;
+using Avalonia;
 using Avalonia.Controls;
-using System.Threading.Tasks;
+using Avalonia.Threading;
 using ImagePerfect.Models;
 using ImagePerfect.Repository.IRepository;
 using ReactiveUI;
-using Avalonia;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ImagePerfect.ViewModels
 {
@@ -47,6 +48,13 @@ namespace ImagePerfect.ViewModels
                 YVector = scrollViewer.Offset.Y
             };
             await _saveDirectoryMethods.UpdateSaveDirectory(saveDirectory);
+
+            // update runtime cache
+            _mainWindowViewModel.SavedDirectoryFolders.Clear();
+            _mainWindowViewModel.SavedDirectoryImages.Clear();
+
+            _mainWindowViewModel.SavedDirectoryFolders.AddRange(_mainWindowViewModel.LibraryFolders);
+            _mainWindowViewModel.SavedDirectoryImages.AddRange(_mainWindowViewModel.Images);
         }
 
         public async Task LoadSavedDirectory(ScrollViewer scrollViewer)
@@ -58,8 +66,29 @@ namespace ImagePerfect.ViewModels
             _mainWindowViewModel.TotalImagePages = _mainWindowViewModel.SavedTotalImagePages;
             _mainWindowViewModel.MaxPage = Math.Max(_mainWindowViewModel.TotalImagePages, _mainWindowViewModel.TotalFolderPages);
             _mainWindowViewModel.MaxCurrentPage = Math.Max(_mainWindowViewModel.CurrentImagePage, _mainWindowViewModel.CurrentFolderPage);
-            await _mainWindowViewModel.LoadCurrentDirectory();
-            scrollViewer.Offset = _mainWindowViewModel.SavedOffsetVector;
+            if (_mainWindowViewModel.SavedDirectoryFolders.Count > 0 || _mainWindowViewModel.SavedDirectoryImages.Count > 0)
+            {
+                //fast path: restore from cache
+                _mainWindowViewModel.LibraryFolders.Clear();
+                foreach(FolderViewModel folder in _mainWindowViewModel.SavedDirectoryFolders)
+                    _mainWindowViewModel.LibraryFolders.Add(folder);
+
+                _mainWindowViewModel.Images.Clear();
+                foreach(ImageViewModel image in _mainWindowViewModel.SavedDirectoryImages)
+                    _mainWindowViewModel.Images.Add(image);
+
+                // defer scroll until after layout
+                Dispatcher.UIThread.Post(() =>
+                {
+                    scrollViewer.Offset = _mainWindowViewModel.SavedOffsetVector;
+                }, DispatcherPriority.Background);
+            }
+            else
+            {
+                // slow path: full rebuild
+                await _mainWindowViewModel.LoadCurrentDirectory();
+                scrollViewer.Offset = _mainWindowViewModel.SavedOffsetVector;
+            }
         }
     }
 }
