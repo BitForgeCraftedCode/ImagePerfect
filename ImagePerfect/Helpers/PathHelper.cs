@@ -237,28 +237,16 @@ namespace ImagePerfect.Helpers
             return path;
         }
 
-        //this needs obvious improvement -- maybe have user select path and store in db. 
-        //remove this method after some more testing
-        public static string GetExternalImageViewerExePath()
-        {
-            #if WINDOWS 
-            return @"C:\Program Files\nomacs\bin\nomacs.exe";
-            #else
-            return @"/usr/bin/eog";
-            #endif
-        }
-
-        //this needs obvious improvement -- maybe have user select path and store in db. 
         public static string GetExternalFileExplorerExePath()
         {
             #if WINDOWS
             return @"C:\Windows\explorer.exe";
             #else
-            return @"/usr/bin/nautilus";
+            return @"/usr/bin/xdg-open";
             #endif
         }
 
-        public static string FormatImageFilePathForProcessStart(string imagePath)
+        public static string FormatFilePathForProcessStart(string imagePath)
         {
             //https://stackoverflow.com/questions/1857325/c-sharp-easiest-way-to-parse-filename-with-spaces-eg-c-test-file-with-space
             //escape the " to wrap the path in " like this "C:\pictures\pic with spaces.jpg"

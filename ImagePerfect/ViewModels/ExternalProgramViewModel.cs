@@ -22,7 +22,7 @@ namespace ImagePerfect.ViewModels
         public async void OpenImageInExternalViewer(ImageViewModel imageVm)
         {
             string? externalImageViewerExePath = _mainWindowViewModel.SettingsVm.ExternalImageViewerExePath;
-            string imagePathForProcessStart = PathHelper.FormatImageFilePathForProcessStart(imageVm.ImagePath);
+            string imagePathForProcessStart = PathHelper.FormatFilePathForProcessStart(imageVm.ImagePath);
             if (!File.Exists(imageVm.ImagePath))
             {
                 await MessageBoxManager.GetMessageBoxCustom(
@@ -99,12 +99,8 @@ namespace ImagePerfect.ViewModels
         public async void OpenCurrentDirectoryWithExplorer()
         {
             string externalFileExplorerExePath = PathHelper.GetExternalFileExplorerExePath();
-            string folderPathForProcessStart = PathHelper.FormatImageFilePathForProcessStart(_mainWindowViewModel.CurrentDirectory); //not an image path but all this did was wrap it in quotes
-            if (File.Exists(externalFileExplorerExePath) && Directory.Exists(_mainWindowViewModel.CurrentDirectory))
-            {
-                Process.Start(externalFileExplorerExePath, folderPathForProcessStart);
-            }
-            else
+            string folderPathForProcessStart = PathHelper.FormatFilePathForProcessStart(_mainWindowViewModel.CurrentDirectory);
+            if (!File.Exists(externalFileExplorerExePath)) 
             {
                 await MessageBoxManager.GetMessageBoxCustom(
                     new MessageBoxCustomParams
@@ -113,14 +109,47 @@ namespace ImagePerfect.ViewModels
                         {
                             new ButtonDefinition { Name = "Ok", },
                         },
-                        ContentTitle = "Open Folder",
-                        ContentMessage = $"Sorry something went wrong.",
+                        ContentTitle = "Open Directory Error",
+                        ContentMessage = $"Your operating system's default file manager could not be found.\n\n" +
+                        $"Windows: expected at C:\\Windows\\explorer.exe\n" +
+                        $"Linux: expected xdg-open at /usr/bin/xdg-open\n\n" +
+                        $"If this tool is installed and you still see this message, please submit a bug report.",
                         WindowStartupLocation = WindowStartupLocation.CenterOwner,
                         SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
                         MinWidth = 500  // optional, so it doesn’t wrap too soon
                     }
                 ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
+            }
+            if (Directory.Exists(_mainWindowViewModel.CurrentDirectory))
+            {
+                try
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = externalFileExplorerExePath,
+                        Arguments = folderPathForProcessStart,
+                        UseShellExecute = false
+                    });
+                }
+                catch (Exception ex) 
+                {
+                    await MessageBoxManager.GetMessageBoxCustom(
+                        new MessageBoxCustomParams
+                        {
+                            ButtonDefinitions = new List<ButtonDefinition>
+                            {
+                                new ButtonDefinition { Name = "Ok", },
+                            },
+                            ContentTitle = "Open Directory Error",
+                            ContentMessage = $"Failed to open directory in default file manager:\n{ex.Message}.\n\n" +
+                            $"Please submit this error message as a bug report.",
+                            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                            SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                            MinWidth = 500  // optional, so it doesn’t wrap too soon
+                        }
+                    ).ShowWindowDialogAsync(Globals.MainWindow);
+                }
             }
         }
     }
