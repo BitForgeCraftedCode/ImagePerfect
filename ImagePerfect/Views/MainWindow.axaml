@@ -412,6 +412,16 @@
 					<ItemsControl.ItemTemplate>
 						<DataTemplate DataType="vm:FolderViewModel">
 							<StackPanel Margin="1" x:Name="FoldersStackPanel">
+								<StackPanel.ContextMenu>
+									<ContextMenu>
+										<MenuItem Header="Move All Images In Folder Up One Directory" 
+												  Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).MoveAllImagesInFolderUpOneDirectoryCommand}"
+												  CommandParameter="{Binding}"/>
+										<MenuItem Header="Copy Cover Image To Containing Folder" 
+												  Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).CopyCoverImageToContainingFolderCommand}"
+												  CommandParameter="{Binding}"/>
+									</ContextMenu>
+								</StackPanel.ContextMenu>
 								<TextBlock MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" Text="{Binding FolderName}"/>
 								<Image MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" Source="{Binding CoverImageBitmap}" />
 								
