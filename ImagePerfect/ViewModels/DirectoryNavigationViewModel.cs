@@ -4,6 +4,9 @@ using ImagePerfect.Helpers;
 using MsBox.Avalonia.Enums;
 using MsBox.Avalonia;
 using ReactiveUI;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Models;
+using Avalonia.Controls;
 
 namespace ImagePerfect.ViewModels
 {
@@ -88,8 +91,20 @@ namespace ImagePerfect.ViewModels
             //two boolean varibale 4 combos TF TT FT and FF
             if (hasChildren == false && hasFiles == false)
             {
-                var box = MessageBoxManager.GetMessageBoxStandard("Empty Folder", "There are no Images in this folder.", ButtonEnum.Ok);
-                await box.ShowAsync();
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = "Empty Folder",
+                        ContentMessage = $"There are no images in this folder.",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
                 _mainWindowViewModel.CurrentDirectory = PathHelper.RemoveOneFolderFromPath(currentFolder.FolderPath);
                 return;
             }
