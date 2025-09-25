@@ -1,18 +1,20 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using ImagePerfect.Repository.IRepository;
-using MsBox.Avalonia.Enums;
-using MsBox.Avalonia;
-using ReactiveUI;
-using ImagePerfect.Models;
-using ImagePerfect.Helpers;
-using Image = ImagePerfect.Models.Image;
 using Avalonia.Controls;
-using System.Linq;
+using ImagePerfect.Helpers;
+using ImagePerfect.Models;
+using ImagePerfect.Repository.IRepository;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Enums;
+using MsBox.Avalonia.Models;
+using ReactiveUI;
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Image = ImagePerfect.Models.Image;
 
 namespace ImagePerfect.ViewModels
 {
@@ -167,10 +169,23 @@ namespace ImagePerfect.ViewModels
                 await box.ShowAsync();
                 return;
             }
-
-            var boxYesNo = MessageBoxManager.GetMessageBoxStandard("Move Images", $"Are you sure you want to move these images to {_mainWindowViewModel.SelectedImagesNewDirectory}?", ButtonEnum.YesNo);
-            var boxResult = await boxYesNo.ShowAsync();
-            if (boxResult == ButtonResult.Yes)
+            var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
+                new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Yes", },
+                            new ButtonDefinition { Name = "No", },
+                        },
+                        ContentTitle = "Move Images",
+                        ContentMessage = $"Are you sure you want to move these images to: \n{_mainWindowViewModel.SelectedImagesNewDirectory}?",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                );
+            var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
+            if (boxResult == "Yes")
             {
                 _mainWindowViewModel.ShowLoading = true;
                 //modify ImagePath, ImageFolderPath and FolderId for each image in imagesToMove 
