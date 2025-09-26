@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using ImagePerfect.Helpers;
 using ImagePerfect.Models;
+using ImagePerfect.ObjectMappers;
 using ImagePerfect.Repository.IRepository;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Dto;
@@ -184,6 +185,44 @@ namespace ImagePerfect.ViewModels
             }
         }
 
+        public async Task MoveAllImagesInFolderUpOneDirectory(FolderViewModel folderVm)
+        {
+            (List<Image> images, List<ImageTag> tags) imageResult = await _imageMethods.GetAllImagesInFolder(folderVm.FolderId);
+            List<Image> allImages = imageResult.images;
+            if(allImages is null || allImages.Count == 0)
+            {
+                await MessageBoxManager.GetMessageBoxCustom(
+                   new MessageBoxCustomParams
+                   {
+                       ButtonDefinitions = new List<ButtonDefinition>
+                       {
+                            new ButtonDefinition { Name = "Ok", },
+                       },
+                       ContentTitle = "Move Images",
+                       ContentMessage = $"There are no images in that folder.",
+                       WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                       SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                       MinWidth = 500  // optional, so it doesn’t wrap too soon
+                   }
+               ).ShowWindowDialogAsync(Globals.MainWindow);
+                return;
+            }
+            //Up One will be the CurrentDirectory in this case
+            _mainWindowViewModel.SelectedImagesNewDirectory = _mainWindowViewModel.CurrentDirectory;
+            if (_mainWindowViewModel.SelectedImagesNewDirectory == null || _mainWindowViewModel.SelectedImagesNewDirectory == "")
+                return;
+            //map Images to ImageViewModel
+            List<ImageViewModel> allImagesVm = new List<ImageViewModel>();
+            await Parallel.ForEachAsync(
+                allImages, 
+                new ParallelOptions { MaxDegreeOfParallelism = 4 }, 
+                async (image, ct) => 
+                {
+                    ImageViewModel iVm = await ImageMapper.GetImageVm(image);
+                    allImagesVm.Add(iVm);
+                });
+            await MoveSelectedImagesToNewFolder(allImagesVm);
+        }
         public async Task MoveSelectedImageUpOneDirectory(IList selectedImages)
         {
             if (selectedImages is null || selectedImages.Count == 0)
@@ -313,8 +352,7 @@ namespace ImagePerfect.ViewModels
                     //reset SelectedImageNewDirectory
                     _mainWindowViewModel.SelectedImagesNewDirectory = string.Empty;
                     //refresh UI
-                    await _mainWindowViewModel.RefreshImages("", imagesToMove[0].FolderId);
-                    await _mainWindowViewModel.RefreshFolders(imagesCurrentFolder.FolderPath);
+                    await _mainWindowViewModel.LoadCurrentDirectory();
                     _mainWindowViewModel.ShowLoading = false;
                 }
                 _mainWindowViewModel.ShowLoading = false;
