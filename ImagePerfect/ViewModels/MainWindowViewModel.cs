@@ -499,7 +499,11 @@ namespace ImagePerfect.ViewModels
 
         public ObservableCollection<FolderViewModel> LibraryFolders { get; } = new ObservableCollection<FolderViewModel>();
 
+        public List<FolderViewModel> SavedDirectoryFolders { get; } = new(); //runtime-only cache
+
         public ObservableCollection<ImageViewModel> Images { get; } = new ObservableCollection<ImageViewModel>();
+
+        public List<ImageViewModel> SavedDirectoryImages { get; } = new(); //runtime-only cache
 
         public ReactiveCommand<FolderViewModel, Unit> NextFolderCommand { get; }
 
