@@ -211,6 +211,9 @@ namespace ImagePerfect.ViewModels
             ToggleListAllTagsCommand = ReactiveCommand.Create(() => {
                 ToggleUI.ToggleListAllTags();
             });
+            ToggleShowExtendedFolderControlsCommand = ReactiveCommand.Create(() => { 
+                ToggleUI.ToggleShowExtendedFolderControls();
+            });
             FilterGetAllImagesInFolderAndSubFoldersCommand = ReactiveCommand.Create(async () =>
             {
                 ResetPagination();
@@ -570,6 +573,8 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<Unit, Unit> ToggleImportAndScanCommand { get; }
 
         public ReactiveCommand<Unit, Unit> ToggleListAllTagsCommand { get; }
+
+        public ReactiveCommand<Unit, Unit> ToggleShowExtendedFolderControlsCommand { get; }
 
         public ReactiveCommand<Unit, Task> FilterGetAllImagesInFolderAndSubFoldersCommand {  get; }
         public ReactiveCommand<decimal, Task> FilterImagesOnRatingCommand { get; }
