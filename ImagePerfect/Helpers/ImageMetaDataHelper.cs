@@ -20,10 +20,28 @@ namespace ImagePerfect.Helpers
     {
         public static async Task<List<ImagePerfectImage>> ScanImagesForMetaData(List<ImagePerfectImage> images)
         {
-            await Parallel.ForEachAsync(images, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async(img, ct) => {
-                ImageSharp.ImageInfo imageInfo = await ImageSharp.Image.IdentifyAsync(img.ImagePath);
-                UpdateMetadata(imageInfo, img);
-            });
+            await Parallel.ForEachAsync(images, 
+                new ParallelOptions { MaxDegreeOfParallelism = 4 }, 
+                async(img, ct) => {
+                    try
+                    {
+                        ImageSharp.ImageInfo imageInfo = await ImageSharp.Image.IdentifyAsync(img.ImagePath);
+                        UpdateMetadata(imageInfo, img);
+                    }
+                    catch
+                    {
+                        /* want to continue scaning the rest if exception -- like a corrupted image file
+                         * 
+                         * return vs. continue: In the context of a lambda expression within Parallel.ForEach, 
+                         * return serves the same purpose as continue in a traditional foreach loop – it exits the current iteration of the lambda and moves to the next item.
+                         * 
+                         * The delegate (async (img, ct) => { ... }) is the entire body of what runs per item.
+                         * Once you return, you’re done with that iteration, and Parallel.ForEachAsync moves on to the next image automatically.
+                         */
+                        return;
+                    }
+                    
+                });
             return images;
         }
 
