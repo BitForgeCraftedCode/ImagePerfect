@@ -735,19 +735,52 @@
 							<!--One way Bind ListBox IsSelected to VM IsSelected used for Select and unSelect all images method-->
 							<ListBoxItem IsSelected="{Binding IsSelected}" x:Name="ImagesListBoxItem">
 								<StackPanel Margin="1" KeyboardNavigation.TabNavigation="Continue">
+									<StackPanel.ContextMenu>
+										<ContextMenu IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
+											<MenuItem>
+												<MenuItem.Template>
+													<ControlTemplate>
+														<Button Content="Toggle Extended Image Controls"
+																Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleShowExtendedImageControlsCommand}"
+																Classes="main-btn"
+																Width="250"/>
+													</ControlTemplate>
+												</MenuItem.Template>
+											</MenuItem>
+										</ContextMenu>
+									</StackPanel.ContextMenu>
 									<Image MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" Source="{Binding ImageBitmap}" />
 									<!--See code behind-->
-									<Grid RowDefinitions="Auto" ColumnDefinitions="Auto,Auto" HorizontalAlignment="Center">
+									<Grid RowDefinitions="Auto" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto" HorizontalAlignment="Center">
+										<Button
+											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).BackFolderFromImageCommand}"
+											CommandParameter="{Binding}"
+											Grid.Row="0" 
+											Grid.Column="0" 
+											Background="Black"
+											IsVisible="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedImageControls}">
+											<Image Width="20" Height="20" Source="avares://ImagePerfect/Assets/previous-button-green-icon.png"></Image>
+										</Button>
+										<Button
+											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).OpenImageInExternalViewerCommand}"
+											CommandParameter="{Binding}"
+											Grid.Row="0" 
+											Grid.Column="1" 
+											Background="Black"
+											IsVisible="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedImageControls}">
+											<Image Width="20" Height="20" Source="avares://ImagePerfect/Assets/music-open-eject-button-green-icon.png"></Image>
+										</Button>
 										<Button 
 											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddImageRatingCommand}"
 											CommandParameter="{Binding}"
 											Click="Image_Rating_Zero"
 											Background="Black" 
 											Grid.Row="0" 
-											Grid.Column="0">
+											Grid.Column="2">
 											<Image Width="20" Height="20" Source="avares://ImagePerfect/Assets/DownArrowRed.png"></Image>
 										</Button>
-										<ItemsControl ItemsSource="{Binding Stars}" HorizontalAlignment="Center" Grid.Row="0" Grid.Column="1">
+										
+										<ItemsControl ItemsSource="{Binding Stars}" HorizontalAlignment="Center" Grid.Row="0" Grid.Column="3">
 											<ItemsControl.ItemsPanel>
 												<ItemsPanelTemplate>
 													<StackPanel Orientation="Horizontal"/>
@@ -774,8 +807,24 @@
 												</DataTemplate>
 											</ItemsControl.ItemTemplate>
 										</ItemsControl>
+										<Button
+											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).MoveImageToTrashCommand}"
+											CommandParameter="{Binding}"
+											Grid.Row="0" 
+											Grid.Column="4" 
+											Background="Black"
+											IsVisible="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedImageControls}">
+											<Image Width="20" Height="20" Source="avares://ImagePerfect/Assets/red-trash-can-icon.png"></Image>
+										</Button>
 									</Grid>
-									<Grid RowDefinitions="Auto" ColumnDefinitions="*,*,*" MaxWidth="600" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
+									<TextBlock 
+										Text="{Binding ImageTags}"
+										IsVisible="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedImageControls}"
+										HorizontalAlignment="Center" 
+										MaxWidth="600"/>
+									<Grid RowDefinitions="Auto" ColumnDefinitions="*,*,*" MaxWidth="600" 
+										  IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}"
+										  IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedImageControls}">
 										<Button Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2"
 										Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).BackFolderFromImageCommand}"
 										CommandParameter="{Binding}" Classes="main-btn">
@@ -793,10 +842,14 @@
 										</Button>
 									</Grid>
 									<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" MaxWidth="600" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
-										<TextBox Grid.Row="0" Grid.Column="0" Margin="5" MaxLength="2000" Text="{Binding ImageTags}"/>
+										<TextBox Grid.Row="0" Grid.Column="0" Margin="5" MaxLength="2000" 
+												 Text="{Binding ImageTags}" 
+												 IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedImageControls}"/>
 										<Button Grid.Row="0" Grid.Column="1" Width="100" HorizontalContentAlignment="Center"
 												Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).EditImageTagsCommand}"
-												CommandParameter="{Binding}" Classes="btn-danger">
+												CommandParameter="{Binding}"
+												IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedImageControls}"
+												Classes="btn-danger">
 											Remove Tag
 										</Button>
 										<AutoCompleteBox Grid.Row="1" Grid.Column="0" MaxLength="100" Margin="5" Watermark="Add A Tag"
@@ -810,7 +863,9 @@
 											Submit
 										</Button>
 									</Grid>
-									<Grid  RowDefinitions="Auto" ColumnDefinitions="Auto,*,Auto" MaxWidth="600" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
+									<Grid  RowDefinitions="Auto" ColumnDefinitions="Auto,*,Auto" MaxWidth="600" 
+										   IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}"
+										   IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedImageControls}">
 										<NumericUpDown Value="{Binding ImageId}" IsVisible="False"/>
 										<CheckBox Grid.Row="0" Grid.Column="0" Margin="5,0,0,0" IsChecked="{Binding ShowAddMultipleImageTags}"></CheckBox>
 										<TextBlock Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" IsVisible="{Binding !ShowAddMultipleImageTags}">Add Multiple Tags</TextBlock>
