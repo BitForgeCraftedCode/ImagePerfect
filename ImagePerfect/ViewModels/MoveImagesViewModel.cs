@@ -305,10 +305,11 @@ namespace ImagePerfect.ViewModels
                         new ButtonDefinition { Name = "No", },
                     },
                     ContentTitle = "Move Images",
-                    ContentMessage = $"Are you sure you want to move these images to: \n{_mainWindowViewModel.SelectedImagesNewDirectory}?",
+                    ContentMessage = $"\"{imagesCurrentFolder.FolderName}\"\n\nAre you sure you want to move images in the above folder to: \n{_mainWindowViewModel.SelectedImagesNewDirectory}?",
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                    MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    SizeToContent = SizeToContent.Manual,
+                    Width = 600,
+                    Height = double.NaN,
                 }
             );
             var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);

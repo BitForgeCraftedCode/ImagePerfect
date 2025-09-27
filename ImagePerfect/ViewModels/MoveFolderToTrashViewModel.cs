@@ -39,10 +39,11 @@ namespace ImagePerfect.ViewModels
                             new ButtonDefinition { Name = "Ok", },
                         },
                         ContentTitle = "Delete Folder",
-                        ContentMessage = $"This folder contains sub folders clean those up first.",
+                        ContentMessage = $"\"{folderVm.FolderName}\"\n\nThe above folder contains subfolders.\nPlease delete or move those first before removing this folder.",
                         WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                        SizeToContent = SizeToContent.Manual,
+                        Width = 500,
+                        Height = double.NaN,
                     }
                 ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
@@ -56,10 +57,11 @@ namespace ImagePerfect.ViewModels
                             new ButtonDefinition { Name = "No", },
                         },
                     ContentTitle = "Delete Folder",
-                    ContentMessage = $"Are you sure you want to delete your folder?",
+                    ContentMessage = $"\"{folderVm.FolderName}\"\n\nAre you sure you want to move the above folder to trash?",
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                    MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    SizeToContent = SizeToContent.Manual, 
+                    Width = 500,
+                    Height= double.NaN,
                 }
             );
             var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
