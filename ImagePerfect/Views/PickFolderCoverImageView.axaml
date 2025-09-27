@@ -2,13 +2,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d"
 			 xmlns:vm="using:ImagePerfect.ViewModels"
 			 x:DataType="vm:PickFolderCoverImageViewModel"
              x:Class="ImagePerfect.Views.PickFolderCoverImageView">
-	<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+	<Button Content="Add Cover Image"
 			Command="{Binding SelectCoverImageCommand}"
-			CommandParameter="{Binding $parent[StackPanel].DataContext}" Classes="main-btn">
-		Add Cover Image
-	</Button>
+			CommandParameter="{Binding $parent[StackPanel].DataContext}"
+			Classes="main-btn"
+			Width="310" />
 </UserControl>

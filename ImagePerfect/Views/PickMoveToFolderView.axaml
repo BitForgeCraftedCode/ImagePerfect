@@ -2,14 +2,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d"
 			 xmlns:vm="using:ImagePerfect.ViewModels"
 			 x:DataType="vm:PickMoveToFolderViewModel"
              x:Class="ImagePerfect.Views.PickMoveToFolderView">
-	<Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2" 
-			Command="{Binding SelectMoveToFolderCommand}"
-			CommandParameter="{Binding $parent[StackPanel].DataContext}"
-			IsEnabled="{Binding !$parent[StackPanel].((vm:FolderViewModel)DataContext).IsRoot}" Classes="main-btn">
-		Move Folder
-	</Button>
+	<Button Content="Move Folder" 
+			Command="{Binding SelectMoveToFolderCommand}" 
+			CommandParameter="{Binding $parent[StackPanel].DataContext}" 
+			IsEnabled="{Binding !$parent[StackPanel].((vm:FolderViewModel)DataContext).IsRoot}" 
+			Classes="main-btn" 
+			Width="310" />
 </UserControl>
