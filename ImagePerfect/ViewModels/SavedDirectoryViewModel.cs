@@ -6,6 +6,7 @@ using ImagePerfect.Repository.IRepository;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace ImagePerfect.ViewModels
@@ -27,6 +28,7 @@ namespace ImagePerfect.ViewModels
         public async Task SaveDirectory(ScrollViewer scrollViewer)
         {
             //update variables
+            _mainWindowViewModel.IsSavedDirectoryLoaded = true;
             _mainWindowViewModel.SavedDirectory = _mainWindowViewModel.CurrentDirectory;
             _mainWindowViewModel.SavedFolderPage = _mainWindowViewModel.CurrentFolderPage;
             _mainWindowViewModel.SavedTotalFolderPages = _mainWindowViewModel.TotalFolderPages;
@@ -49,6 +51,11 @@ namespace ImagePerfect.ViewModels
             };
             await _saveDirectoryMethods.UpdateSaveDirectory(saveDirectory);
 
+            SetSavedDirectoryCache();
+        }
+
+        private void SetSavedDirectoryCache()
+        {
             // update runtime cache
             _mainWindowViewModel.SavedDirectoryFolders.Clear();
             _mainWindowViewModel.SavedDirectoryImages.Clear();
@@ -56,9 +63,14 @@ namespace ImagePerfect.ViewModels
             _mainWindowViewModel.SavedDirectoryFolders.AddRange(_mainWindowViewModel.LibraryFolders);
             _mainWindowViewModel.SavedDirectoryImages.AddRange(_mainWindowViewModel.Images);
         }
-
+        public void UpdateSavedDirectoryCache()
+        {
+            SetSavedDirectoryCache();
+            _mainWindowViewModel.IsSavedDirectoryLoaded = false;
+        }
         public async Task LoadSavedDirectory(ScrollViewer scrollViewer)
         {
+            _mainWindowViewModel.IsSavedDirectoryLoaded = true;
             _mainWindowViewModel.CurrentDirectory = _mainWindowViewModel.SavedDirectory;
             _mainWindowViewModel.CurrentFolderPage = _mainWindowViewModel.SavedFolderPage;
             _mainWindowViewModel.TotalFolderPages = _mainWindowViewModel.SavedTotalFolderPages;

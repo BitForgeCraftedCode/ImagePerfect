@@ -34,6 +34,7 @@ namespace ImagePerfect.ViewModels
         private int _totalImages = 0;
         private string _currentDirectory = string.Empty;
         private string _savedDirectory = string.Empty;
+        private bool _isSavedDirectoryLoaded = false;
         private string _selectedImagesNewDirectory = string.Empty;
         private bool _filterInCurrentDirectory = false;
         private List<Tag> _tagsList = new List<Tag>();
@@ -467,6 +468,12 @@ namespace ImagePerfect.ViewModels
             set => _savedDirectory = value;
         }
 
+        public bool IsSavedDirectoryLoaded
+        {
+            get => _isSavedDirectoryLoaded;
+            set => _isSavedDirectoryLoaded = value;
+        }
+
         public bool FilterInCurrentDirectory
         {
             get => _filterInCurrentDirectory;
@@ -758,6 +765,16 @@ namespace ImagePerfect.ViewModels
         //public so we can call from other view models
         public async Task RefreshFolders(string path = "")
         {
+            /*
+             * Do not call UpdateSavedDirectoryCache() in RefreshFolderProps() as that only incrementally updates the live UI
+             * So calling there will only capture the 1st UI change. 
+             */
+            // Before clearing/reloading, capture the current UI state into cache
+            if (IsSavedDirectoryLoaded)
+            {
+                SavedDirectoryVm.UpdateSavedDirectoryCache();
+            }
+                
             ShowLoading = true;
             switch (currentFilter)
             {
@@ -872,6 +889,10 @@ namespace ImagePerfect.ViewModels
         //public so we can call from other view models
         public async Task RefreshFolderProps(string path, FolderViewModel folderVm)
         {
+            /*
+             * Do not call UpdateSavedDirectoryCache() in RefreshFolderProps() as this only incrementally updates the live UI
+             * So calling here will only capture the 1st UI change. 
+             */
             ShowLoading = true;
             switch (currentFilter)
             {
@@ -962,6 +983,11 @@ namespace ImagePerfect.ViewModels
         }
         public async Task RefreshImages(string path = "", int folderId = 0)
         {
+            // Before clearing/reloading, capture the current UI state into cache
+            if (IsSavedDirectoryLoaded)
+            {
+                SavedDirectoryVm.UpdateSavedDirectoryCache();
+            }
             ShowLoading = true;
             switch (currentFilter)
             {
