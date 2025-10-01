@@ -123,7 +123,7 @@ CREATE TABLE `settings` (
 
 INSERT INTO settings (MaxImageWidth, FolderPageSize, ImagePageSize) VALUES (500, 20, 60); 
 
-/*will need to add to home db*/
+/*will need to add to home db -- added to home db and installer db*/
 ALTER TABLE `settings` ADD `ExternalImageViewerExePath` varchar(2000) DEFAULT NULL;
 ALTER TABLE `settings` ADD `FileExplorerExePath` varchar(2000) DEFAULT NULL;
 
