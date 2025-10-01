@@ -393,19 +393,26 @@
 					<TextBlock Margin="5" Text="{Binding CurrentDirectory}"/>
 					-->
 					<Button Margin="5" Command="{Binding LoadSavedDirectoryCommand}" CommandParameter="{Binding #FoldersAndImagesScrollViewer}" Classes="menu-btn">
-						Load Saved Directory
+						<StackPanel Orientation="Horizontal" Spacing="5">
+							<TextBlock>Load</TextBlock>
+							<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/pink-heart-icon.png"></Image>
+							<TextBlock>Directory</TextBlock>
+						</StackPanel>
 					</Button>
 					<Button Margin="5" Command="{Binding BackFolderFromDirectoryOptionsPanelCommand}" Classes="menu-btn">
-						Back Directory
+						<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/arrow-left-direction-green-icon.png"></Image>
 					</Button>
 					<Button Margin="5" Command="{Binding LoadCurrentDirectoryCommand}" Classes="menu-btn">
-						Load Current Directory
+						<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/reload-button-green-icon.png"></Image>
 					</Button>
 					<Button Margin="5" Command="{Binding OpenCurrentDirectoryWithExplorerCommand}" Classes="menu-btn">
-						Open Current Directory
+						<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/music-open-eject-button-green-icon.png"></Image>
 					</Button>
 					<Button Margin="5" Command="{Binding SaveDirectoryCommand}" CommandParameter="{Binding #FoldersAndImagesScrollViewer}" Classes="btn-danger">
-						Save Directory
+						<StackPanel Orientation="Horizontal" Spacing="5">
+							<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/pink-heart-icon.png"></Image>
+							<TextBlock>Directory</TextBlock>
+						</StackPanel>
 					</Button>
 					<Button 
 						Command="{Binding FilterFiveStarImagesInCurrentDirectoryCommand}"
