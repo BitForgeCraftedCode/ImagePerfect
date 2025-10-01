@@ -10,6 +10,7 @@ using MsBox.Avalonia.Models;
 using ReactiveUI;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -209,19 +210,19 @@ namespace ImagePerfect.ViewModels
             }
             //Up One will be the CurrentDirectory in this case
             _mainWindowViewModel.SelectedImagesNewDirectory = _mainWindowViewModel.CurrentDirectory;
-            if (_mainWindowViewModel.SelectedImagesNewDirectory == null || _mainWindowViewModel.SelectedImagesNewDirectory == "")
+            if (string.IsNullOrEmpty(_mainWindowViewModel.SelectedImagesNewDirectory))
                 return;
             //map Images to ImageViewModel
-            List<ImageViewModel> allImagesVm = new List<ImageViewModel>();
+            ImageViewModel[] allImagesVm = new ImageViewModel[allImages.Count];
             await Parallel.ForEachAsync(
-                allImages, 
+                Enumerable.Range(0, allImages.Count), 
                 new ParallelOptions { MaxDegreeOfParallelism = 4 }, 
-                async (image, ct) => 
+                async (i, ct) => 
                 {
-                    ImageViewModel iVm = await ImageMapper.GetImageVm(image);
-                    allImagesVm.Add(iVm);
+                    ImageViewModel iVm = await ImageMapper.GetImageVm(allImages[i]);
+                    allImagesVm[i] = iVm;
                 });
-            await MoveSelectedImagesToNewFolder(allImagesVm);
+            await MoveSelectedImagesToNewFolder(allImagesVm.ToList());
         }
         public async Task MoveSelectedImageUpOneDirectory(IList selectedImages)
         {
