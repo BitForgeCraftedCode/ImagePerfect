@@ -394,9 +394,9 @@
 					-->
 					<Button Margin="5" Command="{Binding LoadSavedDirectoryCommand}" CommandParameter="{Binding #FoldersAndImagesScrollViewer}" Classes="menu-btn">
 						<StackPanel Orientation="Horizontal" Spacing="5">
-							<TextBlock>Load</TextBlock>
+							<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/reload-button-green-icon.png"></Image>
 							<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/pink-heart-icon.png"></Image>
-							<TextBlock>Directory</TextBlock>
+							<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/computer-folder-dual-tone-icon.png"></Image>
 						</StackPanel>
 					</Button>
 					<Button Margin="5" Command="{Binding BackFolderFromDirectoryOptionsPanelCommand}" Classes="menu-btn">
@@ -411,7 +411,7 @@
 					<Button Margin="5" Command="{Binding SaveDirectoryCommand}" CommandParameter="{Binding #FoldersAndImagesScrollViewer}" Classes="btn-danger">
 						<StackPanel Orientation="Horizontal" Spacing="5">
 							<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/pink-heart-icon.png"></Image>
-							<TextBlock>Directory</TextBlock>
+							<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/computer-folder-dual-tone-icon.png"></Image>
 						</StackPanel>
 					</Button>
 					<Button 
@@ -423,10 +423,18 @@
 						<StackPanel Orientation="Horizontal" Spacing="5">
 							<TextBlock>5</TextBlock>
 							<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/star_filled.png"></Image>
-							<TextBlock>Images</TextBlock>
+							<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/icons8-image-96.png"></Image>
 						</StackPanel>
 					</Button>
-					<Button Command="{Binding FilterGetAllImagesInFolderAndSubFoldersCommand}" Margin="5" Classes="menu-btn">All Images In SubFolders</Button>
+					<Button Command="{Binding FilterGetAllImagesInFolderAndSubFoldersCommand}" Margin="5" Classes="menu-btn">
+						<StackPanel Orientation="Horizontal" Spacing="5">
+							<TextBlock>All</TextBlock>
+							<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/icons8-image-96.png"></Image>
+							<TextBlock>In</TextBlock>
+							<TextBlock>Sub</TextBlock>
+							<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/computer-folder-dual-tone-icon.png"></Image>
+						</StackPanel>
+					</Button>
 				</StackPanel>
 			</Grid>
 		</StackPanel>
