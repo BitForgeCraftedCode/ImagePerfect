@@ -507,6 +507,8 @@ namespace ImagePerfect.ViewModels
 
         public PickNewFoldersViewModel PickNewFolders { get => new PickNewFoldersViewModel(_unitOfWork, this); }
 
+        public PickFoldersToExtractZipsViewModel PickZipFolders { get => new PickFoldersToExtractZipsViewModel(_unitOfWork, this); }
+
         public PickMoveToFolderViewModel PickMoveToFolder { get => new PickMoveToFolderViewModel(_unitOfWork, this); }
 
         public PickImageMoveToFolderViewModel PickImageMoveToFolder { get => new PickImageMoveToFolderViewModel(_unitOfWork, this); }

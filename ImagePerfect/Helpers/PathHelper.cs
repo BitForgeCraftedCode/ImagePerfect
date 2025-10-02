@@ -272,6 +272,13 @@ namespace ImagePerfect.Helpers
             return trashFolderPath + getPathSlash() + g + folderVm.FolderName;
         }
 
+        public static string GetZipFolderTrashPath(string zipFolderName, string trashFolderPath)
+        {
+            //add a guid to guarantee no zip file in trash has the same name
+            Guid g = Guid.NewGuid();
+            return trashFolderPath + getPathSlash() + g + zipFolderName;
+        }
+
         public static string GetNewFolderPath(string currentDirectory, string newFolderName)
         {
             return currentDirectory + getPathSlash() + newFolderName;

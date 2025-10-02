@@ -1,4 +1,6 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
 using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.Repository.IRepository;
@@ -10,6 +12,7 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -111,6 +114,47 @@ namespace ImagePerfect.ViewModels
                 return;
             }
             _mainWindowViewModel.ShowLoading = true;
+            //check for zip files -- must extract zips 1st before import
+            List<string> zipLocations = new List<string>();
+            foreach (string folder in _NewFolders)
+            {
+                string folderPath = PathHelper.FormatPathFromFolderPicker(folder);
+                if (Directory.Exists(folderPath)) 
+                {
+                    IEnumerable<string> zipFiles = Directory.EnumerateFiles(folderPath, "*.zip", SearchOption.AllDirectories);
+                    if (zipFiles.Any())
+                    {
+                        zipLocations.Add(folderPath);
+                    }
+                }
+            }
+            if (zipLocations.Any()) 
+            {
+                string message = "One or more of the selected folders contain .zip files:\n\n" +
+                     string.Join("\n", zipLocations) +
+                     "\n\nPlease extract the zip files before adding these folders to the library.";
+
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = "Add Folders",
+                        CanResize = true,
+                        ContentMessage = message, 
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,
+                        MinWidth = 500,
+                        MinHeight = 600,
+                       
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
+
+                _mainWindowViewModel.ShowLoading = false;
+                return;
+            }
             //check if any folders are already in db
             List<Folder> allFoldersInDb = await _folderMethods.GetAllFolders();
             List<string> foldersNotToAdd = new List<string>();

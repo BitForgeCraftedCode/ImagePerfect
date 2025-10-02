@@ -4,10 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
 			 xmlns:vm="using:ImagePerfect.ViewModels"
-			 x:DataType="vm:PickNewFoldersViewModel"
-             x:Class="ImagePerfect.Views.PickNewFoldersView">
-	<Button Content="Add New Folders" 
-			Command="{Binding SelectNewFoldersCommand}" 
-			Classes="main-btn" 
-			Width="235" />
+			 x:DataType="vm:PickFoldersToExtractZipsViewModel"
+             x:Class="ImagePerfect.Views.PickFoldersToExtractZipsView">
+	<Button Content="Pick Folders With Zips To Extract"
+			Command="{Binding SelectZipFoldersCommand }"
+			Classes="main-btn"
+			Width="235"/>
 </UserControl>

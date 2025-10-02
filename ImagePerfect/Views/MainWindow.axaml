@@ -99,21 +99,28 @@
 					<MenuItem>
 						<MenuItem.Template>
 							<ControlTemplate>
-								<Button Content="Create New Folder" Command="{Binding ToggleCreateNewFolderCommand}" Classes="main-btn" Width="200" />
+								<v:PickFoldersToExtractZipsView DataContext="{Binding PickZipFolders}" />
 							</ControlTemplate>
 						</MenuItem.Template>
 					</MenuItem>
 					<MenuItem>
 						<MenuItem.Template>
 							<ControlTemplate>
-								<Button Content="Clear Favorite Folders" Command="{Binding RemoveAllFavoriteFoldersCommand}" Classes="main-btn" Width="200" />
+								<Button Content="Create New Folder" Command="{Binding ToggleCreateNewFolderCommand}" Classes="main-btn" Width="235" />
 							</ControlTemplate>
 						</MenuItem.Template>
 					</MenuItem>
 					<MenuItem>
 						<MenuItem.Template>
 							<ControlTemplate>
-								<Button Content="Manage Images" Command="{Binding ToggleManageImagesCommand}" Classes="main-btn" Width="200" />
+								<Button Content="Clear Favorite Folders" Command="{Binding RemoveAllFavoriteFoldersCommand}" Classes="main-btn" Width="235" />
+							</ControlTemplate>
+						</MenuItem.Template>
+					</MenuItem>
+					<MenuItem>
+						<MenuItem.Template>
+							<ControlTemplate>
+								<Button Content="Manage Images" Command="{Binding ToggleManageImagesCommand}" Classes="main-btn" Width="235" />
 							</ControlTemplate>
 						</MenuItem.Template>
 					</MenuItem>
