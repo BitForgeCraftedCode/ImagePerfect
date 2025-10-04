@@ -35,6 +35,7 @@ namespace ImagePerfect.ViewModels
         private string _currentDirectory = string.Empty;
         private string _savedDirectory = string.Empty;
         private bool _isSavedDirectoryLoaded = false;
+        private bool _loadSavedDirectoryFromCache = true;
         private string _selectedImagesNewDirectory = string.Empty;
         private bool _filterInCurrentDirectory = false;
         private List<Tag> _tagsList = new List<Tag>();
@@ -474,6 +475,12 @@ namespace ImagePerfect.ViewModels
             set => _isSavedDirectoryLoaded = value;
         }
 
+        public bool LoadSavedDirectoryFromCache
+        {
+            get => _loadSavedDirectoryFromCache;
+            set => this.RaiseAndSetIfChanged(ref _loadSavedDirectoryFromCache, value);
+        }
+
         public bool FilterInCurrentDirectory
         {
             get => _filterInCurrentDirectory;
@@ -772,7 +779,7 @@ namespace ImagePerfect.ViewModels
              * So calling there will only capture the 1st UI change. 
              */
             // Before clearing/reloading, capture the current UI state into cache
-            if (IsSavedDirectoryLoaded)
+            if (IsSavedDirectoryLoaded && LoadSavedDirectoryFromCache)
             {
                 SavedDirectoryVm.UpdateSavedDirectoryCache();
             }
@@ -986,7 +993,7 @@ namespace ImagePerfect.ViewModels
         public async Task RefreshImages(string path = "", int folderId = 0)
         {
             // Before clearing/reloading, capture the current UI state into cache
-            if (IsSavedDirectoryLoaded)
+            if (IsSavedDirectoryLoaded && LoadSavedDirectoryFromCache)
             {
                 SavedDirectoryVm.UpdateSavedDirectoryCache();
             }

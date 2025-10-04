@@ -78,7 +78,7 @@ namespace ImagePerfect.ViewModels
             _mainWindowViewModel.TotalImagePages = _mainWindowViewModel.SavedTotalImagePages;
             _mainWindowViewModel.MaxPage = Math.Max(_mainWindowViewModel.TotalImagePages, _mainWindowViewModel.TotalFolderPages);
             _mainWindowViewModel.MaxCurrentPage = Math.Max(_mainWindowViewModel.CurrentImagePage, _mainWindowViewModel.CurrentFolderPage);
-            if (_mainWindowViewModel.SavedDirectoryFolders.Count > 0 || _mainWindowViewModel.SavedDirectoryImages.Count > 0)
+            if ((_mainWindowViewModel.SavedDirectoryFolders.Count > 0 || _mainWindowViewModel.SavedDirectoryImages.Count > 0) && _mainWindowViewModel.LoadSavedDirectoryFromCache == true)
             {
                 //fast path: restore from cache
                 _mainWindowViewModel.LibraryFolders.Clear();
