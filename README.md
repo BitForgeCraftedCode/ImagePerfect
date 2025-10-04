@@ -166,6 +166,9 @@ I created Image Perfect both as a way to learn desktop application development a
 - GIF creation support (Possible Pro Feature)
 - Restore images and folders from trash
 - Backup and restore MySQL database assist (Possible Pro Feature)
+- History list
+- Saved and or custom filters
+- Have filters open in another window to save main page space
 
 <a id="screen-shots"></a>
 ## 📷 Screen Shots
