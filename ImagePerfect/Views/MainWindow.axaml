@@ -508,6 +508,11 @@
 							Classes="menu-btn">
 						Add Cover Image On Current Page
 					</Button>
+					<Button Margin="5" HorizontalAlignment="Center"
+							Command=""
+							Classes="menu-btn">
+						Get Folder Text
+					</Button>
 				</StackPanel>
 			</Grid>
 		</StackPanel>
