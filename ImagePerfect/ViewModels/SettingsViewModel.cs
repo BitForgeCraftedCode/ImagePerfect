@@ -169,18 +169,15 @@ namespace ImagePerfect.ViewModels
             switch (size)
             {
                 case "Small":
-                    MaxImageWidth = 300;
-                    break;
-                case "Medium":
                     MaxImageWidth = 400;
                     break;
-                case "Large":
+                case "Medium":
                     MaxImageWidth = 500;
                     break;
-                case "XLarge":
+                case "Large":
                     MaxImageWidth = 550;
                     break;
-                case "XXLarge":
+                case "XLarge":
                     MaxImageWidth = 600;
                     break;
             }

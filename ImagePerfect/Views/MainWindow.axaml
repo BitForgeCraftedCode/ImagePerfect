@@ -320,11 +320,13 @@
 					<RadioButton GroupName="PickImageWidth" x:Name="ImageWidthXLarge" Content="XLarge"
 								 Command="{Binding PickImageWidthCommand}"
 								 CommandParameter="{Binding #ImageWidthXLarge.Content}"/>
+					<!--
 					<RadioButton GroupName="PickImageWidth" x:Name="ImageWidthXXLarge" Content="XXLarge"
 								 Command="{Binding PickImageWidthCommand}"
 								 CommandParameter="{Binding #ImageWidthXXLarge.Content}"/>
+					-->
 					
-					<NumericUpDown FormatString="0" Maximum="600" Minimum="300" Margin="5" Value="{Binding SettingsVm.MaxImageWidth}" x:Name="ImageWidthSelect" />
+					<NumericUpDown FormatString="0" Maximum="600" Minimum="400" Margin="5" Value="{Binding SettingsVm.MaxImageWidth}" x:Name="ImageWidthSelect" />
 					<Button Command="{Binding SelectImageWidthCommand}" CommandParameter="{Binding #ImageWidthSelect.Value}" Classes="menu-btn">Save Selected Width</Button>
 				</StackPanel>
 				<StackPanel Grid.Row="0" Grid.Column="1" Width="200">
