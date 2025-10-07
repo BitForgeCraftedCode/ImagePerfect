@@ -11,5 +11,5 @@
 			CommandParameter="{Binding $parent[StackPanel].DataContext}" 
 			IsEnabled="{Binding !$parent[StackPanel].((vm:FolderViewModel)DataContext).IsRoot}" 
 			Classes="main-btn" 
-			Width="310" />
+			Width="320" />
 </UserControl>

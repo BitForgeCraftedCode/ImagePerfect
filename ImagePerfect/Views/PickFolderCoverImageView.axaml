@@ -10,5 +10,5 @@
 			Command="{Binding SelectCoverImageCommand}"
 			CommandParameter="{Binding $parent[StackPanel].DataContext}"
 			Classes="main-btn"
-			Width="310" />
+			Width="320" />
 </UserControl>

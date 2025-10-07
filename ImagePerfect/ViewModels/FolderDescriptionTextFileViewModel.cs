@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.ObjectMappers;
 using ImagePerfect.Repository.IRepository;
@@ -28,6 +29,73 @@ namespace ImagePerfect.ViewModels
             _folderMethods = new FolderMethods(_unitOfWork);
         }
 
+        public async Task CopyFolderDescriptionToContainingFolder(FolderViewModel folderVm)
+        {
+            if (PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath) == _mainWindowViewModel.InitializeVm.RootFolderLocation)
+            {
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = "Copy Description",
+                        ContentMessage = $"Cannot copy description from root folder.",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
+                return;
+            }
+            if (String.IsNullOrEmpty(folderVm.FolderDescription))
+            {
+                await MessageBoxManager.GetMessageBoxCustom(
+                   new MessageBoxCustomParams
+                   {
+                       ButtonDefinitions = new List<ButtonDefinition>
+                       {
+                            new ButtonDefinition { Name = "Ok", },
+                       },
+                       ContentTitle = "Copy Description",
+                       ContentMessage = $"The folder must have a description to copy.",
+                       WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                       SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                       MinWidth = 500  // optional, so it doesn’t wrap too soon
+                   }
+               ).ShowWindowDialogAsync(Globals.MainWindow);
+                return;
+            }
+            Folder containingFolder = await _folderMethods.GetFolderAtDirectory(PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath));
+            if (!string.IsNullOrEmpty(containingFolder.FolderDescription))
+            {
+                var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                            {
+                                new ButtonDefinition { Name = "Yes", },
+                                new ButtonDefinition { Name = "No", },
+                            },
+                        ContentTitle = "Copy Description",
+                        ContentMessage = $"Containing folder already has a description. Do you want to overwrite it?",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                );
+                var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
+                if (boxResult == "No")
+                {
+                    return;
+                }
+            }
+            containingFolder.FolderDescription = folderVm.FolderDescription;
+            //update db
+            await _folderMethods.UpdateFolder(containingFolder);
+
+        }
         public async Task GetFolderDescriptionFromTextFileOnCurrentPage(ItemsControl foldersItemsControl)
         {
             List<FolderViewModel> allFolders = foldersItemsControl.Items.OfType<FolderViewModel>().ToList();

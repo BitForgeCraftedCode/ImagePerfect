@@ -370,6 +370,9 @@ namespace ImagePerfect.ViewModels
             GetFolderDescriptionFromTextFileOnCurrentPageCommand = ReactiveCommand.Create(async (ItemsControl folderItemsControl) => { 
                 await FolderDescriptionTextFileVm.GetFolderDescriptionFromTextFileOnCurrentPage(folderItemsControl);
             });
+            CopyFolderDescriptionToContainingFolderCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
+                await FolderDescriptionTextFileVm.CopyFolderDescriptionToContainingFolder(folderVm);
+            });
             CreateNewFolderCommand = ReactiveCommand.Create(async () => {
                 await CreateNewFolder.CreateNewFolder();
             });
@@ -663,6 +666,8 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<FolderViewModel, Task> CopyCoverImageToContainingFolderCommand { get; }
 
         public ReactiveCommand<ItemsControl, Task> GetFolderDescriptionFromTextFileOnCurrentPageCommand { get; }
+
+        public ReactiveCommand<FolderViewModel, Task> CopyFolderDescriptionToContainingFolderCommand { get; }
 
         public ReactiveCommand<ItemsControl, Task> ScanAllFoldersOnCurrentPageCommand { get; }
 

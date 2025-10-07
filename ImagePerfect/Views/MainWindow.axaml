@@ -541,7 +541,7 @@
 															IsEnabled="{Binding !$parent[StackPanel].((vm:FolderViewModel)DataContext).IsRoot}"
 															CommandParameter="{Binding}"
 															Classes="main-btn"
-															Width="310"/>
+															Width="320"/>
 												</ControlTemplate>
 											</MenuItem.Template>
 										</MenuItem>
@@ -552,7 +552,18 @@
 															Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).CopyCoverImageToContainingFolderCommand}"
 															CommandParameter="{Binding}"
 															Classes="main-btn"
-															Width="310"/>
+															Width="320"/>
+												</ControlTemplate>
+											</MenuItem.Template>
+										</MenuItem>
+										<MenuItem>
+											<MenuItem.Template>
+												<ControlTemplate>
+													<Button Content="Copy Folder Description To Containing Folder" 
+															Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).CopyFolderDescriptionToContainingFolderCommand}"
+															CommandParameter="{Binding}"
+															Classes="main-btn"
+															Width="320"/>
 												</ControlTemplate>
 											</MenuItem.Template>
 										</MenuItem>
@@ -577,7 +588,7 @@
 															Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).SaveFolderAsFavoriteCommand}"
 															CommandParameter="{Binding}"
 															Classes="main-btn"
-															Width="310"/>
+															Width="320"/>
 												</ControlTemplate>
 											</MenuItem.Template>
 										</MenuItem>
@@ -587,7 +598,7 @@
 													<Button Content="Toggle Extended Folder Controls"
 															Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleShowExtendedFolderControlsCommand}"
 															Classes="main-btn"
-															Width="310"/>
+															Width="320"/>
 												</ControlTemplate>
 											</MenuItem.Template>
 										</MenuItem>
@@ -599,7 +610,7 @@
 															CommandParameter="{Binding}"
 															IsEnabled="{Binding !IsRoot}"
 															Classes="btn-danger"
-															Width="310"/>
+															Width="320"/>
 												</ControlTemplate>
 											</MenuItem.Template>
 										</MenuItem>
