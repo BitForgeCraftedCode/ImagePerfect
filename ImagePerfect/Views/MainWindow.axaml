@@ -320,11 +320,6 @@
 					<RadioButton GroupName="PickImageWidth" x:Name="ImageWidthXLarge" Content="XLarge"
 								 Command="{Binding PickImageWidthCommand}"
 								 CommandParameter="{Binding #ImageWidthXLarge.Content}"/>
-					<!--
-					<RadioButton GroupName="PickImageWidth" x:Name="ImageWidthXXLarge" Content="XXLarge"
-								 Command="{Binding PickImageWidthCommand}"
-								 CommandParameter="{Binding #ImageWidthXXLarge.Content}"/>
-					-->
 					
 					<NumericUpDown FormatString="0" Maximum="600" Minimum="400" Margin="5" Value="{Binding SettingsVm.MaxImageWidth}" x:Name="ImageWidthSelect" />
 					<Button Command="{Binding SelectImageWidthCommand}" CommandParameter="{Binding #ImageWidthSelect.Value}" Classes="menu-btn">Save Selected Width</Button>
@@ -620,7 +615,8 @@
 								</StackPanel.ContextMenu>
 								<TextBlock MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" Text="{Binding FolderName}"/>
 								<Image MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" Source="{Binding CoverImageBitmap}" />
-								<TextBlock HorizontalAlignment="Center" 
+								<TextBlock HorizontalAlignment="Center"
+										   TextWrapping="Wrap"
 										   Text="{Binding FolderTags}"
 										   IsVisible="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"
 										   MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" />
@@ -662,6 +658,11 @@
 										</ItemsControl.ItemTemplate>
 									</ItemsControl>
 								</Grid>
+								<ScrollViewer MaxHeight="150" 
+											  IsVisible="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"
+											  MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}">
+									<TextBlock TextWrapping="Wrap" Margin="5" Text="{Binding FolderDescription}" />
+								</ScrollViewer>
 								<Grid RowDefinitions="Auto" ColumnDefinitions="*,*,*" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
 									<Button Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2" IsEnabled="{Binding !IsRoot}"
 											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).BackFolderCommand}"
