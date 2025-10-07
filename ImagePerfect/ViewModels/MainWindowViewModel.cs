@@ -106,6 +106,7 @@ namespace ImagePerfect.ViewModels
             ModifyImageDataVm = new ModifyImageDataViewModel(_unitOfWork, this);
             ExternalProgramVm = new ExternalProgramViewModel(this);
             CoverImageVm = new CoverImageViewModel(_unitOfWork, this);
+            FolderDescriptionTextFileVm = new FolderDescriptionTextFileViewModel(_unitOfWork, this);
             ScanImagesForMetaDataVm = new ScanImagesForMetaDataViewModel(_unitOfWork, this);
             ImportImagesVm = new ImportImagesViewModel(_unitOfWork, this);
             InitializeVm = new InitializeViewModel(_unitOfWork, this);
@@ -366,6 +367,9 @@ namespace ImagePerfect.ViewModels
             CopyCoverImageToContainingFolderCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => { 
                 await CoverImageVm.CopyCoverImageToContainingFolder(folderVm);
             });
+            GetFolderDescriptionFromTextFileOnCurrentPageCommand = ReactiveCommand.Create(async (ItemsControl folderItemsControl) => { 
+                await FolderDescriptionTextFileVm.GetFolderDescriptionFromTextFileOnCurrentPage(folderItemsControl);
+            });
             CreateNewFolderCommand = ReactiveCommand.Create(async () => {
                 await CreateNewFolder.CreateNewFolder();
             });
@@ -498,6 +502,7 @@ namespace ImagePerfect.ViewModels
         public ModifyImageDataViewModel ModifyImageDataVm { get; }
         public ExternalProgramViewModel ExternalProgramVm { get; }
         public CoverImageViewModel CoverImageVm { get; }
+        public FolderDescriptionTextFileViewModel FolderDescriptionTextFileVm { get; }
         public ScanImagesForMetaDataViewModel ScanImagesForMetaDataVm { get; }
         public ImportImagesViewModel ImportImagesVm { get; }
         public InitializeViewModel InitializeVm { get; }
@@ -656,6 +661,8 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<ItemsControl, Task> AddCoverImageOnCurrentPageCommand { get; }
 
         public ReactiveCommand<FolderViewModel, Task> CopyCoverImageToContainingFolderCommand { get; }
+
+        public ReactiveCommand<ItemsControl, Task> GetFolderDescriptionFromTextFileOnCurrentPageCommand { get; }
 
         public ReactiveCommand<ItemsControl, Task> ScanAllFoldersOnCurrentPageCommand { get; }
 

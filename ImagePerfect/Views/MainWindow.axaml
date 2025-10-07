@@ -509,7 +509,8 @@
 						Add Cover Image On Current Page
 					</Button>
 					<Button Margin="5" HorizontalAlignment="Center"
-							Command=""
+							Command="{Binding GetFolderDescriptionFromTextFileOnCurrentPageCommand}"
+							CommandParameter="{Binding #FoldersItemsControl}"
 							Classes="menu-btn">
 						Get Folder Text
 					</Button>
@@ -609,7 +610,7 @@
 								<TextBlock HorizontalAlignment="Center" 
 										   Text="{Binding FolderTags}"
 										   IsVisible="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"
-										   MaxWidth="600" />
+										   MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" />
 								<Grid RowDefinitions="Auto" ColumnDefinitions="Auto,Auto" HorizontalAlignment="Center">
 									<Button
 											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddFolderRatingCommand}"
@@ -648,7 +649,7 @@
 										</ItemsControl.ItemTemplate>
 									</ItemsControl>
 								</Grid>
-								<Grid RowDefinitions="Auto" ColumnDefinitions="*,*,*" MaxWidth="600" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
+								<Grid RowDefinitions="Auto" ColumnDefinitions="*,*,*" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
 									<Button Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2" IsEnabled="{Binding !IsRoot}"
 											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).BackFolderCommand}"
 											CommandParameter="{Binding}" Classes="main-btn">
@@ -666,7 +667,7 @@
 									</Button>
 								</Grid>
 								<!--
-								<Grid RowDefinitions="Auto" ColumnDefinitions="*" MaxWidth="600" 
+								<Grid RowDefinitions="Auto" ColumnDefinitions="*" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" 
 									  IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}"
 									  IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}">
 									<Button Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2"
@@ -676,7 +677,7 @@
 									</Button>
 								</Grid>
 								-->
-								<Grid RowDefinitions="Auto" ColumnDefinitions="*,*" MaxWidth="600" 
+								<Grid RowDefinitions="Auto" ColumnDefinitions="*,*" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" 
 									  IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}" 
 									  IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}">
 									
@@ -691,7 +692,7 @@
 										Trash
 									</Button>
 								</Grid>
-								<Grid RowDefinitions="Auto" ColumnDefinitions="*,*" MaxWidth="600" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
+								<Grid RowDefinitions="Auto" ColumnDefinitions="*,*" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
 									<Button Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2" IsVisible="{Binding AreImagesImported}"
 											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).ScanFolderImagesForMetaDataCommand}"
 											CommandParameter="{Binding}" Classes="main-btn">
@@ -701,7 +702,7 @@
 										Image Metadata Scanned
 									</TextBlock>
 								</Grid>
-								<Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" MaxWidth="600" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
+								<Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
 									<TextBox Grid.Row="0" Grid.Column="0" Watermark="Add Description" Height="100" AcceptsReturn="True" TextWrapping="Wrap" 
 											 Margin="5" 
 											 MaxLength="3000" 
@@ -849,8 +850,8 @@
 										Text="{Binding ImageTags}"
 										IsVisible="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedImageControls}"
 										HorizontalAlignment="Center" 
-										MaxWidth="600"/>
-									<Grid RowDefinitions="Auto" ColumnDefinitions="*,*,*" MaxWidth="600" 
+										MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}"/>
+									<Grid RowDefinitions="Auto" ColumnDefinitions="*,*,*" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" 
 										  IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}"
 										  IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedImageControls}">
 										<Button Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2"
@@ -869,7 +870,7 @@
 											Trash
 										</Button>
 									</Grid>
-									<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" MaxWidth="600" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
+									<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
 										<TextBox Grid.Row="0" Grid.Column="0" Margin="5" MaxLength="2000" 
 												 Text="{Binding ImageTags}" 
 												 IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedImageControls}"/>
@@ -891,7 +892,7 @@
 											Submit
 										</Button>
 									</Grid>
-									<Grid  RowDefinitions="Auto" ColumnDefinitions="Auto,*,Auto" MaxWidth="600" 
+									<Grid  RowDefinitions="Auto" ColumnDefinitions="Auto,*,Auto" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" 
 										   IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}"
 										   IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedImageControls}">
 										<NumericUpDown Value="{Binding ImageId}" IsVisible="False"/>
@@ -911,7 +912,7 @@
 										</Button>
 									</Grid>
 									<!--
-									<Grid RowDefinitions="Auto" ColumnDefinitions="*,Auto" MaxWidth="600" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
+									<Grid RowDefinitions="Auto" ColumnDefinitions="*,Auto" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
 										<NumericUpDown Grid.Row="0" Grid.Column="0" Maximum="5" Minimum="0" Margin="5" Value="{Binding ImageRating}"/>
 										<Button Grid.Row="0" Grid.Column="1" Width="100" HorizontalContentAlignment="Center"
 												Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddImageRatingCommand}"
