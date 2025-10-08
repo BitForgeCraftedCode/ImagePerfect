@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -186,6 +187,56 @@ namespace ImagePerfect.ViewModels
                             new ButtonDefinition { Name = "Ok", },
                         },
                         ContentTitle = "Add text file to folder description",
+                        CanResize = true,
+                        ContentMessage = errorMsg,
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,
+                        MinWidth = 500,
+                        MinHeight = 600,
+
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
+            }
+        }
+
+        public async Task BackUpFolderDescriptionToTextFileOnCurrentPage(ItemsControl foldersItemsControl)
+        {
+            List<FolderViewModel> allFolders = foldersItemsControl.Items.OfType<FolderViewModel>().ToList();
+            List<string> errors = new List<string>();
+            foreach (FolderViewModel folder in allFolders) 
+            {
+                if (folder.HasFiles == true && folder.AreImagesImported == true && string.IsNullOrEmpty(folder.FolderDescription) == false)
+                {
+
+                    string pathToFile = Path.Combine(folder.FolderPath, "folderDescription.txt");
+                    Debug.WriteLine(pathToFile);
+                    try
+                    {
+                        string contentToWrite = folder.FolderDescription.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", Environment.NewLine);
+                        await File.WriteAllTextAsync(pathToFile, contentToWrite, Encoding.UTF8);
+                    }
+                    catch (Exception ex) 
+                    {
+                        string failedMsg = $"Failed to write description for folder {folder.FolderName}. Reason: {ex.Message}";
+                        errors.Add(failedMsg);
+                    }
+                   
+
+                }
+            }
+            if (errors.Any())
+            {
+                string errorMsg = string.Empty;
+                errorMsg += "Some text files failed to be written: \n\n" + string.Join("\n\n", errors);
+
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = "Back up folder description",
                         CanResize = true,
                         ContentMessage = errorMsg,
                         WindowStartupLocation = WindowStartupLocation.CenterOwner,

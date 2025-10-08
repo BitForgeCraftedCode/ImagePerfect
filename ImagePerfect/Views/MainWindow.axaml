@@ -508,13 +508,19 @@
 							Classes="menu-btn">
 						Add Cover Image On Current Page
 					</Button>
-					<Button Margin="5" HorizontalAlignment="Center"
+					<Button Margin="5" HorizontalAlignment="Center" ToolTip.Tip="Populates Folder Description With Text File In Folders"
 							Command="{Binding GetFolderDescriptionFromTextFileOnCurrentPageCommand}"
 							CommandParameter="{Binding #FoldersItemsControl}"
 							Classes="menu-btn">
 						Get Folder Text
 					</Button>
 					<CheckBox IsChecked="{Binding CopyFolderTextToParentFolder}" ToolTip.Tip="Also Copy Folder Text To Parent Folder"></CheckBox>
+					<Button Margin="5" HorizontalAlignment="Center" ToolTip.Tip="Backs Up The Folder Description To A Text File In Folders"
+							Command="{Binding BackUpFolderDescriptionToTextFileOnCurrentPageCommand}"
+							CommandParameter="{Binding #FoldersItemsControl}"
+							Classes="menu-btn">
+						Back Up Folder Text
+					</Button>
 				</StackPanel>
 			</Grid>
 		</StackPanel>
