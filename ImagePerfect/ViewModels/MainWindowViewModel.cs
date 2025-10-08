@@ -36,6 +36,7 @@ namespace ImagePerfect.ViewModels
         private string _savedDirectory = string.Empty;
         private bool _isSavedDirectoryLoaded = false;
         private bool _loadSavedDirectoryFromCache = true;
+        private bool _copyFolderTextToParentFolder = true;
         private string _selectedImagesNewDirectory = string.Empty;
         private bool _filterInCurrentDirectory = false;
         private List<Tag> _tagsList = new List<Tag>();
@@ -486,6 +487,12 @@ namespace ImagePerfect.ViewModels
         {
             get => _loadSavedDirectoryFromCache;
             set => this.RaiseAndSetIfChanged(ref _loadSavedDirectoryFromCache, value);
+        }
+
+        public bool CopyFolderTextToParentFolder
+        {
+            get => _copyFolderTextToParentFolder;
+            set => this.RaiseAndSetIfChanged(ref _copyFolderTextToParentFolder, value);
         }
 
         public bool FilterInCurrentDirectory

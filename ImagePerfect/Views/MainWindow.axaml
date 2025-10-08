@@ -396,7 +396,7 @@
 					<TextBlock Margin="5">Current Directory:</TextBlock>
 					<TextBlock Margin="5" Text="{Binding CurrentDirectory}"/>
 					-->
-					<CheckBox IsChecked="{Binding LoadSavedDirectoryFromCache}"></CheckBox>
+					<CheckBox ToolTip.Tip="Load Saved Directory From Cache" IsChecked="{Binding LoadSavedDirectoryFromCache}"></CheckBox>
 					<Button Margin="5" Command="{Binding LoadSavedDirectoryCommand}" CommandParameter="{Binding #FoldersAndImagesScrollViewer}" Classes="menu-btn">
 						<StackPanel Orientation="Horizontal" Spacing="5">
 							<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/reload-button-green-icon.png"></Image>
@@ -421,7 +421,8 @@
 					</Button>
 					<Button 
 						Command="{Binding FilterFiveStarImagesInCurrentDirectoryCommand}"
-						Margin="5" Classes="menu-btn">
+						Margin="5" Classes="menu-btn"
+						ToolTip.Tip="Gets All Five Star Images In Current Directory">
 						<Button.CommandParameter>
 							<sys:Decimal>5.00</sys:Decimal>
 						</Button.CommandParameter>
@@ -431,7 +432,9 @@
 							<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/icons8-image-96.png"></Image>
 						</StackPanel>
 					</Button>
-					<Button Command="{Binding FilterGetAllImagesInFolderAndSubFoldersCommand}" Margin="5" Classes="menu-btn">
+					<Button Command="{Binding FilterGetAllImagesInFolderAndSubFoldersCommand}" 
+							Margin="5" Classes="menu-btn"
+							ToolTip.Tip="Gets All Images In Current Directory">
 						<StackPanel Orientation="Horizontal" Spacing="5">
 							<TextBlock>All</TextBlock>
 							<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/icons8-image-96.png"></Image>
@@ -511,6 +514,7 @@
 							Classes="menu-btn">
 						Get Folder Text
 					</Button>
+					<CheckBox IsChecked="{Binding CopyFolderTextToParentFolder}" ToolTip.Tip="Also Copy Folder Text To Parent Folder"></CheckBox>
 				</StackPanel>
 			</Grid>
 		</StackPanel>

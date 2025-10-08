@@ -9,6 +9,7 @@ using MsBox.Avalonia.Models;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -158,6 +159,17 @@ namespace ImagePerfect.ViewModels
                         string failedMsg = $"Failed to read file {filePathToUse}. Reason: {ex.Message}";
                         errors.Add(failedMsg);
                     }
+                }
+            }
+
+            //add folder description to parent folder as well
+            if (!errors.Any() && _mainWindowViewModel.CopyFolderTextToParentFolder == true)
+            {
+                Folder containingFolder = await _folderMethods.GetFolderAtDirectory(PathHelper.RemoveOneFolderFromPath(allFolders[0].FolderPath));
+                if (string.IsNullOrEmpty(containingFolder.FolderDescription))
+                {
+                    containingFolder.FolderDescription = allFolders[0].FolderDescription;
+                    await _folderMethods.UpdateFolder(containingFolder);
                 }
             }
 
