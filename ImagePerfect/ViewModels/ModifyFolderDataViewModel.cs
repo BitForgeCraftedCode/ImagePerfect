@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Models;
 using Avalonia.Controls;
+using System.Diagnostics;
+using ImagePerfect.Helpers;
 
 namespace ImagePerfect.ViewModels
 {
@@ -145,6 +147,58 @@ namespace ImagePerfect.ViewModels
             {
                 _mainWindowViewModel.ShowLoading = false;
             }
+        }
+
+        public async Task AddTagToAllFoldersInCurrentDirectory(Tag selectedTag)
+        {
+            //nothing selected just return
+            if (selectedTag == null)
+                return;
+
+            // Get all folders in current directory
+            (List<Folder> folders, List<FolderTag> tags) folderResults = await _folderMethods.GetFoldersInDirectory(_mainWindowViewModel.CurrentDirectory);
+            List<Folder> folders = folderResults.folders;
+
+            var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
+            new MessageBoxCustomParams
+            {
+                ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Yes", },
+                            new ButtonDefinition { Name = "No", },
+                        },
+                ContentTitle = "Add Tag To All Folders",
+                ContentMessage = $"You’re about to add the tag “{selectedTag.TagName}” to all {folders.Count} folders in the current directory.\n\n"
+                + "Important: This action affects only the folders in the current directory — not any folders shown because of filters or searches. \n\n"
+                + "Make sure you have the current directory loaded before continuing.\nDo you want to proceed?",
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                MinWidth = 500  // optional, so it doesn’t wrap too soon
+            }
+            );
+            var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
+            if (boxResult != "Yes")
+                return;
+            _mainWindowViewModel.ShowLoading = true;
+            try
+            {
+                const int batchSize = 500;
+                List<string> batches = new List<string>();
+                for (int i = 0; i < folders.Count; i += batchSize) 
+                { 
+                    List<Folder> batch = folders.Skip(i).Take(batchSize).ToList();
+                    string batchSql = SqlStringBuilder.BuildSqlForBulkInsertFolderTag(selectedTag, batch);
+                    batches.Add(batchSql);
+                }
+                await _folderMethods.AddTagToAllFoldersInCurrentDirectory(batches);
+                // Refresh UI
+                await _mainWindowViewModel.LoadCurrentDirectory();
+            }
+            finally
+            {
+                _mainWindowViewModel.ShowLoading = false;
+            }
+
         }
     }
 }

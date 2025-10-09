@@ -163,6 +163,9 @@ namespace ImagePerfect.ViewModels
             RemoveTagOnAllFoldersCommand = ReactiveCommand.Create(async (Tag selectedTag) => { 
                 await ModifyFolderDataVm.RemoveTagOnAllFolders(selectedTag);
             });
+            AddTagToAllFoldersInCurrentDirectoryCommand = ReactiveCommand.Create(async (Tag selectedTag) => { 
+                await ModifyFolderDataVm.AddTagToAllFoldersInCurrentDirectory(selectedTag);
+            });
             DeleteLibraryCommand = ReactiveCommand.Create(() => {
                 DeleteLibrary();
             });
@@ -579,6 +582,8 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<Tag, Task> RemoveTagOnAllImagesCommand { get; }
 
         public ReactiveCommand<Tag, Task> RemoveTagOnAllFoldersCommand { get; }
+
+        public ReactiveCommand<Tag, Task> AddTagToAllFoldersInCurrentDirectoryCommand { get; }
 
         public ReactiveCommand<Unit, Unit> DeleteLibraryCommand { get; }
 

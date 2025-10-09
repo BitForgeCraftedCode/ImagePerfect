@@ -1,10 +1,13 @@
-﻿using MySqlConnector;
+﻿using Dapper;
+using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.Repository.IRepository;
-using System.Threading.Tasks;
-using Dapper;
+using MySqlConnector;
+using System;
 using System.Collections.Generic;
-using ImagePerfect.Helpers;
+using System.Data;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace ImagePerfect.Repository
 {
@@ -325,6 +328,28 @@ namespace ImagePerfect.Repository
             await txn.CommitAsync();
             await _connection.CloseAsync();
             return rowsEffectedA + rowsEffectedB >= 1 ? true : false;
+        }
+
+        public async Task<bool> AddTagToAllFoldersInCurrentDirectory(List<string> folderInsertTagSqlBatches)
+        {
+            int rowsEffected = 0;
+            // Open connection if needed
+            if (_connection.State == ConnectionState.Closed)
+                await _connection.OpenAsync();
+
+            try
+            {
+                foreach (string sql in folderInsertTagSqlBatches)
+                {
+                    int rows = await _connection.ExecuteAsync(sql);
+                    rowsEffected += rows;
+                }
+            }
+            finally
+            {
+                await _connection.CloseAsync();
+            }
+            return rowsEffected > 0 ? true : false;
         }
         public async Task<bool> DeleteFolderTag(FolderTag tag)
         {

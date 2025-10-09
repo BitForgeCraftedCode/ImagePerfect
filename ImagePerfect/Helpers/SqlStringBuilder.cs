@@ -240,5 +240,23 @@ namespace ImagePerfect.Helpers
             
             return sb.ToString();
         }
+
+        public static string BuildSqlForBulkInsertFolderTag(Tag tagToAdd, List<Folder> folders)
+        {
+            //IGNORE to ignore duplicate tags. If a folder already has this tag just IGNORE that one but do the rest
+            StringBuilder sb = new StringBuilder("INSERT IGNORE INTO folder_tags_join (FolderId, TagId) VALUES ");
+            for (int i = 0; i < folders.Count; i++) 
+            { 
+                if(i < folders.Count - 1)
+                {
+                    sb.Append($"({folders[i].FolderId}, {tagToAdd.TagId}),");
+                }
+                else
+                {
+                    sb.Append($"({folders[i].FolderId}, {tagToAdd.TagId});");
+                }
+            }
+            return sb.ToString();
+        }
     }
 }

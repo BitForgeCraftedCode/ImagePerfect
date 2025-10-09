@@ -110,6 +110,11 @@ namespace ImagePerfect.Models
             return await _unitOfWork.Folder.UpdateFolderTags(folder, newTag);
         }
 
+        public async Task<bool> AddTagToAllFoldersInCurrentDirectory(List<string> folderInsertTagSqlBatches)
+        {
+            return await _unitOfWork.Folder.AddTagToAllFoldersInCurrentDirectory(folderInsertTagSqlBatches);
+        }
+
         public async Task<bool> DeleteFolderTag(FolderTag tag)
         {
             return await _unitOfWork.Folder.DeleteFolderTag(tag);

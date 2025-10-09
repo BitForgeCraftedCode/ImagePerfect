@@ -152,19 +152,30 @@
 					</DataTemplate>
 				</ListBox.ItemTemplate>
 			</ListBox>
-			<Grid RowDefinitions="Auto" ColumnDefinitions="*" HorizontalAlignment="Center" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
+			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*" HorizontalAlignment="Center" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
 				<StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0">
 					<Button Margin="5"
+						ToolTip.Tip="Wil Remove The Selected Tag From All Images Across The Entire Database."
 						Command="{Binding RemoveTagOnAllImagesCommand}" 
 						CommandParameter="{Binding SelectedItem, ElementName=SelectedTag}"
 						Classes="btn-danger">
 						Remove Tag From All Images
 					</Button>
 					<Button Margin="5"
+						ToolTip.Tip="Will Remove The Selected Tag From All Folders Across The Entire Database."
 						Command="{Binding RemoveTagOnAllFoldersCommand}" 
 						CommandParameter="{Binding SelectedItem, ElementName=SelectedTag}"
 						Classes="btn-danger">
 						Remove Tag From All Folders
+					</Button>
+				</StackPanel>
+				<StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Center">
+					<Button Margin="5"
+							ToolTip.Tip="Will Add The Selected Tag To All Folders In The Current Directory."
+							Command="{Binding AddTagToAllFoldersInCurrentDirectoryCommand}"
+							CommandParameter="{Binding SelectedItem, ElementName=SelectedTag}"
+							Classes="btn-danger">
+						Add Tag To All Folders In Directory
 					</Button>
 				</StackPanel>
 			</Grid>
