@@ -70,7 +70,9 @@ namespace ImagePerfect.ViewModels
         }
         public async Task LoadSavedDirectory(ScrollViewer scrollViewer)
         {
-            _mainWindowViewModel.IsSavedDirectoryLoaded = true;
+            // ensure we don't tell other code the saved-dir is "loaded" until we've restored it
+            // otherwise RefreshFolders and or RefreshImages will call UpdateSavedDirectoryCache and write the wrong directory to Cache
+            _mainWindowViewModel.IsSavedDirectoryLoaded = false;
             _mainWindowViewModel.CurrentDirectory = _mainWindowViewModel.SavedDirectory;
             _mainWindowViewModel.CurrentFolderPage = _mainWindowViewModel.SavedFolderPage;
             _mainWindowViewModel.TotalFolderPages = _mainWindowViewModel.SavedTotalFolderPages;
@@ -89,6 +91,9 @@ namespace ImagePerfect.ViewModels
                 foreach(ImageViewModel image in _mainWindowViewModel.SavedDirectoryImages)
                     _mainWindowViewModel.Images.Add(image);
 
+                // now that we've restored from cache, mark saved-dir as loaded
+                _mainWindowViewModel.IsSavedDirectoryLoaded = true;
+
                 // defer scroll until after layout
                 Dispatcher.UIThread.Post(() =>
                 {
@@ -99,6 +104,10 @@ namespace ImagePerfect.ViewModels
             {
                 // slow path: full rebuild
                 await _mainWindowViewModel.LoadCurrentDirectory();
+                // populate the runtime cache now that the UI is showing the saved directory
+                SetSavedDirectoryCache();
+                // now mark saved-dir as loaded so refreshes can update cache later
+                _mainWindowViewModel.IsSavedDirectoryLoaded = true;
                 scrollViewer.Offset = _mainWindowViewModel.SavedOffsetVector;
             }
         }
