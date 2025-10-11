@@ -113,6 +113,39 @@ namespace ImagePerfect.Repository
             return (allFoldersAtRating,tags);
         }
 
+        public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithRatingAndTag(int rating, string tag, bool filterInCurrentDirectory, string currentDirectory)
+        {
+            await _connection.OpenAsync();
+            MySqlTransaction txn = await _connection.BeginTransactionAsync();
+            string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
+            string sql1 = string.Empty;
+            string sql2 = string.Empty;
+            if (filterInCurrentDirectory)
+            {
+                sql1 = @"SELECT folders.* FROM folders
+                    JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId
+                    JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.FolderRating = @rating AND tags.TagName = @tag AND FolderPath LIKE '" + path + "' ORDER BY folders.FolderPath, folders.FolderName;";
+                sql2 = @"SELECT tags.TagId, tags.TagName, folders.FolderId FROM folders 
+                        JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId 
+                        JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.FolderRating = @rating AND FolderPath LIKE '" + path + "' ORDER BY folders.FolderPath, folders.FolderName;";
+            }
+            else
+            {
+                sql1 = @"SELECT folders.* FROM folders
+                    JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId
+                    JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.FolderRating = @rating AND tags.TagName = @tag ORDER BY folders.FolderPath, folders.FolderName;";
+                sql2 = @"SELECT tags.TagId, tags.TagName, folders.FolderId FROM folders 
+                        JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId 
+                        JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.FolderRating = @rating ORDER BY folders.FolderPath, folders.FolderName;";
+            }
+
+            List<Folder> allFoldersWithRatingAndTag = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, new { rating, tag }, transaction: txn);
+            List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, new { rating, tag }, transaction: txn);
+            await txn.CommitAsync();
+            await _connection.CloseAsync();
+            return (allFoldersWithRatingAndTag, tags);
+        }
+
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithNoImportedImages(bool filterInCurrentDirectory, string currentDirectory)
         {
             await _connection.OpenAsync();

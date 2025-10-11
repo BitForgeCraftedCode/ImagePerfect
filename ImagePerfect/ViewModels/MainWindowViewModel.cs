@@ -75,6 +75,7 @@ namespace ImagePerfect.ViewModels
             FolderRatingFilter,
             ImageTagFilter,
             FolderTagFilter,
+            FolderTagAndRatingFilter,
             FolderDescriptionFilter,
             ImageYearFilter,
             ImageYearMonthFilter,
@@ -92,6 +93,8 @@ namespace ImagePerfect.ViewModels
         private DateTimeOffset endDateForFilter;
         private string tagForFilter = string.Empty;
         private string textForFilter = string.Empty;
+        private int _comboFolderFilterRating = 10;
+        private string _comboFolderFilterTag = string.Empty;
 
         public MainWindowViewModel() { }
         public MainWindowViewModel(IUnitOfWork unitOfWork)
@@ -273,6 +276,14 @@ namespace ImagePerfect.ViewModels
                     await RefreshImages();
                 }
             });
+            FilterFolderOnRatingAndTagCommand = ReactiveCommand.Create(async () => {
+                if (!string.IsNullOrEmpty(ComboFolderFilterTag))
+                {
+                    ResetPagination();
+                    currentFilter = Filters.FolderTagAndRatingFilter;
+                    await RefreshFolders();
+                }
+            });
             FilterFoldersOnRatingCommand = ReactiveCommand.Create(async (decimal rating) => {
                 ResetPagination();
                 selectedRatingForFilter = Decimal.ToInt32(rating);
@@ -389,6 +400,23 @@ namespace ImagePerfect.ViewModels
             InitializeVm.Initialize();
         }
 
+        //For Combo Filter
+        public int ComboFolderFilterRating
+        {
+            get => _comboFolderFilterRating;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _comboFolderFilterRating, value);
+            }
+        }
+        public string ComboFolderFilterTag
+        {
+            get => _comboFolderFilterTag;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _comboFolderFilterTag, value);
+            }
+        }
         public int TotalImages
         {
             get => _totalImages;
@@ -632,6 +660,8 @@ namespace ImagePerfect.ViewModels
 
         public ReactiveCommand<ImageDatesViewModel, Task> FilterImagesOnDateRangeCommand { get; }
 
+        public ReactiveCommand<Unit, Task> FilterFolderOnRatingAndTagCommand { get; }
+
         public ReactiveCommand<decimal, Task> FilterFoldersOnRatingCommand { get; }
 
         public ReactiveCommand<string, Task> FilterImagesOnTagCommand { get; }
@@ -846,6 +876,16 @@ namespace ImagePerfect.ViewModels
                     (List<Folder> folders, List<FolderTag> tags) folderTagResult = await _folderMethods.GetAllFoldersWithTag(tagForFilter, FilterInCurrentDirectory, CurrentDirectory);
                     displayFolders = folderTagResult.folders;
                     displayFolderTags = folderTagResult.tags;
+
+                    Images.Clear();
+                    LibraryFolders.Clear();
+                    displayFolders = FolderPagination();
+                    await MapTagsToFoldersAddToObservable();
+                    break;
+                case Filters.FolderTagAndRatingFilter:
+                    (List<Folder> folders, List<FolderTag> tags) folderRatingAndTagResult = await _folderMethods.GetAllFoldersWithRatingAndTag(ComboFolderFilterRating, ComboFolderFilterTag, FilterInCurrentDirectory, CurrentDirectory);
+                    displayFolders = folderRatingAndTagResult.folders;
+                    displayFolderTags = folderRatingAndTagResult.tags;
 
                     Images.Clear();
                     LibraryFolders.Clear();
