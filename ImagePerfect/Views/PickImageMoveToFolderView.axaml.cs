@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using Avalonia.ReactiveUI;
 using ImagePerfect.ViewModels;
 using ReactiveUI;
 using System.Net;
@@ -9,6 +8,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Avalonia.Platform.Storage;
 using System.Linq;
+using ReactiveUI.Avalonia;
 
 namespace ImagePerfect.Views;
 

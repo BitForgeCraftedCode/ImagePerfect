@@ -1,8 +1,8 @@
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
-using Avalonia.ReactiveUI;
 using ImagePerfect.ViewModels;
 using ReactiveUI;
+using ReactiveUI.Avalonia;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
