@@ -9,7 +9,7 @@ namespace ImagePerfect.Repository.IRepository
         //any Folder model specific database methods here
         Task<bool> AddFolderCsv(string filePath);
         Task<Folder?> GetRootFolder();
-        Task<(List<Folder> folders, List<FolderTag> tags)> GetFoldersInDirectory(string directoryPath);
+        Task<(List<Folder> folders, List<FolderTag> tags)> GetFoldersInDirectory(string directoryPath, bool ascending);
         Task<Folder> GetFolderAtDirectory(string directoryPath);
         Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersAtRating(int rating, bool filterInCurrentDirectory, string currentDirectory);
         Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithRatingAndTag(int rating, string tag, bool filterInCurrentDirectory, string currentDirectory);

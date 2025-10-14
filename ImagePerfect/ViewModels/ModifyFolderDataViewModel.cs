@@ -156,7 +156,7 @@ namespace ImagePerfect.ViewModels
                 return;
 
             // Get all folders in current directory
-            (List<Folder> folders, List<FolderTag> tags) folderResults = await _folderMethods.GetFoldersInDirectory(_mainWindowViewModel.CurrentDirectory);
+            (List<Folder> folders, List<FolderTag> tags) folderResults = await _folderMethods.GetFoldersInDirectory(_mainWindowViewModel.CurrentDirectory, _mainWindowViewModel.LoadFoldersAscending);
             List<Folder> folders = folderResults.folders;
 
             var boxYesNo = MessageBoxManager.GetMessageBoxCustom(

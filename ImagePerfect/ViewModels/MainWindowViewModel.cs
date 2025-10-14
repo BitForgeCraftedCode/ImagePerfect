@@ -36,6 +36,7 @@ namespace ImagePerfect.ViewModels
         private string _savedDirectory = string.Empty;
         private bool _isSavedDirectoryLoaded = false;
         private bool _loadSavedDirectoryFromCache = true;
+        private bool _loadFoldersAscending = true;
         private bool _copyFolderTextToParentFolder = true;
         private string _selectedImagesNewDirectory = string.Empty;
         private bool _filterInCurrentDirectory = false;
@@ -523,6 +524,11 @@ namespace ImagePerfect.ViewModels
             set => this.RaiseAndSetIfChanged(ref _loadSavedDirectoryFromCache, value);
         }
 
+        public bool LoadFoldersAscending
+        {
+            get => _loadFoldersAscending;
+            set => this.RaiseAndSetIfChanged(ref _loadFoldersAscending, value);
+        }
         public bool CopyFolderTextToParentFolder
         {
             get => _copyFolderTextToParentFolder;
@@ -850,11 +856,11 @@ namespace ImagePerfect.ViewModels
                     (List<Folder> folders, List<FolderTag> tags) folderResult;
                     if (String.IsNullOrEmpty(path))
                     {
-                        folderResult = await _folderMethods.GetFoldersInDirectory(CurrentDirectory);
+                        folderResult = await _folderMethods.GetFoldersInDirectory(CurrentDirectory, LoadFoldersAscending);
                     }
                     else
                     {
-                        folderResult = await _folderMethods.GetFoldersInDirectory(path);
+                        folderResult = await _folderMethods.GetFoldersInDirectory(path, LoadFoldersAscending);
                     }
                     displayFolders = folderResult.folders;
                     displayFolderTags = folderResult.tags;
@@ -975,7 +981,7 @@ namespace ImagePerfect.ViewModels
             switch (currentFilter)
             {
                 case Filters.None:
-                    (List<Folder> folders, List<FolderTag> tags) folderResult = await _folderMethods.GetFoldersInDirectory(path);
+                    (List<Folder> folders, List<FolderTag> tags) folderResult = await _folderMethods.GetFoldersInDirectory(path, LoadFoldersAscending);
                     displayFolders = folderResult.folders;
                     displayFolderTags = folderResult.tags;
                     displayFolders = FolderPagination();

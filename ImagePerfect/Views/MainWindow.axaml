@@ -467,6 +467,7 @@
 							<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/computer-folder-dual-tone-icon.png"></Image>
 						</StackPanel>
 					</Button>
+					<CheckBox ToolTip.Tip="Show Folders Ascending or Descending? Checked Is Ascending. Flag Does Not Apply To Filterd Results." IsChecked="{Binding LoadFoldersAscending}"></CheckBox>
 				</StackPanel>
 			</Grid>
 		</StackPanel>
