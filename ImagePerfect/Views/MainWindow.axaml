@@ -647,9 +647,9 @@
 										</MenuItem>
 									</ContextMenu>
 								</StackPanel.ContextMenu>
-								<TextBlock MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" Text="{Binding FolderName}"/>
+								<SelectableTextBlock MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" Text="{Binding FolderName}"/>
 								<Image MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" Source="{Binding CoverImageBitmap}" />
-								<TextBlock HorizontalAlignment="Center"
+								<SelectableTextBlock HorizontalAlignment="Center"
 										   TextWrapping="Wrap"
 										   Text="{Binding FolderTags}"
 										   IsVisible="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"
@@ -695,7 +695,7 @@
 								<ScrollViewer MaxHeight="150" 
 											  IsVisible="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"
 											  MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}">
-									<TextBlock TextWrapping="Wrap" Margin="5" Text="{Binding FolderDescription}" />
+									<SelectableTextBlock TextWrapping="Wrap" Margin="5" Text="{Binding FolderDescription}" />
 								</ScrollViewer>
 								<Grid RowDefinitions="Auto" ColumnDefinitions="*,*,*" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
 									<Button Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2" IsEnabled="{Binding !IsRoot}"
@@ -894,7 +894,7 @@
 											<Image Width="20" Height="20" Source="avares://ImagePerfect/Assets/red-trash-can-icon.png"></Image>
 										</Button>
 									</Grid>
-									<TextBlock 
+									<SelectableTextBlock
 										Text="{Binding ImageTags}"
 										IsVisible="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedImageControls}"
 										HorizontalAlignment="Center" 
