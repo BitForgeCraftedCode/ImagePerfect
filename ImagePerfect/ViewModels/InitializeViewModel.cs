@@ -56,7 +56,7 @@ namespace ImagePerfect.ViewModels
             if (saveDirectory.SavedDirectory != "")
             {
                 //update variables
-                _mainWindowViewModel.SavedDirectory = saveDirectory.SavedDirectory;
+                _mainWindowViewModel.SavedDirectoryVm.SavedDirectory = saveDirectory.SavedDirectory;
                 _mainWindowViewModel.ExplorerVm.SavedFolderPage = saveDirectory.SavedFolderPage;
                 _mainWindowViewModel.ExplorerVm.SavedTotalFolderPages = saveDirectory.SavedTotalFolderPages;
                 _mainWindowViewModel.ExplorerVm.SavedImagePage = saveDirectory.SavedImagePage;
@@ -66,7 +66,7 @@ namespace ImagePerfect.ViewModels
             else
             {
                 //initially set SavedDirectory to CurrentDirectory so method wont fail if btn clicked before saving a directory
-                _mainWindowViewModel.SavedDirectory = _mainWindowViewModel.ExplorerVm.CurrentDirectory;
+                _mainWindowViewModel.SavedDirectoryVm.SavedDirectory = _mainWindowViewModel.ExplorerVm.CurrentDirectory;
             }
 
         }

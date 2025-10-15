@@ -427,7 +427,7 @@
 					<TextBlock Margin="5">Current Directory:</TextBlock>
 					<TextBlock Margin="5" Text="{Binding CurrentDirectory}"/>
 					-->
-					<CheckBox ToolTip.Tip="Load Saved Directory From Cache" IsChecked="{Binding LoadSavedDirectoryFromCache}"></CheckBox>
+					<CheckBox ToolTip.Tip="Load Saved Directory From Cache" IsChecked="{Binding SavedDirectoryVm.LoadSavedDirectoryFromCache}"></CheckBox>
 					<Button Margin="5" Command="{Binding LoadSavedDirectoryCommand}" CommandParameter="{Binding #FoldersAndImagesScrollViewer}" Classes="menu-btn">
 						<StackPanel Orientation="Horizontal" Spacing="5">
 							<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/reload-button-green-icon.png"></Image>

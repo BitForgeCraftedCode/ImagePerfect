@@ -240,7 +240,7 @@ namespace ImagePerfect.ViewModels
         public async Task RefreshImages(string path = "", int folderId = 0)
         {
             // Before clearing/reloading, capture the current UI state into cache
-            if (_mainWindowViewModel.IsSavedDirectoryLoaded && _mainWindowViewModel.LoadSavedDirectoryFromCache)
+            if (_mainWindowViewModel.SavedDirectoryVm.IsSavedDirectoryLoaded && _mainWindowViewModel.SavedDirectoryVm.LoadSavedDirectoryFromCache)
             {
                 _mainWindowViewModel.SavedDirectoryVm.UpdateSavedDirectoryCache();
             }
@@ -402,7 +402,7 @@ namespace ImagePerfect.ViewModels
              * So calling there will only capture the 1st UI change. 
              */
             // Before clearing/reloading, capture the current UI state into cache
-            if (_mainWindowViewModel.IsSavedDirectoryLoaded && _mainWindowViewModel.LoadSavedDirectoryFromCache)
+            if (_mainWindowViewModel.SavedDirectoryVm.IsSavedDirectoryLoaded && _mainWindowViewModel.SavedDirectoryVm.LoadSavedDirectoryFromCache)
             {
                 _mainWindowViewModel.SavedDirectoryVm.UpdateSavedDirectoryCache();
             }
