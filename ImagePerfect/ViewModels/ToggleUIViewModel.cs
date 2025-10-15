@@ -19,7 +19,13 @@ namespace ImagePerfect.ViewModels
         private bool _showManageImages = false;
         private bool _showExtendedFolderControls = false;
         private bool _showExtendedImageControls = false;
+        private bool _showFolderAlphabeticalFilters = false;
 
+        public bool ShowFolderAlphabeticalFilters
+        {
+            get => _showFolderAlphabeticalFilters;
+            set => this.RaiseAndSetIfChanged(ref  _showFolderAlphabeticalFilters, value);   
+        }
         public bool ShowExtendedImageControls
         {
             get => _showExtendedImageControls;
@@ -108,6 +114,10 @@ namespace ImagePerfect.ViewModels
             if(showFilter == "ImageDateFilters")
             {
                 ShowImageDateFilters = !ShowImageDateFilters;
+            }
+            if (showFilter == "FolderAlphabeticalFilters")
+            {
+                ShowFolderAlphabeticalFilters = !ShowFolderAlphabeticalFilters;
             }
 
         }

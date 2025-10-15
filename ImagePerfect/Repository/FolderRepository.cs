@@ -75,6 +75,23 @@ namespace ImagePerfect.Repository
             return (folders,tags);
         }
 
+        public async Task<(List<Folder> folders, List<FolderTag> tags)> GetFoldersInDirectoryByStartingLetter(string directoryPath, bool ascending, string letter)
+        {
+            await _connection.OpenAsync();
+            MySqlTransaction txn = await _connection.BeginTransactionAsync();
+            string regExpString = PathHelper.GetRegExpStringAllFoldersInDirectory(directoryPath);
+            string order = ascending ? "ASC" : "DESC";
+            string sql1 = $@"SELECT * FROM folders WHERE REGEXP_LIKE(FolderPath, '{regExpString}') AND FolderName LIKE '{letter}%' ORDER BY FolderPath {order}, FolderName {order};";
+            List<Folder> folders = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, transaction: txn);
+            string sql2 = $@"SELECT tags.TagId, tags.TagName, folders.FolderId FROM folders 
+                            JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId 
+                            JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE REGEXP_LIKE(folders.FolderPath, '{regExpString}') AND FolderName LIKE '{letter}%' ORDER BY folders.FolderPath {order}, folders.FolderName {order};";
+            List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, transaction: txn);
+            await txn.CommitAsync();
+            await _connection.CloseAsync();
+            return (folders, tags);
+        }
+
         //get the folder at the path -- only one folder returned
         public async Task<Folder> GetFolderAtDirectory(string directoryPath)
         {

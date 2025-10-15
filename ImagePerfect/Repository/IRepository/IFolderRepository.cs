@@ -10,6 +10,7 @@ namespace ImagePerfect.Repository.IRepository
         Task<bool> AddFolderCsv(string filePath);
         Task<Folder?> GetRootFolder();
         Task<(List<Folder> folders, List<FolderTag> tags)> GetFoldersInDirectory(string directoryPath, bool ascending);
+        Task<(List<Folder> folders, List<FolderTag> tags)> GetFoldersInDirectoryByStartingLetter(string directoryPath, bool ascending, string letter);
         Task<Folder> GetFolderAtDirectory(string directoryPath);
         Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersAtRating(int rating, bool filterInCurrentDirectory, string currentDirectory);
         Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithRatingAndTag(int rating, string tag, bool filterInCurrentDirectory, string currentDirectory);
