@@ -52,11 +52,11 @@ namespace ImagePerfect.ViewModels
                     if (_mainWindowViewModel.currentFilter == MainWindowViewModel.Filters.AllFoldersWithMetadataNotScanned || _mainWindowViewModel.currentFilter == MainWindowViewModel.Filters.AllFoldersWithNoImportedImages)
                     {
                         //have to call hard refresh for these two cases as they will not be returned from the query to update props
-                        await _mainWindowViewModel.RefreshFolders();
+                        await _mainWindowViewModel.ExplorerVm.RefreshFolders();
                     }
                     else
                     {
-                        await _mainWindowViewModel.RefreshFolderProps(newPath, imageFolder);
+                        await _mainWindowViewModel.ExplorerVm.RefreshFolderProps(newPath, imageFolder);
                     }
                 }
             }
@@ -115,7 +115,7 @@ namespace ImagePerfect.ViewModels
                 });
                
                 _mainWindowViewModel.ResetPagination();
-                await _mainWindowViewModel.RefreshFolders();
+                await _mainWindowViewModel.ExplorerVm.RefreshFolders();
                 _mainWindowViewModel.ShowLoading = false;
             }
         }

@@ -179,7 +179,7 @@ namespace ImagePerfect.ViewModels
                     await _folderMethods.UpdateFolder(parentOfTheFolderToMove);
                     //update lib folders to show the folder has moved
                     string foldersDirectoryPath = PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath);
-                    await _mainWindowViewModel.RefreshFolders(foldersDirectoryPath);
+                    await _mainWindowViewModel.ExplorerVm.RefreshFolders(foldersDirectoryPath);
                 }
                 catch (Exception e)
                 {

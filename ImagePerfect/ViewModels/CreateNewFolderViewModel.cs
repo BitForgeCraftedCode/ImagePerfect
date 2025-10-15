@@ -97,7 +97,7 @@ namespace ImagePerfect.ViewModels
                     Directory.CreateDirectory(newFolderPath);
                     //refresh UI
                     _mainWindowViewModel.currentFilter = MainWindowViewModel.Filters.None;
-                    await _mainWindowViewModel.RefreshFolders();
+                    await _mainWindowViewModel.ExplorerVm.RefreshFolders();
                 }
                 catch (Exception e)
                 {

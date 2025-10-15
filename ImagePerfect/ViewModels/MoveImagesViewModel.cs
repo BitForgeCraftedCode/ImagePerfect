@@ -56,10 +56,10 @@ namespace ImagePerfect.ViewModels
             {
                 _mainWindowViewModel.ShowLoading = true;
                 (List<Folder> folders, List<FolderTag> tags) folderResult = await _folderMethods.GetFoldersInDirectory(imageVm.ImageFolderPath, _mainWindowViewModel.LoadFoldersAscending);
-                _mainWindowViewModel.displayFolders = folderResult.folders;
+                _mainWindowViewModel.ExplorerVm.displayFolders = folderResult.folders;
                 (List<Image> images, List<ImageTag> tags) imageResultA = await _imageMethods.GetAllImagesInFolder(imageVm.FolderId);
-                _mainWindowViewModel.displayImages = imageResultA.images;
-                if (_mainWindowViewModel.displayImages.Count == 1 && _mainWindowViewModel.displayFolders.Count == 0)
+                _mainWindowViewModel.ExplorerVm.displayImages = imageResultA.images;
+                if (_mainWindowViewModel.ExplorerVm.displayImages.Count == 1 && _mainWindowViewModel.ExplorerVm.displayFolders.Count == 0)
                 {
                     await MessageBoxManager.GetMessageBoxCustom(
                         new MessageBoxCustomParams
@@ -98,7 +98,7 @@ namespace ImagePerfect.ViewModels
 
                         //refresh UI
                         if(!_mainWindowViewModel.SuppressImageRefresh)
-                            await _mainWindowViewModel.RefreshImages("", imageVm.FolderId);
+                            await _mainWindowViewModel.ExplorerVm.RefreshImages("", imageVm.FolderId);
                         _mainWindowViewModel.ShowLoading = false;
                     }
                 }
@@ -179,7 +179,7 @@ namespace ImagePerfect.ViewModels
                     }
                     //refresh UI
                     if (!_mainWindowViewModel.SuppressImageRefresh)
-                        await _mainWindowViewModel.RefreshImages("", imagesToDelete[0].FolderId);
+                        await _mainWindowViewModel.ExplorerVm.RefreshImages("", imagesToDelete[0].FolderId);
                     _mainWindowViewModel.ShowLoading = false;
                 }
                 _mainWindowViewModel.ShowLoading = false;

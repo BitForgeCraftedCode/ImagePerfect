@@ -198,7 +198,7 @@ namespace ImagePerfect.ViewModels
             {
                 await _folderCsvMethods.AddFolderCsv();
                 //reload the page
-                await _mainWindowViewModel.RefreshFolders();
+                await _mainWindowViewModel.ExplorerVm.RefreshFolders();
             }
             _mainWindowViewModel.ShowLoading = false;
         }

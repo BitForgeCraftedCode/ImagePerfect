@@ -75,11 +75,11 @@ namespace ImagePerfect.ViewModels
                     if (_mainWindowViewModel.currentFilter == MainWindowViewModel.Filters.AllFoldersWithMetadataNotScanned || _mainWindowViewModel.currentFilter == MainWindowViewModel.Filters.AllFoldersWithNoImportedImages)
                     {
                         //have to call hard refresh for these two cases as they will not be returned from the query to update props
-                        await _mainWindowViewModel.RefreshFolders();
+                        await _mainWindowViewModel.ExplorerVm.RefreshFolders();
                     }
                     else
                     {
-                        await _mainWindowViewModel.RefreshFolderProps(_mainWindowViewModel.CurrentDirectory, folderVm);
+                        await _mainWindowViewModel.ExplorerVm.RefreshFolderProps(_mainWindowViewModel.CurrentDirectory, folderVm);
                     }
                 } 
             }
@@ -119,7 +119,7 @@ namespace ImagePerfect.ViewModels
                 _mainWindowViewModel.ResetPagination();
                 //Update TagsList to show in UI AutoCompleteBox
                 await _mainWindowViewModel.GetTagsList();
-                await _mainWindowViewModel.RefreshFolders();
+                await _mainWindowViewModel.ExplorerVm.RefreshFolders();
                 _mainWindowViewModel.ShowLoading = false;
             }
         }

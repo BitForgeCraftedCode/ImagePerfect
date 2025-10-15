@@ -73,7 +73,7 @@ namespace ImagePerfect.ViewModels
             if (success)
             {
                 string foldersDirectoryPath = PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath);
-                await _mainWindowViewModel.RefreshFolderProps(foldersDirectoryPath, folderVm);
+                await _mainWindowViewModel.ExplorerVm.RefreshFolderProps(foldersDirectoryPath, folderVm);
             }
         }
     }

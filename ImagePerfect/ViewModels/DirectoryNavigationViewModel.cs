@@ -39,8 +39,8 @@ namespace ImagePerfect.ViewModels
             _mainWindowViewModel.CurrentDirectory = newPath;
             //refresh UI
             _mainWindowViewModel.currentFilter = MainWindowViewModel.Filters.None;
-            await _mainWindowViewModel.RefreshFolders();
-            await _mainWindowViewModel.RefreshImages(newPath);
+            await _mainWindowViewModel.ExplorerVm.RefreshFolders();
+            await _mainWindowViewModel.ExplorerVm.RefreshImages(newPath);
         }
 
         //opens the previous directory location -- from image button
@@ -57,8 +57,8 @@ namespace ImagePerfect.ViewModels
             _mainWindowViewModel.CurrentDirectory = newPath;
             //refresh UI
             _mainWindowViewModel.currentFilter = MainWindowViewModel.Filters.None;
-            await _mainWindowViewModel.RefreshFolders();
-            await _mainWindowViewModel.RefreshImages(newPath);
+            await _mainWindowViewModel.ExplorerVm.RefreshFolders();
+            await _mainWindowViewModel.ExplorerVm.RefreshImages(newPath);
         }
 
         //opens the previous directory location -- from folder button
@@ -76,8 +76,8 @@ namespace ImagePerfect.ViewModels
             _mainWindowViewModel.CurrentDirectory = newPath;
             //refresh UI
             _mainWindowViewModel.currentFilter = MainWindowViewModel.Filters.None;
-            await _mainWindowViewModel.RefreshFolders();
-            await _mainWindowViewModel.RefreshImages(newPath);
+            await _mainWindowViewModel.ExplorerVm.RefreshFolders();
+            await _mainWindowViewModel.ExplorerVm.RefreshImages(newPath);
         }
 
         //opens the next directory location
@@ -112,8 +112,8 @@ namespace ImagePerfect.ViewModels
             {
                 //refresh UI
                 _mainWindowViewModel.currentFilter = MainWindowViewModel.Filters.None;
-                await _mainWindowViewModel.RefreshFolders();
-                await _mainWindowViewModel.RefreshImages("", currentFolder.FolderId);
+                await _mainWindowViewModel.ExplorerVm.RefreshFolders();
+                await _mainWindowViewModel.ExplorerVm.RefreshImages("", currentFolder.FolderId);
             }
         }
     }

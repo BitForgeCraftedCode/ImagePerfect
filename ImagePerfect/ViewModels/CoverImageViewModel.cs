@@ -174,7 +174,7 @@ namespace ImagePerfect.ViewModels
                     await _folderMethods.UpdateFolder(FolderMapper.GetFolderFromVm(folder));
                 }
             }
-            await _mainWindowViewModel.RefreshFolders();
+            await _mainWindowViewModel.ExplorerVm.RefreshFolders();
         }
 
     }

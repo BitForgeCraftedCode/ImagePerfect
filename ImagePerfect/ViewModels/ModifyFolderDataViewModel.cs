@@ -96,7 +96,7 @@ namespace ImagePerfect.ViewModels
                 await _mainWindowViewModel.GetTagsList();
                 folderVm.NewTag = "";
                 //refresh UI
-                await _mainWindowViewModel.RefreshFolderProps(_mainWindowViewModel.CurrentDirectory, folderVm);
+                await _mainWindowViewModel.ExplorerVm.RefreshFolderProps(_mainWindowViewModel.CurrentDirectory, folderVm);
             }
             else
             {

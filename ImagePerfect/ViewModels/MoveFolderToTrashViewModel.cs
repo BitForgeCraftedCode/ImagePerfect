@@ -102,7 +102,7 @@ namespace ImagePerfect.ViewModels
                             await _folderMethods.UpdateFolder(parentFolder);
                         }
                         //refresh UI
-                        await _mainWindowViewModel.RefreshFolders(pathThatContainsFolder);
+                        await _mainWindowViewModel.ExplorerVm.RefreshFolders(pathThatContainsFolder);
                         _mainWindowViewModel.ShowLoading = false;
                     }
                 }
