@@ -103,7 +103,7 @@ namespace ImagePerfect.ViewModels
             else
             {
                 // slow path: full rebuild
-                await _mainWindowViewModel.LoadCurrentDirectory();
+                await _mainWindowViewModel.DirectoryNavigationVm.LoadCurrentDirectory();
                 // populate the runtime cache now that the UI is showing the saved directory
                 SetSavedDirectoryCache();
                 // now mark saved-dir as loaded so refreshes can update cache later

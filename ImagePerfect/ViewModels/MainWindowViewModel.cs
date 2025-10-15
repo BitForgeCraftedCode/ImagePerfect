@@ -281,7 +281,7 @@ namespace ImagePerfect.ViewModels
                 await ExplorerVm.RefreshFolders();
             });
             LoadCurrentDirectoryCommand = ReactiveCommand.Create(async () => {
-                await LoadCurrentDirectory();
+                await DirectoryNavigationVm.LoadCurrentDirectory();
             });
             PickImageWidthCommand = ReactiveCommand.Create(async (string size) => {
                 await SettingsVm.PickImageWidth(size);
@@ -624,12 +624,6 @@ namespace ImagePerfect.ViewModels
             }
         }
        
-        public async Task LoadCurrentDirectory()
-        {
-            ExplorerVm.currentFilter = ExplorerViewModel.Filters.None;
-            await ExplorerVm.RefreshFolders(CurrentDirectory);
-            await ExplorerVm.RefreshImages(CurrentDirectory);
-        }
         private async void DeleteLibrary()
         {
             var boxYesNo = MessageBoxManager.GetMessageBoxCustom(

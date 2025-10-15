@@ -354,7 +354,7 @@ namespace ImagePerfect.ViewModels
                     //reset SelectedImageNewDirectory
                     _mainWindowViewModel.SelectedImagesNewDirectory = string.Empty;
                     //refresh UI
-                    await _mainWindowViewModel.LoadCurrentDirectory();
+                    await _mainWindowViewModel.DirectoryNavigationVm.LoadCurrentDirectory();
                     _mainWindowViewModel.ShowLoading = false;
                 }
                 _mainWindowViewModel.ShowLoading = false;

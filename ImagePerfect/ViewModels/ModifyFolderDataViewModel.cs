@@ -192,7 +192,7 @@ namespace ImagePerfect.ViewModels
                 }
                 await _folderMethods.AddTagToAllFoldersInCurrentDirectory(batches);
                 // Refresh UI
-                await _mainWindowViewModel.LoadCurrentDirectory();
+                await _mainWindowViewModel.DirectoryNavigationVm.LoadCurrentDirectory();
             }
             finally
             {

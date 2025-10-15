@@ -1,12 +1,13 @@
+using Avalonia.Controls;
+using ImagePerfect.Helpers;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Enums;
+using MsBox.Avalonia.Models;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
-using ImagePerfect.Helpers;
-using MsBox.Avalonia.Enums;
-using MsBox.Avalonia;
-using ReactiveUI;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
-using Avalonia.Controls;
+using System.Threading.Tasks;
 
 namespace ImagePerfect.ViewModels
 {
@@ -16,6 +17,13 @@ namespace ImagePerfect.ViewModels
         public DirectoryNavigationViewModel(MainWindowViewModel mainWindowViewModel) 
 		{
             _mainWindowViewModel = mainWindowViewModel;
+        }
+
+        public async Task LoadCurrentDirectory()
+        {
+            _mainWindowViewModel.ExplorerVm.currentFilter = ExplorerViewModel.Filters.None;
+            await _mainWindowViewModel.ExplorerVm.RefreshFolders(_mainWindowViewModel.CurrentDirectory);
+            await _mainWindowViewModel.ExplorerVm.RefreshImages(_mainWindowViewModel.CurrentDirectory);
         }
         //Reason for all 3 methods
         //All three BackFolder methods can just be reduced to BackFolderFromDirectoryOptionsPanel()
