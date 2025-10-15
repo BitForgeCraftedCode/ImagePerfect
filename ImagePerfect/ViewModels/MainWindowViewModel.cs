@@ -27,7 +27,6 @@ namespace ImagePerfect.ViewModels
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly FolderMethods _folderMethods;
-        private readonly ImageCsvMethods _imageCsvMethods;
         private readonly ImageMethods _imageMethods;
         private bool _showLoading;
         private bool _suppressImageRefresh = false;
@@ -47,7 +46,6 @@ namespace ImagePerfect.ViewModels
         {
             _unitOfWork = unitOfWork;
             _folderMethods = new FolderMethods(_unitOfWork);
-            _imageCsvMethods = new ImageCsvMethods(_unitOfWork);
             _imageMethods = new ImageMethods(_unitOfWork);
             _showLoading = false;
 
