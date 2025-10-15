@@ -99,7 +99,7 @@ namespace ImagePerfect.ViewModels
         public async void OpenCurrentDirectoryWithExplorer()
         {
             string externalFileExplorerExePath = PathHelper.GetExternalFileExplorerExePath();
-            string folderPathForProcessStart = PathHelper.FormatFilePathForProcessStart(_mainWindowViewModel.CurrentDirectory);
+            string folderPathForProcessStart = PathHelper.FormatFilePathForProcessStart(_mainWindowViewModel.ExplorerVm.CurrentDirectory);
             if (!File.Exists(externalFileExplorerExePath)) 
             {
                 await MessageBoxManager.GetMessageBoxCustom(
@@ -121,7 +121,7 @@ namespace ImagePerfect.ViewModels
                 ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
-            if (Directory.Exists(_mainWindowViewModel.CurrentDirectory))
+            if (Directory.Exists(_mainWindowViewModel.ExplorerVm.CurrentDirectory))
             {
                 try
                 {

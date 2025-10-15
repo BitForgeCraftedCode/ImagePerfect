@@ -31,7 +31,6 @@ namespace ImagePerfect.ViewModels
         private bool _showLoading;
         private bool _suppressImageRefresh = false;
         private int _totalImages = 0;
-        private string _currentDirectory = string.Empty;
         private string _savedDirectory = string.Empty;
         private bool _isSavedDirectoryLoaded = false;
         private bool _loadSavedDirectoryFromCache = true;
@@ -365,12 +364,7 @@ namespace ImagePerfect.ViewModels
             get => _showLoading;
             set => this.RaiseAndSetIfChanged(ref _showLoading, value);
         }
-        
-        public string CurrentDirectory
-        {
-            get => _currentDirectory;
-            set => this.RaiseAndSetIfChanged(ref _currentDirectory, value);
-        }
+       
         public bool SuppressImageRefresh
         {
             get => _suppressImageRefresh;

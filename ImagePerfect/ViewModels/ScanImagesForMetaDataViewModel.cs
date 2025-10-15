@@ -79,7 +79,7 @@ namespace ImagePerfect.ViewModels
                     }
                     else
                     {
-                        await _mainWindowViewModel.ExplorerVm.RefreshFolderProps(_mainWindowViewModel.CurrentDirectory, folderVm);
+                        await _mainWindowViewModel.ExplorerVm.RefreshFolderProps(_mainWindowViewModel.ExplorerVm.CurrentDirectory, folderVm);
                     }
                 } 
             }

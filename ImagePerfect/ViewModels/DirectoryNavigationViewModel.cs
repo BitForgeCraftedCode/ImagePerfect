@@ -22,8 +22,8 @@ namespace ImagePerfect.ViewModels
         public async Task LoadCurrentDirectory()
         {
             _mainWindowViewModel.ExplorerVm.currentFilter = ExplorerViewModel.Filters.None;
-            await _mainWindowViewModel.ExplorerVm.RefreshFolders(_mainWindowViewModel.CurrentDirectory);
-            await _mainWindowViewModel.ExplorerVm.RefreshImages(_mainWindowViewModel.CurrentDirectory);
+            await _mainWindowViewModel.ExplorerVm.RefreshFolders(_mainWindowViewModel.ExplorerVm.CurrentDirectory);
+            await _mainWindowViewModel.ExplorerVm.RefreshImages(_mainWindowViewModel.ExplorerVm.CurrentDirectory);
         }
         //Reason for all 3 methods
         //All three BackFolder methods can just be reduced to BackFolderFromDirectoryOptionsPanel()
@@ -35,16 +35,16 @@ namespace ImagePerfect.ViewModels
         //method opens the previous directory location
         public async void BackFolderFromDirectoryOptionsPanel()
         {
-            if (_mainWindowViewModel.CurrentDirectory == _mainWindowViewModel.InitializeVm.RootFolderLocation)
+            if (_mainWindowViewModel.ExplorerVm.CurrentDirectory == _mainWindowViewModel.InitializeVm.RootFolderLocation)
             {
                 return;
             }
             //not ideal but keeps pagination to the folder your in. When you go back or next start from page 1
             _mainWindowViewModel.ExplorerVm.ResetPagination();
 
-            string newPath = PathHelper.RemoveOneFolderFromPath(_mainWindowViewModel.CurrentDirectory);
+            string newPath = PathHelper.RemoveOneFolderFromPath(_mainWindowViewModel.ExplorerVm.CurrentDirectory);
             //set the current directory -- used to add new folder to location
-            _mainWindowViewModel.CurrentDirectory = newPath;
+            _mainWindowViewModel.ExplorerVm.CurrentDirectory = newPath;
             //refresh UI
             _mainWindowViewModel.ExplorerVm.currentFilter = ExplorerViewModel.Filters.None;
             await _mainWindowViewModel.ExplorerVm.RefreshFolders();
@@ -62,7 +62,7 @@ namespace ImagePerfect.ViewModels
              */
             string newPath = PathHelper.RemoveOneFolderFromPath(imageVm.ImageFolderPath);
             //set the current directory -- used to add new folder to location
-            _mainWindowViewModel.CurrentDirectory = newPath;
+            _mainWindowViewModel.ExplorerVm.CurrentDirectory = newPath;
             //refresh UI
             _mainWindowViewModel.ExplorerVm.currentFilter = ExplorerViewModel.Filters.None;
             await _mainWindowViewModel.ExplorerVm.RefreshFolders();
@@ -81,7 +81,7 @@ namespace ImagePerfect.ViewModels
              */
             string newPath = PathHelper.RemoveTwoFoldersFromPath(currentFolder.FolderPath);
             //set the current directory -- used to add new folder to location
-            _mainWindowViewModel.CurrentDirectory = newPath;
+            _mainWindowViewModel.ExplorerVm.CurrentDirectory = newPath;
             //refresh UI
             _mainWindowViewModel.ExplorerVm.currentFilter = ExplorerViewModel.Filters.None;
             await _mainWindowViewModel.ExplorerVm.RefreshFolders();
@@ -95,7 +95,7 @@ namespace ImagePerfect.ViewModels
             bool hasChildren = currentFolder.HasChildren;
             bool hasFiles = currentFolder.HasFiles;
             //set the current directory -- used to add new folder to location
-            _mainWindowViewModel.CurrentDirectory = currentFolder.FolderPath;
+            _mainWindowViewModel.ExplorerVm.CurrentDirectory = currentFolder.FolderPath;
             //two boolean varibale 4 combos TF TT FT and FF
             if (hasChildren == false && hasFiles == false)
             {
@@ -113,7 +113,7 @@ namespace ImagePerfect.ViewModels
                         MinWidth = 500  // optional, so it doesn’t wrap too soon
                     }
                 ).ShowWindowDialogAsync(Globals.MainWindow);
-                _mainWindowViewModel.CurrentDirectory = PathHelper.RemoveOneFolderFromPath(currentFolder.FolderPath);
+                _mainWindowViewModel.ExplorerVm.CurrentDirectory = PathHelper.RemoveOneFolderFromPath(currentFolder.FolderPath);
                 return;
             }
             else

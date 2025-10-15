@@ -120,7 +120,7 @@ namespace ImagePerfect.ViewModels
             await UpdateSettings();
             _mainWindowViewModel.ExplorerVm.ResetPagination();
             await _mainWindowViewModel.ExplorerVm.RefreshFolders();
-            await _mainWindowViewModel.ExplorerVm.RefreshImages(_mainWindowViewModel.CurrentDirectory);
+            await _mainWindowViewModel.ExplorerVm.RefreshImages(_mainWindowViewModel.ExplorerVm.CurrentDirectory);
         }
         public async Task PickFolderPageSize(string size)
         {
@@ -157,7 +157,7 @@ namespace ImagePerfect.ViewModels
             await UpdateSettings();
             _mainWindowViewModel.ExplorerVm.ResetPagination();
             await _mainWindowViewModel.ExplorerVm.RefreshFolders();
-            await _mainWindowViewModel.ExplorerVm.RefreshImages(_mainWindowViewModel.CurrentDirectory);
+            await _mainWindowViewModel.ExplorerVm.RefreshImages(_mainWindowViewModel.ExplorerVm.CurrentDirectory);
         }
         public async Task SelectImageWidth(decimal size)
         {

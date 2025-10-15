@@ -85,9 +85,9 @@ namespace ImagePerfect.ViewModels
                     _mainWindowViewModel.LibraryFolders.Add(rootFolderVm);
 
                     _mainWindowViewModel.InitializeVm.RootFolderLocation = PathHelper.RemoveOneFolderFromPath(rootFolder.FolderPath);
-                    _mainWindowViewModel.CurrentDirectory = _mainWindowViewModel.InitializeVm.RootFolderLocation;
+                    _mainWindowViewModel.ExplorerVm.CurrentDirectory = _mainWindowViewModel.InitializeVm.RootFolderLocation;
                     //initially set SavedDirectory to CurrentDirectory so method wont fail if btn clicked before saving a directory
-                    _mainWindowViewModel.SavedDirectory = _mainWindowViewModel.CurrentDirectory;
+                    _mainWindowViewModel.SavedDirectory = _mainWindowViewModel.ExplorerVm.CurrentDirectory;
                 }
             }
             _mainWindowViewModel.ShowLoading = false;

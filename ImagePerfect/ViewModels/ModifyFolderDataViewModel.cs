@@ -96,7 +96,7 @@ namespace ImagePerfect.ViewModels
                 await _mainWindowViewModel.GetTagsList();
                 folderVm.NewTag = "";
                 //refresh UI
-                await _mainWindowViewModel.ExplorerVm.RefreshFolderProps(_mainWindowViewModel.CurrentDirectory, folderVm);
+                await _mainWindowViewModel.ExplorerVm.RefreshFolderProps(_mainWindowViewModel.ExplorerVm.CurrentDirectory, folderVm);
             }
             else
             {
@@ -132,7 +132,7 @@ namespace ImagePerfect.ViewModels
             try
             {
                 //select all folders from db with tag as List<Folder>
-                (List<Folder> folders, List<FolderTag> tags) folderTagResult = await _folderMethods.GetAllFoldersWithTag(selectedTag.TagName, false, _mainWindowViewModel.CurrentDirectory);
+                (List<Folder> folders, List<FolderTag> tags) folderTagResult = await _folderMethods.GetAllFoldersWithTag(selectedTag.TagName, false, _mainWindowViewModel.ExplorerVm.CurrentDirectory);
                 List<Folder> taggedFolders = folderTagResult.folders;
                 //no taggedFolders returned just exit
                 if(taggedFolders == null || taggedFolders.Count == 0)
@@ -156,7 +156,7 @@ namespace ImagePerfect.ViewModels
                 return;
 
             // Get all folders in current directory
-            (List<Folder> folders, List<FolderTag> tags) folderResults = await _folderMethods.GetFoldersInDirectory(_mainWindowViewModel.CurrentDirectory, _mainWindowViewModel.LoadFoldersAscending);
+            (List<Folder> folders, List<FolderTag> tags) folderResults = await _folderMethods.GetFoldersInDirectory(_mainWindowViewModel.ExplorerVm.CurrentDirectory, _mainWindowViewModel.LoadFoldersAscending);
             List<Folder> folders = folderResults.folders;
 
             var boxYesNo = MessageBoxManager.GetMessageBoxCustom(

@@ -209,7 +209,7 @@ namespace ImagePerfect.ViewModels
                 return;
             }
             //Up One will be the CurrentDirectory in this case
-            _mainWindowViewModel.SelectedImagesNewDirectory = _mainWindowViewModel.CurrentDirectory;
+            _mainWindowViewModel.SelectedImagesNewDirectory = _mainWindowViewModel.ExplorerVm.CurrentDirectory;
             if (string.IsNullOrEmpty(_mainWindowViewModel.SelectedImagesNewDirectory))
                 return;
             //map Images to ImageViewModel
@@ -244,7 +244,7 @@ namespace ImagePerfect.ViewModels
                 ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
-            _mainWindowViewModel.SelectedImagesNewDirectory = PathHelper.RemoveOneFolderFromPath(_mainWindowViewModel.CurrentDirectory);
+            _mainWindowViewModel.SelectedImagesNewDirectory = PathHelper.RemoveOneFolderFromPath(_mainWindowViewModel.ExplorerVm.CurrentDirectory);
             if (_mainWindowViewModel.SelectedImagesNewDirectory == null || _mainWindowViewModel.SelectedImagesNewDirectory == "")
                 return;
             await MoveSelectedImagesToNewFolder(selectedImages);

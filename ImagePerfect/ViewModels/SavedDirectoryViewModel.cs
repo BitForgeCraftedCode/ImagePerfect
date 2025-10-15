@@ -29,7 +29,7 @@ namespace ImagePerfect.ViewModels
         {
             //update variables
             _mainWindowViewModel.IsSavedDirectoryLoaded = true;
-            _mainWindowViewModel.SavedDirectory = _mainWindowViewModel.CurrentDirectory;
+            _mainWindowViewModel.SavedDirectory = _mainWindowViewModel.ExplorerVm.CurrentDirectory;
             _mainWindowViewModel.ExplorerVm.SavedFolderPage = _mainWindowViewModel.ExplorerVm.CurrentFolderPage;
             _mainWindowViewModel.ExplorerVm.SavedTotalFolderPages = _mainWindowViewModel.ExplorerVm.TotalFolderPages;
             _mainWindowViewModel.ExplorerVm.SavedImagePage = _mainWindowViewModel.ExplorerVm.CurrentImagePage;
@@ -41,7 +41,7 @@ namespace ImagePerfect.ViewModels
             SaveDirectory saveDirectory = new()
             {
                 SavedDirectoryId = 1,
-                SavedDirectory = _mainWindowViewModel.CurrentDirectory,
+                SavedDirectory = _mainWindowViewModel.ExplorerVm.CurrentDirectory,
                 SavedFolderPage = _mainWindowViewModel.ExplorerVm.CurrentFolderPage,
                 SavedTotalFolderPages = _mainWindowViewModel.ExplorerVm.TotalFolderPages,
                 SavedImagePage = _mainWindowViewModel.ExplorerVm.CurrentImagePage,
@@ -73,7 +73,7 @@ namespace ImagePerfect.ViewModels
             // ensure we don't tell other code the saved-dir is "loaded" until we've restored it
             // otherwise RefreshFolders and or RefreshImages will call UpdateSavedDirectoryCache and write the wrong directory to Cache
             _mainWindowViewModel.IsSavedDirectoryLoaded = false;
-            _mainWindowViewModel.CurrentDirectory = _mainWindowViewModel.SavedDirectory;
+            _mainWindowViewModel.ExplorerVm.CurrentDirectory = _mainWindowViewModel.SavedDirectory;
             _mainWindowViewModel.ExplorerVm.CurrentFolderPage = _mainWindowViewModel.ExplorerVm.SavedFolderPage;
             _mainWindowViewModel.ExplorerVm.TotalFolderPages = _mainWindowViewModel.ExplorerVm.SavedTotalFolderPages;
             _mainWindowViewModel.ExplorerVm.CurrentImagePage = _mainWindowViewModel.ExplorerVm.SavedImagePage;

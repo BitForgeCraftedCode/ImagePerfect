@@ -62,7 +62,7 @@ namespace ImagePerfect.ViewModels
             }
             
             Folder? rootFolder = await _folderMethods.GetRootFolder();
-            _MoveImagesToFolderPath = await _SelectMoveImagesToFolderInteration.Handle(_mainWindowViewModel.CurrentDirectory);
+            _MoveImagesToFolderPath = await _SelectMoveImagesToFolderInteration.Handle(_mainWindowViewModel.ExplorerVm.CurrentDirectory);
             //list will be empty if Cancel is pressed exit method
             if (_MoveImagesToFolderPath.Count == 0) 
             { 

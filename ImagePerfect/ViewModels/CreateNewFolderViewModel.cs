@@ -34,7 +34,7 @@ namespace ImagePerfect.ViewModels
             set
             {
                 this.RaiseAndSetIfChanged(ref _newFolderName, value);
-                if (value == "" || _mainWindowViewModel.CurrentDirectory == _mainWindowViewModel.InitializeVm.RootFolderLocation || _mainWindowViewModel.ExplorerVm.currentFilter != ExplorerViewModel.Filters.None)
+                if (value == "" || _mainWindowViewModel.ExplorerVm.CurrentDirectory == _mainWindowViewModel.InitializeVm.RootFolderLocation || _mainWindowViewModel.ExplorerVm.currentFilter != ExplorerViewModel.Filters.None)
                 {
                     IsNewFolderEnabled = false;
                 }
@@ -54,7 +54,7 @@ namespace ImagePerfect.ViewModels
         public async Task CreateNewFolder()
 		{
             //first check if directory exists
-            string newFolderPath = PathHelper.GetNewFolderPath(_mainWindowViewModel.CurrentDirectory, NewFolderName);
+            string newFolderPath = PathHelper.GetNewFolderPath(_mainWindowViewModel.ExplorerVm.CurrentDirectory, NewFolderName);
             if (Directory.Exists(newFolderPath))
             {
                 await MessageBoxManager.GetMessageBoxCustom(

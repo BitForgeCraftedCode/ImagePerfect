@@ -161,7 +161,7 @@ namespace ImagePerfect.ViewModels
             try
             {
                 //select all images from db with tag get as List<Image>
-                (List<Image> images, List<ImageTag> tags) imageTagResult = await _imageMethods.GetAllImagesWithTag(selectedTag.TagName, false, _mainWindowViewModel.CurrentDirectory);
+                (List<Image> images, List<ImageTag> tags) imageTagResult = await _imageMethods.GetAllImagesWithTag(selectedTag.TagName, false, _mainWindowViewModel.ExplorerVm.CurrentDirectory);
                 List<Image> taggedImags = imageTagResult.images;
                 //no taggedImages returned just exit
                 if (taggedImags == null || taggedImags.Count == 0)
