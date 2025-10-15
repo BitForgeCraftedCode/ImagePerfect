@@ -109,6 +109,7 @@ namespace ImagePerfect.ViewModels
             _showLoading = false;
 
             DirectoryNavigationVm = new DirectoryNavigationViewModel(this);
+            ExplorerVm = new ExplorerViewModel(_unitOfWork, this);
             ModifyFolderDataVm = new ModifyFolderDataViewModel(_unitOfWork, this);
             ModifyImageDataVm = new ModifyImageDataViewModel(_unitOfWork, this);
             ExternalProgramVm = new ExternalProgramViewModel(this);
@@ -555,6 +556,8 @@ namespace ImagePerfect.ViewModels
             get => _imageDatesVm;
             set => this.RaiseAndSetIfChanged(ref _imageDatesVm, value);
         }
+
+        public ExplorerViewModel ExplorerVm { get; }
         public DirectoryNavigationViewModel DirectoryNavigationVm { get; }
         public ModifyFolderDataViewModel ModifyFolderDataVm { get; }
         public ModifyImageDataViewModel ModifyImageDataVm { get; }
