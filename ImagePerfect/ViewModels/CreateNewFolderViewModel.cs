@@ -34,7 +34,7 @@ namespace ImagePerfect.ViewModels
             set
             {
                 this.RaiseAndSetIfChanged(ref _newFolderName, value);
-                if (value == "" || _mainWindowViewModel.CurrentDirectory == _mainWindowViewModel.InitializeVm.RootFolderLocation || _mainWindowViewModel.currentFilter != MainWindowViewModel.Filters.None)
+                if (value == "" || _mainWindowViewModel.CurrentDirectory == _mainWindowViewModel.InitializeVm.RootFolderLocation || _mainWindowViewModel.ExplorerVm.currentFilter != ExplorerViewModel.Filters.None)
                 {
                     IsNewFolderEnabled = false;
                 }
@@ -96,7 +96,7 @@ namespace ImagePerfect.ViewModels
                 {
                     Directory.CreateDirectory(newFolderPath);
                     //refresh UI
-                    _mainWindowViewModel.currentFilter = MainWindowViewModel.Filters.None;
+                    _mainWindowViewModel.ExplorerVm.currentFilter = ExplorerViewModel.Filters.None;
                     await _mainWindowViewModel.ExplorerVm.RefreshFolders();
                 }
                 catch (Exception e)

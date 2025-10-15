@@ -42,10 +42,6 @@ namespace ImagePerfect.ViewModels
         private bool _filterInCurrentDirectory = false;
         private List<Tag> _tagsList = new List<Tag>();
 
-        //public List<Folder> displayFolders = new List<Folder>();
-        //private List<FolderTag> displayFolderTags = new List<FolderTag>();
-        //public List<Image> displayImages = new List<Image>();
-        //private List<ImageTag> displayImageTags = new List<ImageTag>();
         //pagination
         //see FolderPageSize in SettingsVm
         private int _totalFolderPages = 1;
@@ -65,39 +61,6 @@ namespace ImagePerfect.ViewModels
         private int _maxPage = 1;
         //max value between CurrentFolderPage or CurrentImagePage
         private int _maxCurrentPage = 1;
-
-        //Filters
-        public enum Filters
-        {
-            None,
-            ImageRatingFilter,
-            AllImagesInFolderAndSubFolders,
-            FiveStarImagesInCurrentDirectory,
-            FolderRatingFilter,
-            ImageTagFilter,
-            FolderTagFilter,
-            FolderTagAndRatingFilter,
-            FolderDescriptionFilter,
-            FolderAlphabeticalFilter,
-            ImageYearFilter,
-            ImageYearMonthFilter,
-            ImageDateRangeFilter,
-            AllFavoriteFolders,
-            AllFoldersWithNoImportedImages,
-            AllFoldersWithMetadataNotScanned,
-            AllFoldersWithoutCovers
-        }
-        public Filters currentFilter = Filters.None;
-        public string selectedLetterForFilter = "A";
-        public int selectedRatingForFilter = 0;
-        public int selectedYearForFilter = 0;
-        public int selectedMonthForFilter = 0;
-        public DateTimeOffset startDateForFilter;
-        public DateTimeOffset endDateForFilter;
-        public string tagForFilter = string.Empty;
-        public string textForFilter = string.Empty;
-        private int _comboFolderFilterRating = 10;
-        private string _comboFolderFilterTag = string.Empty;
 
         public MainWindowViewModel() { }
         public MainWindowViewModel(IUnitOfWork unitOfWork)
@@ -235,27 +198,27 @@ namespace ImagePerfect.ViewModels
             FilterGetAllImagesInFolderAndSubFoldersCommand = ReactiveCommand.Create(async () =>
             {
                 ResetPagination();
-                currentFilter = Filters.AllImagesInFolderAndSubFolders;
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.AllImagesInFolderAndSubFolders;
                 await ExplorerVm.RefreshImages();
             });
             FilterImagesOnRatingCommand = ReactiveCommand.Create(async (decimal rating) => {
                 ResetPagination();
-                selectedRatingForFilter = Decimal.ToInt32(rating);
-                currentFilter = Filters.ImageRatingFilter;
+                ExplorerVm.selectedRatingForFilter = Decimal.ToInt32(rating);
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.ImageRatingFilter;
                 await ExplorerVm.RefreshImages();
             });
             FilterFiveStarImagesInCurrentDirectoryCommand = ReactiveCommand.Create(async (decimal rating) => {
                 ResetPagination();
-                selectedRatingForFilter = Decimal.ToInt32(rating);
-                currentFilter = Filters.FiveStarImagesInCurrentDirectory;
+                ExplorerVm.selectedRatingForFilter = Decimal.ToInt32(rating);
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FiveStarImagesInCurrentDirectory;
                 await ExplorerVm.RefreshImages();
             });
             FilterImagesOnYearCommand = ReactiveCommand.Create(async (int year) => { 
                 if(year == 0)
                     return;
                 ResetPagination();
-                selectedYearForFilter = year;
-                currentFilter = Filters.ImageYearFilter;
+                ExplorerVm.selectedYearForFilter = year;
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.ImageYearFilter;
                 await ExplorerVm.RefreshImages();
             });
             FilterImagesOnYearMonthCommand = ReactiveCommand.Create(async (string yearMonth) => {
@@ -265,57 +228,57 @@ namespace ImagePerfect.ViewModels
                 int year = int.Parse(parts[0]);
                 int month = int.Parse(parts[1]);
                 ResetPagination();
-                selectedYearForFilter = year;
-                selectedMonthForFilter = month;
-                currentFilter = Filters.ImageYearMonthFilter;
+                ExplorerVm.selectedYearForFilter = year;
+                ExplorerVm.selectedMonthForFilter = month;
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.ImageYearMonthFilter;
                 await ExplorerVm.RefreshImages();
             });
             FilterImagesOnDateRangeCommand = ReactiveCommand.Create(async (ImageDatesViewModel imageDatesVm) => {
                 if (imageDatesVm.StartDate != null && imageDatesVm.EndDate != null) 
                 {
                     ResetPagination();
-                    startDateForFilter = (DateTimeOffset)imageDatesVm.StartDate;
-                    endDateForFilter = (DateTimeOffset)imageDatesVm.EndDate;
-                    currentFilter = Filters.ImageDateRangeFilter;
+                    ExplorerVm.startDateForFilter = (DateTimeOffset)imageDatesVm.StartDate;
+                    ExplorerVm.endDateForFilter = (DateTimeOffset)imageDatesVm.EndDate;
+                    ExplorerVm.currentFilter = ExplorerViewModel.Filters.ImageDateRangeFilter;
                     await ExplorerVm.RefreshImages();
                 }
             });
             FilterFoldersInCurrentDirectoryByStartingLetterCommand = ReactiveCommand.Create(async (string letter) => {
                 ResetPagination();
-                selectedLetterForFilter = letter;
-                currentFilter = Filters.FolderAlphabeticalFilter;
+                ExplorerVm.selectedLetterForFilter = letter;
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderAlphabeticalFilter;
                 await ExplorerVm.RefreshFolders();
             });
             FilterFolderOnRatingAndTagCommand = ReactiveCommand.Create(async () => {
-                if (!string.IsNullOrEmpty(ComboFolderFilterTag))
+                if (!string.IsNullOrEmpty(ExplorerVm.ComboFolderFilterTag))
                 {
                     ResetPagination();
-                    currentFilter = Filters.FolderTagAndRatingFilter;
+                    ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderTagAndRatingFilter;
                     await ExplorerVm.RefreshFolders();
                 }
             });
             FilterFoldersOnRatingCommand = ReactiveCommand.Create(async (decimal rating) => {
                 ResetPagination();
-                selectedRatingForFilter = Decimal.ToInt32(rating);
-                currentFilter = Filters.FolderRatingFilter;
+                ExplorerVm.selectedRatingForFilter = Decimal.ToInt32(rating);
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderRatingFilter;
                 await ExplorerVm.RefreshFolders();
             });
             FilterImagesOnTagCommand = ReactiveCommand.Create(async (string tag) => {
                 ResetPagination();
-                tagForFilter = tag;
-                currentFilter = Filters.ImageTagFilter;
+                ExplorerVm.tagForFilter = tag;
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.ImageTagFilter;
                 await ExplorerVm.RefreshImages();
             });
             FilterFoldersOnTagCommand = ReactiveCommand.Create(async (string tag) => {
                 ResetPagination();
-                tagForFilter = tag;
-                currentFilter = Filters.FolderTagFilter;
+                ExplorerVm.tagForFilter = tag;
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderTagFilter;
                 await ExplorerVm.RefreshFolders();
             });
             FilterFoldersOnDescriptionCommand = ReactiveCommand.Create(async (string text) => {
                 ResetPagination();
-                textForFilter = text;
-                currentFilter = Filters.FolderDescriptionFilter;
+                ExplorerVm.textForFilter = text;
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderDescriptionFilter;
                 await ExplorerVm.RefreshFolders();
             });
             UpdateImageDatesCommand = ReactiveCommand.Create(async () => { 
@@ -324,17 +287,17 @@ namespace ImagePerfect.ViewModels
             });
             GetAllFoldersWithNoImportedImagesCommand = ReactiveCommand.Create(async () => {
                 ResetPagination();
-                currentFilter = Filters.AllFoldersWithNoImportedImages;
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.AllFoldersWithNoImportedImages;
                 await ExplorerVm.RefreshFolders();
             });
             GetAllFoldersWithMetadataNotScannedCommand = ReactiveCommand.Create(async () => {
                 ResetPagination();
-                currentFilter = Filters.AllFoldersWithMetadataNotScanned;
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.AllFoldersWithMetadataNotScanned;
                 await ExplorerVm.RefreshFolders();
             });
             GetAllFoldersWithoutCoversCommand = ReactiveCommand.Create(async () => {
                 ResetPagination();
-                currentFilter = Filters.AllFoldersWithoutCovers;
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.AllFoldersWithoutCovers;
                 await ExplorerVm.RefreshFolders();
             });
             LoadCurrentDirectoryCommand = ReactiveCommand.Create(async () => {
@@ -363,7 +326,7 @@ namespace ImagePerfect.ViewModels
             });
             GetAllFavoriteFoldersCommand = ReactiveCommand.Create(async () => {
                 ResetPagination();
-                currentFilter = Filters.AllFavoriteFolders;
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.AllFavoriteFolders;
                 await ExplorerVm.RefreshFolders();
             });
             RemoveAllFavoriteFoldersCommand = ReactiveCommand.Create(async () => {
@@ -408,24 +371,6 @@ namespace ImagePerfect.ViewModels
                 ExitApp();
             });
             InitializeVm.Initialize();
-        }
-
-        //For Combo Filter
-        public int ComboFolderFilterRating
-        {
-            get => _comboFolderFilterRating;
-            set
-            {
-                this.RaiseAndSetIfChanged(ref _comboFolderFilterRating, value);
-            }
-        }
-        public string ComboFolderFilterTag
-        {
-            get => _comboFolderFilterTag;
-            set
-            {
-                this.RaiseAndSetIfChanged(ref _comboFolderFilterTag, value);
-            }
         }
         public int TotalImages
         {
@@ -757,7 +702,7 @@ namespace ImagePerfect.ViewModels
        
         public async Task LoadCurrentDirectory()
         {
-            currentFilter = Filters.None;
+            ExplorerVm.currentFilter = ExplorerViewModel.Filters.None;
             await ExplorerVm.RefreshFolders(CurrentDirectory);
             await ExplorerVm.RefreshImages(CurrentDirectory);
         }

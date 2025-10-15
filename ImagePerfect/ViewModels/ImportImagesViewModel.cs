@@ -49,7 +49,7 @@ namespace ImagePerfect.ViewModels
                     //remove one folder from path
                     newPath = PathHelper.RemoveOneFolderFromPath(imageFolderPath);
                     //refresh UI
-                    if (_mainWindowViewModel.currentFilter == MainWindowViewModel.Filters.AllFoldersWithMetadataNotScanned || _mainWindowViewModel.currentFilter == MainWindowViewModel.Filters.AllFoldersWithNoImportedImages)
+                    if (_mainWindowViewModel.ExplorerVm.currentFilter == ExplorerViewModel.Filters.AllFoldersWithMetadataNotScanned || _mainWindowViewModel.ExplorerVm.currentFilter == ExplorerViewModel.Filters.AllFoldersWithNoImportedImages)
                     {
                         //have to call hard refresh for these two cases as they will not be returned from the query to update props
                         await _mainWindowViewModel.ExplorerVm.RefreshFolders();
