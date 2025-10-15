@@ -118,7 +118,7 @@ namespace ImagePerfect.ViewModels
                     break;
             }
             await UpdateSettings();
-            _mainWindowViewModel.ResetPagination();
+            _mainWindowViewModel.ExplorerVm.ResetPagination();
             await _mainWindowViewModel.ExplorerVm.RefreshFolders();
             await _mainWindowViewModel.ExplorerVm.RefreshImages(_mainWindowViewModel.CurrentDirectory);
         }
@@ -155,7 +155,7 @@ namespace ImagePerfect.ViewModels
                     break;
             }
             await UpdateSettings();
-            _mainWindowViewModel.ResetPagination();
+            _mainWindowViewModel.ExplorerVm.ResetPagination();
             await _mainWindowViewModel.ExplorerVm.RefreshFolders();
             await _mainWindowViewModel.ExplorerVm.RefreshImages(_mainWindowViewModel.CurrentDirectory);
         }

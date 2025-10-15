@@ -32,7 +32,7 @@ namespace ImagePerfect.ViewModels
                 return;
             }
             //not ideal but keeps pagination to the folder your in. When you go back or next start from page 1
-            _mainWindowViewModel.ResetPagination();
+            _mainWindowViewModel.ExplorerVm.ResetPagination();
 
             string newPath = PathHelper.RemoveOneFolderFromPath(_mainWindowViewModel.CurrentDirectory);
             //set the current directory -- used to add new folder to location
@@ -47,7 +47,7 @@ namespace ImagePerfect.ViewModels
         public async void BackFolderFromImage(ImageViewModel imageVm)
         {
             //not ideal but keeps pagination to the folder your in. When you go back or next start from page 1
-            _mainWindowViewModel.ResetPagination();
+            _mainWindowViewModel.ExplorerVm.ResetPagination();
             /*
                 Similar to Back folders except these buttons are on the image and we only need to remove one folder
                 Not every folder has a folder so this is the quickest way for now to back out of a folder that only has images
@@ -64,7 +64,7 @@ namespace ImagePerfect.ViewModels
         //opens the previous directory location -- from folder button
         public async void BackFolder(FolderViewModel currentFolder)
         {
-            _mainWindowViewModel.ResetPagination();
+            _mainWindowViewModel.ExplorerVm.ResetPagination();
             /*
                 tough to see but basically you need to remove two folders to build the regexp string
                 example if you are in /pictures/hiking/bearmountian and bearmountain folder has another folder saturday_2025_05_25
@@ -83,7 +83,7 @@ namespace ImagePerfect.ViewModels
         //opens the next directory location
         public async void NextFolder(FolderViewModel currentFolder)
         {
-            _mainWindowViewModel.ResetPagination();
+            _mainWindowViewModel.ExplorerVm.ResetPagination();
             bool hasChildren = currentFolder.HasChildren;
             bool hasFiles = currentFolder.HasFiles;
             //set the current directory -- used to add new folder to location

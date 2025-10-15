@@ -114,7 +114,7 @@ namespace ImagePerfect.ViewModels
                     }
                 });
                
-                _mainWindowViewModel.ResetPagination();
+                _mainWindowViewModel.ExplorerVm.ResetPagination();
                 await _mainWindowViewModel.ExplorerVm.RefreshFolders();
                 _mainWindowViewModel.ShowLoading = false;
             }

@@ -1028,7 +1028,7 @@
 						Command="{Binding NextPageCommand}" Classes="menu-btn">
 					Next Page
 				</Button>
-				<NumericUpDown Minimum="1" Maximum="{Binding MaxPage}" Grid.Row="0" Grid.Column="2" Width="150" Margin="5" Value="{Binding MaxCurrentPage}" x:Name="PageNumber" ParsingNumberStyle="Integer" FormatString="0"/>
+				<NumericUpDown Minimum="1" Maximum="{Binding ExplorerVm.MaxPage}" Grid.Row="0" Grid.Column="2" Width="150" Margin="5" Value="{Binding ExplorerVm.MaxCurrentPage}" x:Name="PageNumber" ParsingNumberStyle="Integer" FormatString="0"/>
 				<Button HorizontalAlignment="Center" Margin="5" Grid.Row="0" Grid.Column="3"
 						Command="{Binding GoToPageCommand}"
 						CommandParameter="{Binding #PageNumber.Value}" Classes="menu-btn">
@@ -1042,9 +1042,9 @@
 		<StackPanel Grid.Row="15" HorizontalAlignment="Stretch"  Classes="menu-bg-color">
 			<Grid RowDefinitions="Auto" ColumnDefinitions="Auto,Auto,Auto,Auto" HorizontalAlignment="Center" Margin="0 0 0 10">
 				<Label Grid.Row="0" Grid.Column="0">Total Pages:</Label>
-				<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding MaxPage}" VerticalAlignment="Center"></TextBlock>
+				<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ExplorerVm.MaxPage}" VerticalAlignment="Center"></TextBlock>
 				<Label Grid.Row="0" Grid.Column="2">Current Page:</Label>
-				<TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding MaxCurrentPage}" VerticalAlignment="Center"></TextBlock>
+				<TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding ExplorerVm.MaxCurrentPage}" VerticalAlignment="Center"></TextBlock>
 			</Grid>
 		</StackPanel>
 	</Grid>

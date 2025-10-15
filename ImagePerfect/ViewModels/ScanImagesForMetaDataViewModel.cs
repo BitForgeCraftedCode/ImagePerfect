@@ -116,7 +116,7 @@ namespace ImagePerfect.ViewModels
                     await ScanFolderImagesForMetaData(folder, true);
                 });
 
-                _mainWindowViewModel.ResetPagination();
+                _mainWindowViewModel.ExplorerVm.ResetPagination();
                 //Update TagsList to show in UI AutoCompleteBox
                 await _mainWindowViewModel.GetTagsList();
                 await _mainWindowViewModel.ExplorerVm.RefreshFolders();

@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Threading;
 using ImagePerfect.Models;
 using ImagePerfect.ObjectMappers;
@@ -25,6 +26,26 @@ namespace ImagePerfect.ViewModels
         private List<ImageTag> displayImageTags = new List<ImageTag>();
         public List<Folder> displayFolders = new List<Folder>();
         private List<FolderTag> displayFolderTags = new List<FolderTag>();
+
+        //pagination
+        //see FolderPageSize in SettingsVm
+        private int _totalFolderPages = 1;
+        private int _currentFolderPage = 1;
+        private int _savedTotalFolderPages = 1;
+        private int _savedFolderPage = 1;
+
+        //used to save scrollviewer offset
+        private Vector _savedOffsetVector = new Vector();
+
+        //see ImagePageSize in SettingsVm
+        private int _totalImagePages = 1;
+        private int _currentImagePage = 1;
+        private int _savedTotalImagePages = 1;
+        private int _savedImagePage = 1;
+        //max value between TotalFolderPages or TotalImagePages
+        private int _maxPage = 1;
+        //max value between CurrentFolderPage or CurrentImagePage
+        private int _maxCurrentPage = 1;
 
         //Filters
         public enum Filters
@@ -67,6 +88,65 @@ namespace ImagePerfect.ViewModels
             _imageMethods = new ImageMethods(_unitOfWork);
         }
 
+        //pagination
+        public int MaxCurrentPage
+        {
+            get => _maxCurrentPage;
+            set => this.RaiseAndSetIfChanged(ref _maxCurrentPage, value);
+        }
+        public int MaxPage
+        {
+            get => _maxPage;
+            set => this.RaiseAndSetIfChanged(ref _maxPage, value);
+        }
+        public int TotalImagePages
+        {
+            get => _totalImagePages;
+            set => this.RaiseAndSetIfChanged(ref _totalImagePages, value);
+        }
+
+        public int CurrentImagePage
+        {
+            get => _currentImagePage;
+            set => this.RaiseAndSetIfChanged(ref _currentImagePage, value);
+        }
+        public int SavedTotalImagePages
+        {
+            get => _savedTotalImagePages;
+            set => _savedTotalImagePages = value;
+        }
+        public int SavedImagePage
+        {
+            get => _savedImagePage;
+            set => _savedImagePage = value;
+        }
+        public int TotalFolderPages
+        {
+            get => _totalFolderPages;
+            set => this.RaiseAndSetIfChanged(ref _totalFolderPages, value);
+        }
+        public int SavedTotalFolderPages
+        {
+            get => _savedTotalFolderPages;
+            set => _savedTotalFolderPages = value;
+        }
+        public int SavedFolderPage
+        {
+            get => _savedFolderPage;
+            set => _savedFolderPage = value;
+        }
+
+        public Vector SavedOffsetVector
+        {
+            get => _savedOffsetVector;
+            set => _savedOffsetVector = value;
+        }
+        public int CurrentFolderPage
+        {
+            get => _currentFolderPage;
+            set => this.RaiseAndSetIfChanged(ref _currentFolderPage, value);
+        }
+
         public int ComboFolderFilterRating
         {
             get => _comboFolderFilterRating;
@@ -79,25 +159,36 @@ namespace ImagePerfect.ViewModels
             set => this.RaiseAndSetIfChanged(ref _comboFolderFilterTag, value);
         }
 
+
+        public void ResetPagination()
+        {
+            CurrentFolderPage = 1;
+            TotalFolderPages = 1;
+            CurrentImagePage = 1;
+            TotalImagePages = 1;
+            MaxCurrentPage = 1;
+            MaxPage = 1;
+        }
+
         private List<Image> ImagePagination()
         {
             //same as FolderPagination
-            int offset = _mainWindowViewModel.SettingsVm.ImagePageSize * (_mainWindowViewModel.CurrentImagePage - 1);
+            int offset = _mainWindowViewModel.SettingsVm.ImagePageSize * (CurrentImagePage - 1);
             int totalImageCount = displayImages.Count;
             if (totalImageCount == 0 || totalImageCount <= _mainWindowViewModel.SettingsVm.ImagePageSize)
                 return displayImages;
-            _mainWindowViewModel.TotalImagePages = (int)Math.Ceiling(totalImageCount / (double)_mainWindowViewModel.SettingsVm.ImagePageSize);
+            TotalImagePages = (int)Math.Ceiling(totalImageCount / (double)_mainWindowViewModel.SettingsVm.ImagePageSize);
             List<Image> displayImagesTemp;
-            if (_mainWindowViewModel.CurrentImagePage == _mainWindowViewModel.TotalImagePages)
+            if (CurrentImagePage == TotalImagePages)
             {
-                displayImagesTemp = displayImages.GetRange(offset, (totalImageCount - (_mainWindowViewModel.TotalImagePages - 1) * _mainWindowViewModel.SettingsVm.ImagePageSize));
+                displayImagesTemp = displayImages.GetRange(offset, (totalImageCount - (TotalImagePages - 1) * _mainWindowViewModel.SettingsVm.ImagePageSize));
             }
             else
             {
                 displayImagesTemp = displayImages.GetRange(offset, _mainWindowViewModel.SettingsVm.ImagePageSize);
             }
-            _mainWindowViewModel.MaxPage = Math.Max(_mainWindowViewModel.TotalImagePages, _mainWindowViewModel.TotalFolderPages);
-            _mainWindowViewModel.MaxCurrentPage = Math.Max(_mainWindowViewModel.CurrentImagePage, _mainWindowViewModel.CurrentFolderPage);
+            MaxPage = Math.Max(TotalImagePages, TotalFolderPages);
+            MaxCurrentPage = Math.Max(CurrentImagePage, CurrentFolderPage);
             return displayImagesTemp;
         }
         private async Task MapTagsToImagesAddToObservable()
@@ -234,27 +325,27 @@ namespace ImagePerfect.ViewModels
              * totalFolderCount = 14
              * TotalFolderPages = 2
              */
-            int offest = _mainWindowViewModel.SettingsVm.FolderPageSize * (_mainWindowViewModel.CurrentFolderPage - 1);
+            int offest = _mainWindowViewModel.SettingsVm.FolderPageSize * (CurrentFolderPage - 1);
             int totalFolderCount = displayFolders.Count;
             if (totalFolderCount == 0 || totalFolderCount <= _mainWindowViewModel.SettingsVm.FolderPageSize)
                 return displayFolders;
-            _mainWindowViewModel.TotalFolderPages = (int)Math.Ceiling(totalFolderCount / (double)_mainWindowViewModel.SettingsVm.FolderPageSize);
+            TotalFolderPages = (int)Math.Ceiling(totalFolderCount / (double)_mainWindowViewModel.SettingsVm.FolderPageSize);
             List<Folder> displayFoldersTemp;
-            if (_mainWindowViewModel.CurrentFolderPage == _mainWindowViewModel.TotalFolderPages)
+            if (CurrentFolderPage == TotalFolderPages)
             {
                 //on last page GetRange count CANNOT be FolderPageSize or index out of range 
                 //thus following logical example above in a array of 14 elements the range count on the last page is 14 - 10
                 //formul used: totalFolderCount - ((TotalFolderPages - 1)*FolderPageSize)
                 //folderCount minus total folders on all but last page
                 //14 - 10
-                displayFoldersTemp = displayFolders.GetRange(offest, (totalFolderCount - (_mainWindowViewModel.TotalFolderPages - 1) * _mainWindowViewModel.SettingsVm.FolderPageSize));
+                displayFoldersTemp = displayFolders.GetRange(offest, (totalFolderCount - (TotalFolderPages - 1) * _mainWindowViewModel.SettingsVm.FolderPageSize));
             }
             else
             {
                 displayFoldersTemp = displayFolders.GetRange(offest, _mainWindowViewModel.SettingsVm.FolderPageSize);
             }
-            _mainWindowViewModel.MaxPage = Math.Max(_mainWindowViewModel.TotalImagePages, _mainWindowViewModel.TotalFolderPages);
-            _mainWindowViewModel.MaxCurrentPage = Math.Max(_mainWindowViewModel.CurrentImagePage, _mainWindowViewModel.CurrentFolderPage);
+            MaxPage = Math.Max(TotalImagePages, TotalFolderPages);
+            MaxCurrentPage = Math.Max(CurrentImagePage, CurrentFolderPage);
             return displayFoldersTemp;
         }
 
@@ -513,14 +604,14 @@ namespace ImagePerfect.ViewModels
         //loads the previous X elements in CurrentDirectory
         public async void PreviousPage()
         {
-            if (_mainWindowViewModel.CurrentFolderPage > 1)
+            if (CurrentFolderPage > 1)
             {
-                _mainWindowViewModel.CurrentFolderPage = _mainWindowViewModel.CurrentFolderPage - 1;
+                CurrentFolderPage = CurrentFolderPage - 1;
                 await RefreshFolders();
             }
-            if (_mainWindowViewModel.CurrentImagePage > 1)
+            if (CurrentImagePage > 1)
             {
-                _mainWindowViewModel.CurrentImagePage = _mainWindowViewModel.CurrentImagePage - 1;
+                CurrentImagePage = CurrentImagePage - 1;
                 await RefreshImages(_mainWindowViewModel.CurrentDirectory);
             }
         }
@@ -528,28 +619,28 @@ namespace ImagePerfect.ViewModels
         //loads the next X elements in CurrentDirectory
         public async void NextPage()
         {
-            if (_mainWindowViewModel.CurrentFolderPage < _mainWindowViewModel.TotalFolderPages)
+            if (CurrentFolderPage < TotalFolderPages)
             {
-                _mainWindowViewModel.CurrentFolderPage = _mainWindowViewModel.CurrentFolderPage + 1;
+                CurrentFolderPage = CurrentFolderPage + 1;
                 await RefreshFolders();
             }
-            if (_mainWindowViewModel.CurrentImagePage < _mainWindowViewModel.TotalImagePages)
+            if (CurrentImagePage < TotalImagePages)
             {
-                _mainWindowViewModel.CurrentImagePage = _mainWindowViewModel.CurrentImagePage + 1;
+                CurrentImagePage = CurrentImagePage + 1;
                 await RefreshImages(_mainWindowViewModel.CurrentDirectory);
             }
         }
 
         public async Task GoToPage(int pageNumber)
         {
-            if (pageNumber <= _mainWindowViewModel.TotalFolderPages)
+            if (pageNumber <= TotalFolderPages)
             {
-                _mainWindowViewModel.CurrentFolderPage = pageNumber;
+                CurrentFolderPage = pageNumber;
                 await RefreshFolders();
             }
-            if (pageNumber <= _mainWindowViewModel.TotalImagePages)
+            if (pageNumber <= TotalImagePages)
             {
-                _mainWindowViewModel.CurrentImagePage = pageNumber;
+                CurrentImagePage = pageNumber;
                 await RefreshImages(_mainWindowViewModel.CurrentDirectory);
             }
         }
