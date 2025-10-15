@@ -223,7 +223,7 @@
 					Seach Folder Description
 				</Button>
 
-				<CheckBox Grid.Row="1" Grid.Column="2" Margin="5" Width="200" IsChecked="{Binding FilterInCurrentDirectory}">
+				<CheckBox Grid.Row="1" Grid.Column="2" Margin="5" Width="200" IsChecked="{Binding ExplorerVm.FilterInCurrentDirectory}">
 					Filter in Current Directory
 				</CheckBox>
 
@@ -282,7 +282,7 @@
 				</Button>
 			</Grid>
 			<Grid RowDefinitions="Auto" ColumnDefinitions="Auto, Auto" HorizontalAlignment="Center">
-				<CheckBox Grid.Row="0" Grid.Column="0" Margin="5" IsChecked="{Binding FilterInCurrentDirectory}">
+				<CheckBox Grid.Row="0" Grid.Column="0" Margin="5" IsChecked="{Binding ExplorerVm.FilterInCurrentDirectory}">
 					Filter in Current Directory
 				</CheckBox>
 				<Button Grid.Row="0" Grid.Column="1" Margin="5"
@@ -320,7 +320,7 @@
 				</StackPanel>
 			</Grid>
 			<Grid RowDefinitions="Auto" ColumnDefinitions="Auto, Auto, Auto" HorizontalAlignment="Center">
-				<CheckBox Grid.Row="0" Grid.Column="0" Margin="5" IsChecked="{Binding FilterInCurrentDirectory}">
+				<CheckBox Grid.Row="0" Grid.Column="0" Margin="5" IsChecked="{Binding ExplorerVm.FilterInCurrentDirectory}">
 					Filter in Current Directory
 				</CheckBox>
 				<Button Grid.Row="0" Grid.Column="1" Margin="5"

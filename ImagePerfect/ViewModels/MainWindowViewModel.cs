@@ -37,7 +37,6 @@ namespace ImagePerfect.ViewModels
         private bool _loadFoldersAscending = true;
         private bool _copyFolderTextToParentFolder = true;
         private string _selectedImagesNewDirectory = string.Empty;
-        private bool _filterInCurrentDirectory = false;
         private List<Tag> _tagsList = new List<Tag>();
 
         public MainWindowViewModel() { }
@@ -402,12 +401,6 @@ namespace ImagePerfect.ViewModels
         {
             get => _copyFolderTextToParentFolder;
             set => this.RaiseAndSetIfChanged(ref _copyFolderTextToParentFolder, value);
-        }
-
-        public bool FilterInCurrentDirectory
-        {
-            get => _filterInCurrentDirectory;
-            set => this.RaiseAndSetIfChanged(ref _filterInCurrentDirectory, value);
         }
 
         private ImageDatesViewModel _imageDatesVm = new ImageDatesViewModel();
