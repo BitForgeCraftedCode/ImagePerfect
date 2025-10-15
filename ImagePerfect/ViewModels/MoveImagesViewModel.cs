@@ -55,7 +55,7 @@ namespace ImagePerfect.ViewModels
             if (boxResult == "Yes")
             {
                 _mainWindowViewModel.ShowLoading = true;
-                (List<Folder> folders, List<FolderTag> tags) folderResult = await _folderMethods.GetFoldersInDirectory(imageVm.ImageFolderPath, _mainWindowViewModel.LoadFoldersAscending);
+                (List<Folder> folders, List<FolderTag> tags) folderResult = await _folderMethods.GetFoldersInDirectory(imageVm.ImageFolderPath, _mainWindowViewModel.ExplorerVm.LoadFoldersAscending);
                 _mainWindowViewModel.ExplorerVm.displayFolders = folderResult.folders;
                 (List<Image> images, List<ImageTag> tags) imageResultA = await _imageMethods.GetAllImagesInFolder(imageVm.FolderId);
                 _mainWindowViewModel.ExplorerVm.displayImages = imageResultA.images;

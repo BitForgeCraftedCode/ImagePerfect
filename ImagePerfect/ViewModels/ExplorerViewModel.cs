@@ -82,6 +82,7 @@ namespace ImagePerfect.ViewModels
         private int _comboFolderFilterRating = 10;
         private string _comboFolderFilterTag = string.Empty;
         private bool _filterInCurrentDirectory = false;
+        private bool _loadFoldersAscending = true;
 
         public ExplorerViewModel(IUnitOfWork unitOfWork, MainWindowViewModel mainWindowViewModel)
         {
@@ -95,6 +96,11 @@ namespace ImagePerfect.ViewModels
         {
             get => _currentDirectory;
             set => this.RaiseAndSetIfChanged(ref _currentDirectory, value);
+        }
+        public bool LoadFoldersAscending
+        {
+            get => _loadFoldersAscending;
+            set => this.RaiseAndSetIfChanged(ref _loadFoldersAscending, value);
         }
 
         public bool FilterInCurrentDirectory
@@ -408,11 +414,11 @@ namespace ImagePerfect.ViewModels
                     (List<Folder> folders, List<FolderTag> tags) folderResult;
                     if (String.IsNullOrEmpty(path))
                     {
-                        folderResult = await _folderMethods.GetFoldersInDirectory(CurrentDirectory, _mainWindowViewModel.LoadFoldersAscending);
+                        folderResult = await _folderMethods.GetFoldersInDirectory(CurrentDirectory, LoadFoldersAscending);
                     }
                     else
                     {
-                        folderResult = await _folderMethods.GetFoldersInDirectory(path, _mainWindowViewModel.LoadFoldersAscending);
+                        folderResult = await _folderMethods.GetFoldersInDirectory(path, LoadFoldersAscending);
                     }
                     displayFolders = folderResult.folders;
                     displayFolderTags = folderResult.tags;
@@ -421,7 +427,7 @@ namespace ImagePerfect.ViewModels
                     await MapTagsToFoldersAddToObservable();
                     break;
                 case Filters.FolderAlphabeticalFilter:
-                    (List<Folder> folders, List<FolderTag> tags) folderAlphabeticalResult = await _folderMethods.GetFoldersInDirectoryByStartingLetter(CurrentDirectory, _mainWindowViewModel.LoadFoldersAscending, selectedLetterForFilter);
+                    (List<Folder> folders, List<FolderTag> tags) folderAlphabeticalResult = await _folderMethods.GetFoldersInDirectoryByStartingLetter(CurrentDirectory, LoadFoldersAscending, selectedLetterForFilter);
                     displayFolders = folderAlphabeticalResult.folders;
                     displayFolderTags = folderAlphabeticalResult.tags;
 
@@ -543,14 +549,14 @@ namespace ImagePerfect.ViewModels
             switch (currentFilter)
             {
                 case Filters.None:
-                    (List<Folder> folders, List<FolderTag> tags) folderResult = await _folderMethods.GetFoldersInDirectory(path, _mainWindowViewModel.LoadFoldersAscending);
+                    (List<Folder> folders, List<FolderTag> tags) folderResult = await _folderMethods.GetFoldersInDirectory(path, LoadFoldersAscending);
                     displayFolders = folderResult.folders;
                     displayFolderTags = folderResult.tags;
                     displayFolders = FolderPagination();
                     await MapTagsToSingleFolderUpdateObservable(folderVm);
                     break;
                 case Filters.FolderAlphabeticalFilter:
-                    (List<Folder> folders, List<FolderTag> tags) folderAlphabeticalResult = await _folderMethods.GetFoldersInDirectoryByStartingLetter(CurrentDirectory, _mainWindowViewModel.LoadFoldersAscending, selectedLetterForFilter);
+                    (List<Folder> folders, List<FolderTag> tags) folderAlphabeticalResult = await _folderMethods.GetFoldersInDirectoryByStartingLetter(CurrentDirectory, LoadFoldersAscending, selectedLetterForFilter);
                     displayFolders = folderAlphabeticalResult.folders;
                     displayFolderTags = folderAlphabeticalResult.tags;
                     displayFolders = FolderPagination();
