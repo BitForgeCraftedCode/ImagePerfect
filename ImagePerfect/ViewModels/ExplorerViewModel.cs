@@ -204,6 +204,23 @@ namespace ImagePerfect.ViewModels
                 }
             });
         }
+
+        private async Task SetDisplayImagesForRefreshImages((List<Image> images, List<ImageTag> tags) data)
+        {
+            displayImages = data.images;
+            displayImageTags = data.tags;
+            if(currentFilter == Filters.None) //dont clear folders -- folder may contain images and folders
+            {
+                _mainWindowViewModel.Images.Clear(); 
+            }
+            else
+            {
+                _mainWindowViewModel.Images.Clear();
+                _mainWindowViewModel.LibraryFolders.Clear();
+            }
+            displayImages = ImagePagination();
+            await MapTagsToImagesAddToObservable();
+        }
         public async Task RefreshImages(string path = "", int folderId = 0)
         {
             // Before clearing/reloading, capture the current UI state into cache
@@ -224,82 +241,35 @@ namespace ImagePerfect.ViewModels
                     {
                         imageResult = await _imageMethods.GetAllImagesInFolder(path);
                     }
-                    displayImages = imageResult.images;
-                    displayImageTags = imageResult.tags;
-
-                    _mainWindowViewModel.Images.Clear();
-                    displayImages = ImagePagination();
-                    await MapTagsToImagesAddToObservable();
+                    await SetDisplayImagesForRefreshImages(imageResult);
                     break;
                 case Filters.AllImagesInFolderAndSubFolders:
                     (List<Image> images, List<ImageTag> tags) allImagesInFolderAndSubFoldersResult = await _imageMethods.GetAllImagesInFolderAndSubFolders(CurrentDirectory);
-                    displayImages = allImagesInFolderAndSubFoldersResult.images;
-                    displayImageTags = allImagesInFolderAndSubFoldersResult.tags;
-
-                    _mainWindowViewModel.Images.Clear();
-                    _mainWindowViewModel.LibraryFolders.Clear();
-                    displayImages = ImagePagination();
-                    await MapTagsToImagesAddToObservable();
+                    await SetDisplayImagesForRefreshImages(allImagesInFolderAndSubFoldersResult);
                     break;
                 case Filters.ImageRatingFilter:
                     (List<Image> images, List<ImageTag> tags) imageRatingResult = await _imageMethods.GetAllImagesAtRating(selectedRatingForFilter, FilterInCurrentDirectory, CurrentDirectory);
-                    displayImages = imageRatingResult.images;
-                    displayImageTags = imageRatingResult.tags;
-
-                    _mainWindowViewModel.Images.Clear();
-                    _mainWindowViewModel.LibraryFolders.Clear();
-                    displayImages = ImagePagination();
-                    await MapTagsToImagesAddToObservable();
+                    await SetDisplayImagesForRefreshImages(imageRatingResult);
                     break;
                 case Filters.FiveStarImagesInCurrentDirectory:
                     (List<Image> images, List<ImageTag> tags) fiveStarImageRatingResult = await _imageMethods.GetAllImagesAtRating(selectedRatingForFilter, true, CurrentDirectory);
-                    displayImages = fiveStarImageRatingResult.images;
-                    displayImageTags = fiveStarImageRatingResult.tags;
-
-                    _mainWindowViewModel.Images.Clear();
-                    _mainWindowViewModel.LibraryFolders.Clear();
-                    displayImages = ImagePagination();
-                    await MapTagsToImagesAddToObservable();
+                    await SetDisplayImagesForRefreshImages(fiveStarImageRatingResult);
                     break;
                 case Filters.ImageTagFilter:
                     (List<Image> images, List<ImageTag> tags) imageTagResult = await _imageMethods.GetAllImagesWithTag(tagForFilter, FilterInCurrentDirectory, CurrentDirectory);
-                    displayImages = imageTagResult.images;
-                    displayImageTags = imageTagResult.tags;
-
-                    _mainWindowViewModel.Images.Clear();
-                    _mainWindowViewModel.LibraryFolders.Clear();
-                    displayImages = ImagePagination();
-                    await MapTagsToImagesAddToObservable();
+                    await SetDisplayImagesForRefreshImages(imageTagResult);
                     break;
                 case Filters.ImageYearFilter:
                     (List<Image> images, List<ImageTag> tags) imageYearResult = await _imageMethods.GetAllImagesAtYear(selectedYearForFilter, FilterInCurrentDirectory, CurrentDirectory);
-                    displayImages = imageYearResult.images;
-                    displayImageTags = imageYearResult.tags;
-
-                    _mainWindowViewModel.Images.Clear();
-                    _mainWindowViewModel.LibraryFolders.Clear();
-                    displayImages = ImagePagination();
-                    await MapTagsToImagesAddToObservable();
+                    await SetDisplayImagesForRefreshImages(imageYearResult);
                     break;
                 case Filters.ImageYearMonthFilter:
                     (List<Image> images, List<ImageTag> tags) imageYearMonthResult = await _imageMethods.GetAllImagesAtYearMonth(selectedYearForFilter, selectedMonthForFilter, FilterInCurrentDirectory, CurrentDirectory);
-                    displayImages = imageYearMonthResult.images;
-                    displayImageTags = imageYearMonthResult.tags;
-
-                    _mainWindowViewModel.Images.Clear();
-                    _mainWindowViewModel.LibraryFolders.Clear();
-                    displayImages = ImagePagination();
-                    await MapTagsToImagesAddToObservable();
+                    await SetDisplayImagesForRefreshImages(imageYearMonthResult);
                     break;
                 case Filters.ImageDateRangeFilter:
                     (List<Image> images, List<ImageTag> tags) imageDateRangeResult = await _imageMethods.GetAllImagesInDateRange(startDateForFilter, endDateForFilter, FilterInCurrentDirectory, CurrentDirectory);
-                    displayImages = imageDateRangeResult.images;
-                    displayImageTags = imageDateRangeResult.tags;
-
-                    _mainWindowViewModel.Images.Clear();
-                    _mainWindowViewModel.LibraryFolders.Clear();
-                    displayImages = ImagePagination();
-                    await MapTagsToImagesAddToObservable();
+                    await SetDisplayImagesForRefreshImages(imageDateRangeResult);
                     break;
             }
             _mainWindowViewModel.ShowLoading = false;
@@ -361,6 +331,23 @@ namespace ImagePerfect.ViewModels
             });
         }
 
+        private async Task SetDisplayFoldersForRefreshFolders((List<Folder> folders, List<FolderTag> tags) data)
+        {
+            displayFolders = data.folders;
+            displayFolderTags = data.tags;
+            if (currentFilter == Filters.None) //dont clear images -- folder may have folders and images
+            {
+                _mainWindowViewModel.LibraryFolders.Clear();
+            }
+            else
+            {
+                _mainWindowViewModel.Images.Clear();
+                _mainWindowViewModel.LibraryFolders.Clear();
+            }
+            displayFolders = FolderPagination();
+            await MapTagsToFoldersAddToObservable();
+
+        }
         //public so we can call from other view models
         public async Task RefreshFolders(string path = "")
         {
@@ -387,101 +374,43 @@ namespace ImagePerfect.ViewModels
                     {
                         folderResult = await _folderMethods.GetFoldersInDirectory(path, LoadFoldersAscending);
                     }
-                    displayFolders = folderResult.folders;
-                    displayFolderTags = folderResult.tags;
-                    _mainWindowViewModel.LibraryFolders.Clear();
-                    displayFolders = FolderPagination();
-                    await MapTagsToFoldersAddToObservable();
+                    await SetDisplayFoldersForRefreshFolders(folderResult);
                     break;
                 case Filters.FolderAlphabeticalFilter:
                     (List<Folder> folders, List<FolderTag> tags) folderAlphabeticalResult = await _folderMethods.GetFoldersInDirectoryByStartingLetter(CurrentDirectory, LoadFoldersAscending, selectedLetterForFilter);
-                    displayFolders = folderAlphabeticalResult.folders;
-                    displayFolderTags = folderAlphabeticalResult.tags;
-
-                    _mainWindowViewModel.Images.Clear();
-                    _mainWindowViewModel.LibraryFolders.Clear();
-                    displayFolders = FolderPagination();
-                    await MapTagsToFoldersAddToObservable();
+                    await SetDisplayFoldersForRefreshFolders(folderAlphabeticalResult);
                     break;
                 case Filters.FolderRatingFilter:
                     (List<Folder> folders, List<FolderTag> tags) folderRatingResult = await _folderMethods.GetAllFoldersAtRating(selectedRatingForFilter, FilterInCurrentDirectory, CurrentDirectory);
-                    displayFolders = folderRatingResult.folders;
-                    displayFolderTags = folderRatingResult.tags;
-
-                    _mainWindowViewModel.Images.Clear();
-                    _mainWindowViewModel.LibraryFolders.Clear();
-                    displayFolders = FolderPagination();
-                    await MapTagsToFoldersAddToObservable();
+                    await SetDisplayFoldersForRefreshFolders(folderRatingResult);
                     break;
                 case Filters.FolderTagFilter:
                     (List<Folder> folders, List<FolderTag> tags) folderTagResult = await _folderMethods.GetAllFoldersWithTag(tagForFilter, FilterInCurrentDirectory, CurrentDirectory);
-                    displayFolders = folderTagResult.folders;
-                    displayFolderTags = folderTagResult.tags;
-
-                    _mainWindowViewModel.Images.Clear();
-                    _mainWindowViewModel.LibraryFolders.Clear();
-                    displayFolders = FolderPagination();
-                    await MapTagsToFoldersAddToObservable();
+                    await SetDisplayFoldersForRefreshFolders(folderTagResult);
                     break;
                 case Filters.FolderTagAndRatingFilter:
                     (List<Folder> folders, List<FolderTag> tags) folderRatingAndTagResult = await _folderMethods.GetAllFoldersWithRatingAndTag(ComboFolderFilterRating, ComboFolderFilterTag, FilterInCurrentDirectory, CurrentDirectory);
-                    displayFolders = folderRatingAndTagResult.folders;
-                    displayFolderTags = folderRatingAndTagResult.tags;
-
-                    _mainWindowViewModel.Images.Clear();
-                    _mainWindowViewModel.LibraryFolders.Clear();
-                    displayFolders = FolderPagination();
-                    await MapTagsToFoldersAddToObservable();
+                    await SetDisplayFoldersForRefreshFolders(folderRatingAndTagResult);
                     break;
                 case Filters.FolderDescriptionFilter:
                     (List<Folder> folders, List<FolderTag> tags) folderDescriptionResult = await _folderMethods.GetAllFoldersWithDescriptionText(textForFilter, FilterInCurrentDirectory, CurrentDirectory);
-                    displayFolders = folderDescriptionResult.folders;
-                    displayFolderTags = folderDescriptionResult.tags;
-
-                    _mainWindowViewModel.Images.Clear();
-                    _mainWindowViewModel.LibraryFolders.Clear();
-                    displayFolders = FolderPagination();
-                    await MapTagsToFoldersAddToObservable();
+                    await SetDisplayFoldersForRefreshFolders(folderDescriptionResult);
                     break;
                 case Filters.AllFavoriteFolders:
                     (List<Folder> folders, List<FolderTag> tags) allFavoriteFoldersResult = await _folderMethods.GetAllFavoriteFolders();
-                    displayFolders = allFavoriteFoldersResult.folders;
-                    displayFolderTags = allFavoriteFoldersResult.tags;
-
-                    _mainWindowViewModel.Images.Clear();
-                    _mainWindowViewModel.LibraryFolders.Clear();
-                    displayFolders = FolderPagination();
-                    await MapTagsToFoldersAddToObservable();
+                    await SetDisplayFoldersForRefreshFolders(allFavoriteFoldersResult);
                     break;
                 case Filters.AllFoldersWithNoImportedImages:
                     (List<Folder> folders, List<FolderTag> tags) allFoldersWithNoImportedImagesResult = await _folderMethods.GetAllFoldersWithNoImportedImages(FilterInCurrentDirectory, CurrentDirectory);
-                    displayFolders = allFoldersWithNoImportedImagesResult.folders;
-                    displayFolderTags = allFoldersWithNoImportedImagesResult.tags;
-
-                    _mainWindowViewModel.Images.Clear();
-                    _mainWindowViewModel.LibraryFolders.Clear();
-                    displayFolders = FolderPagination();
-                    await MapTagsToFoldersAddToObservable();
+                    await SetDisplayFoldersForRefreshFolders(allFoldersWithNoImportedImagesResult);
                     break;
                 case Filters.AllFoldersWithMetadataNotScanned:
                     (List<Folder> folders, List<FolderTag> tags) allFoldersWithMetadataNotScannedResult = await _folderMethods.GetAllFoldersWithMetadataNotScanned(FilterInCurrentDirectory, CurrentDirectory);
-                    displayFolders = allFoldersWithMetadataNotScannedResult.folders;
-                    displayFolderTags = allFoldersWithMetadataNotScannedResult.tags;
-
-                    _mainWindowViewModel.Images.Clear();
-                    _mainWindowViewModel.LibraryFolders.Clear();
-                    displayFolders = FolderPagination();
-                    await MapTagsToFoldersAddToObservable();
+                    await SetDisplayFoldersForRefreshFolders(allFoldersWithMetadataNotScannedResult);
                     break;
                 case Filters.AllFoldersWithoutCovers:
                     (List<Folder> folders, List<FolderTag> tags) allFoldersWithoutCoversResult = await _folderMethods.GetAllFoldersWithoutCovers(FilterInCurrentDirectory, CurrentDirectory);
-                    displayFolders = allFoldersWithoutCoversResult.folders;
-                    displayFolderTags = allFoldersWithoutCoversResult.tags;
-
-                    _mainWindowViewModel.Images.Clear();
-                    _mainWindowViewModel.LibraryFolders.Clear();
-                    displayFolders = FolderPagination();
-                    await MapTagsToFoldersAddToObservable();
+                    await SetDisplayFoldersForRefreshFolders(allFoldersWithoutCoversResult);
                     break;
             }
             _mainWindowViewModel.ShowLoading = false;
@@ -505,6 +434,13 @@ namespace ImagePerfect.ViewModels
             }
         }
 
+        private async Task SetDisplayFoldersForRefreshFolderProps((List<Folder> folders, List<FolderTag> tags) data, FolderViewModel folderVm)
+        {
+            displayFolders = data.folders;
+            displayFolderTags = data.tags;
+            displayFolders = FolderPagination();
+            await MapTagsToSingleFolderUpdateObservable(folderVm);
+        }
         //public so we can call from other view models
         public async Task RefreshFolderProps(string path, FolderViewModel folderVm)
         {
@@ -517,73 +453,43 @@ namespace ImagePerfect.ViewModels
             {
                 case Filters.None:
                     (List<Folder> folders, List<FolderTag> tags) folderResult = await _folderMethods.GetFoldersInDirectory(path, LoadFoldersAscending);
-                    displayFolders = folderResult.folders;
-                    displayFolderTags = folderResult.tags;
-                    displayFolders = FolderPagination();
-                    await MapTagsToSingleFolderUpdateObservable(folderVm);
+                    await SetDisplayFoldersForRefreshFolderProps(folderResult, folderVm);
                     break;
                 case Filters.FolderAlphabeticalFilter:
                     (List<Folder> folders, List<FolderTag> tags) folderAlphabeticalResult = await _folderMethods.GetFoldersInDirectoryByStartingLetter(CurrentDirectory, LoadFoldersAscending, selectedLetterForFilter);
-                    displayFolders = folderAlphabeticalResult.folders;
-                    displayFolderTags = folderAlphabeticalResult.tags;
-                    displayFolders = FolderPagination();
-                    await MapTagsToSingleFolderUpdateObservable(folderVm);
+                    await SetDisplayFoldersForRefreshFolderProps(folderAlphabeticalResult, folderVm);
                     break;
                 case Filters.FolderRatingFilter:
                     (List<Folder> folders, List<FolderTag> tags) folderRatingResult = await _folderMethods.GetAllFoldersAtRating(selectedRatingForFilter, FilterInCurrentDirectory, CurrentDirectory);
-                    displayFolders = folderRatingResult.folders;
-                    displayFolderTags = folderRatingResult.tags;
-                    displayFolders = FolderPagination();
-                    await MapTagsToSingleFolderUpdateObservable(folderVm);
+                    await SetDisplayFoldersForRefreshFolderProps(folderRatingResult, folderVm);
                     break;
                 case Filters.FolderTagFilter:
                     (List<Folder> folders, List<FolderTag> tags) folderTagResult = await _folderMethods.GetAllFoldersWithTag(tagForFilter, FilterInCurrentDirectory, CurrentDirectory);
-                    displayFolders = folderTagResult.folders;
-                    displayFolderTags = folderTagResult.tags;
-                    displayFolders = FolderPagination();
-                    await MapTagsToSingleFolderUpdateObservable(folderVm);
+                    await SetDisplayFoldersForRefreshFolderProps(folderTagResult, folderVm);
                     break;
                 case Filters.FolderTagAndRatingFilter:
                     (List<Folder> folders, List<FolderTag> tags) folderRatingAndTagResult = await _folderMethods.GetAllFoldersWithRatingAndTag(ComboFolderFilterRating, ComboFolderFilterTag, FilterInCurrentDirectory, CurrentDirectory);
-                    displayFolders = folderRatingAndTagResult.folders;
-                    displayFolderTags = folderRatingAndTagResult.tags;
-                    displayFolders = FolderPagination();
-                    await MapTagsToSingleFolderUpdateObservable(folderVm);
+                    await SetDisplayFoldersForRefreshFolderProps(folderRatingAndTagResult, folderVm);
                     break;
                 case Filters.FolderDescriptionFilter:
                     (List<Folder> folders, List<FolderTag> tags) folderDescriptionResult = await _folderMethods.GetAllFoldersWithDescriptionText(textForFilter, FilterInCurrentDirectory, CurrentDirectory);
-                    displayFolders = folderDescriptionResult.folders;
-                    displayFolderTags = folderDescriptionResult.tags;
-                    displayFolders = FolderPagination();
-                    await MapTagsToSingleFolderUpdateObservable(folderVm);
+                    await SetDisplayFoldersForRefreshFolderProps(folderDescriptionResult, folderVm);
                     break;
                 case Filters.AllFavoriteFolders:
                     (List<Folder> folders, List<FolderTag> tags) allFavoriteFoldersResult = await _folderMethods.GetAllFavoriteFolders();
-                    displayFolders = allFavoriteFoldersResult.folders;
-                    displayFolderTags = allFavoriteFoldersResult.tags;
-                    displayFolders = FolderPagination();
-                    await MapTagsToSingleFolderUpdateObservable(folderVm);
+                    await SetDisplayFoldersForRefreshFolderProps(allFavoriteFoldersResult, folderVm);
                     break;
                 case Filters.AllFoldersWithNoImportedImages:
                     (List<Folder> folders, List<FolderTag> tags) allFoldersWithNoImportedImagesResult = await _folderMethods.GetAllFoldersWithNoImportedImages(FilterInCurrentDirectory, CurrentDirectory);
-                    displayFolders = allFoldersWithNoImportedImagesResult.folders;
-                    displayFolderTags = allFoldersWithNoImportedImagesResult.tags;
-                    displayFolders = FolderPagination();
-                    await MapTagsToSingleFolderUpdateObservable(folderVm);
+                    await SetDisplayFoldersForRefreshFolderProps(allFoldersWithNoImportedImagesResult, folderVm);
                     break;
                 case Filters.AllFoldersWithMetadataNotScanned:
                     (List<Folder> folders, List<FolderTag> tags) allFoldersWithMetadataNotScannedResult = await _folderMethods.GetAllFoldersWithMetadataNotScanned(FilterInCurrentDirectory, CurrentDirectory);
-                    displayFolders = allFoldersWithMetadataNotScannedResult.folders;
-                    displayFolderTags = allFoldersWithMetadataNotScannedResult.tags;
-                    displayFolders = FolderPagination();
-                    await MapTagsToSingleFolderUpdateObservable(folderVm);
+                    await SetDisplayFoldersForRefreshFolderProps(allFoldersWithMetadataNotScannedResult, folderVm);
                     break;
                 case Filters.AllFoldersWithoutCovers:
                     (List<Folder> folders, List<FolderTag> tags) allFoldersWithoutCoversResult = await _folderMethods.GetAllFoldersWithoutCovers(FilterInCurrentDirectory, CurrentDirectory);
-                    displayFolders = allFoldersWithoutCoversResult.folders;
-                    displayFolderTags = allFoldersWithoutCoversResult.tags;
-                    displayFolders = FolderPagination();
-                    await MapTagsToSingleFolderUpdateObservable(folderVm);
+                    await SetDisplayFoldersForRefreshFolderProps(allFoldersWithoutCoversResult, folderVm);
                     break;
             }
             _mainWindowViewModel.ShowLoading = false;
