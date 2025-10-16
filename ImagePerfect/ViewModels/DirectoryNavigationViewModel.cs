@@ -33,7 +33,7 @@ namespace ImagePerfect.ViewModels
         //This can aid the user in finding just where that image/folder is located in the library
 
         //method opens the previous directory location
-        public async void BackFolderFromDirectoryOptionsPanel()
+        public async Task BackFolderFromDirectoryOptionsPanel()
         {
             if (_mainWindowViewModel.ExplorerVm.CurrentDirectory == _mainWindowViewModel.InitializeVm.RootFolderLocation)
             {
@@ -52,7 +52,7 @@ namespace ImagePerfect.ViewModels
         }
 
         //opens the previous directory location -- from image button
-        public async void BackFolderFromImage(ImageViewModel imageVm)
+        public async Task BackFolderFromImage(ImageViewModel imageVm)
         {
             //not ideal but keeps pagination to the folder your in. When you go back or next start from page 1
             _mainWindowViewModel.ExplorerVm.ResetPagination();
@@ -70,7 +70,7 @@ namespace ImagePerfect.ViewModels
         }
 
         //opens the previous directory location -- from folder button
-        public async void BackFolder(FolderViewModel currentFolder)
+        public async Task BackFolder(FolderViewModel currentFolder)
         {
             _mainWindowViewModel.ExplorerVm.ResetPagination();
             /*
@@ -89,7 +89,7 @@ namespace ImagePerfect.ViewModels
         }
 
         //opens the next directory location
-        public async void NextFolder(FolderViewModel currentFolder)
+        public async Task NextFolder(FolderViewModel currentFolder)
         {
             _mainWindowViewModel.ExplorerVm.ResetPagination();
             bool hasChildren = currentFolder.HasChildren;

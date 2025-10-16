@@ -60,17 +60,17 @@ namespace ImagePerfect.ViewModels
             MoveFolderToTrash = new MoveFolderToTrashViewModel(_unitOfWork, this);
             CreateNewFolder = new CreateNewFolderViewModel(_unitOfWork, this);
 
-            NextFolderCommand = ReactiveCommand.Create((FolderViewModel currentFolder) => {
-                DirectoryNavigationVm.NextFolder(currentFolder);
+            NextFolderCommand = ReactiveCommand.Create(async (FolderViewModel currentFolder) => {
+                await DirectoryNavigationVm.NextFolder(currentFolder);
             });
-            BackFolderCommand = ReactiveCommand.Create((FolderViewModel currentFolder) => {
-                DirectoryNavigationVm.BackFolder(currentFolder);
+            BackFolderCommand = ReactiveCommand.Create(async (FolderViewModel currentFolder) => {
+                await DirectoryNavigationVm.BackFolder(currentFolder);
             });
-            BackFolderFromImageCommand = ReactiveCommand.Create((ImageViewModel imageVm) => {
-                DirectoryNavigationVm.BackFolderFromImage(imageVm);
+            BackFolderFromImageCommand = ReactiveCommand.Create(async (ImageViewModel imageVm) => {
+                await DirectoryNavigationVm.BackFolderFromImage(imageVm);
             });
-            BackFolderFromDirectoryOptionsPanelCommand = ReactiveCommand.Create(() => {
-                DirectoryNavigationVm.BackFolderFromDirectoryOptionsPanel();
+            BackFolderFromDirectoryOptionsPanelCommand = ReactiveCommand.Create(async () => {
+                await DirectoryNavigationVm.BackFolderFromDirectoryOptionsPanel();
             });
             ImportImagesCommand = ReactiveCommand.Create(async (FolderViewModel imageFolder) => {
                 await ImportImagesVm.ImportImages(imageFolder, false);
@@ -425,13 +425,13 @@ namespace ImagePerfect.ViewModels
 
         public List<ImageViewModel> SavedDirectoryImages { get; } = new(); //runtime-only cache
 
-        public ReactiveCommand<FolderViewModel, Unit> NextFolderCommand { get; }
+        public ReactiveCommand<FolderViewModel, Task> NextFolderCommand { get; }
 
-        public ReactiveCommand<FolderViewModel,Unit> BackFolderCommand { get; }
+        public ReactiveCommand<FolderViewModel, Task> BackFolderCommand { get; }
 
-        public ReactiveCommand<ImageViewModel, Unit> BackFolderFromImageCommand { get; }
+        public ReactiveCommand<ImageViewModel, Task> BackFolderFromImageCommand { get; }
 
-        public ReactiveCommand<Unit, Unit> BackFolderFromDirectoryOptionsPanelCommand { get; }
+        public ReactiveCommand<Unit, Task> BackFolderFromDirectoryOptionsPanelCommand { get; }
 
         public ReactiveCommand<FolderViewModel, Task> ImportImagesCommand { get; }
 
