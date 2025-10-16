@@ -19,6 +19,12 @@ namespace ImagePerfect.ViewModels
         private readonly MainWindowViewModel _mainWindowViewModel;
 
         private string _savedDirectory = string.Empty;
+        private int _savedFolderPage = 1;
+        private int _savedTotalFolderPages = 1;
+        private int _savedImagePage = 1;
+        private int _savedTotalImagePages = 1;
+        //used to save scrollviewer offset
+        private Vector _savedOffsetVector = new Vector();
         private bool _isSavedDirectoryLoaded = false;
         private bool _loadSavedDirectoryFromCache = true;
 
@@ -39,6 +45,31 @@ namespace ImagePerfect.ViewModels
             get => _savedDirectory;
             set => _savedDirectory = value;
         }
+        public int SavedFolderPage
+        {
+            get => _savedFolderPage;
+            set => _savedFolderPage = value;
+        }
+        public int SavedTotalFolderPages
+        {
+            get => _savedTotalFolderPages;
+            set => _savedTotalFolderPages = value;
+        }
+        public int SavedImagePage
+        {
+            get => _savedImagePage;
+            set => _savedImagePage = value;
+        }
+        public int SavedTotalImagePages
+        {
+            get => _savedTotalImagePages;
+            set => _savedTotalImagePages = value;
+        }
+        public Vector SavedOffsetVector
+        {
+            get => _savedOffsetVector;
+            set => _savedOffsetVector = value;
+        }
         public bool IsSavedDirectoryLoaded
         {
             get => _isSavedDirectoryLoaded;
@@ -50,13 +81,13 @@ namespace ImagePerfect.ViewModels
             //update variables
             IsSavedDirectoryLoaded = true;
             SavedDirectory = _mainWindowViewModel.ExplorerVm.CurrentDirectory;
-            _mainWindowViewModel.ExplorerVm.SavedFolderPage = _mainWindowViewModel.ExplorerVm.CurrentFolderPage;
-            _mainWindowViewModel.ExplorerVm.SavedTotalFolderPages = _mainWindowViewModel.ExplorerVm.TotalFolderPages;
-            _mainWindowViewModel.ExplorerVm.SavedImagePage = _mainWindowViewModel.ExplorerVm.CurrentImagePage;
-            _mainWindowViewModel.ExplorerVm.SavedTotalImagePages = _mainWindowViewModel.ExplorerVm.TotalImagePages;
+            SavedFolderPage = _mainWindowViewModel.ExplorerVm.CurrentFolderPage;
+            SavedTotalFolderPages = _mainWindowViewModel.ExplorerVm.TotalFolderPages;
+            SavedImagePage = _mainWindowViewModel.ExplorerVm.CurrentImagePage;
+            SavedTotalImagePages = _mainWindowViewModel.ExplorerVm.TotalImagePages;
             double XVector = scrollViewer.Offset.X;
             double YVector = scrollViewer.Offset.Y;
-            _mainWindowViewModel.ExplorerVm.SavedOffsetVector = new Vector(XVector, YVector);
+            SavedOffsetVector = new Vector(XVector, YVector);
             //persist to database
             SaveDirectory saveDirectory = new()
             {
@@ -94,10 +125,10 @@ namespace ImagePerfect.ViewModels
             // otherwise RefreshFolders and or RefreshImages will call UpdateSavedDirectoryCache and write the wrong directory to Cache
             IsSavedDirectoryLoaded = false;
             _mainWindowViewModel.ExplorerVm.CurrentDirectory = SavedDirectory;
-            _mainWindowViewModel.ExplorerVm.CurrentFolderPage = _mainWindowViewModel.ExplorerVm.SavedFolderPage;
-            _mainWindowViewModel.ExplorerVm.TotalFolderPages = _mainWindowViewModel.ExplorerVm.SavedTotalFolderPages;
-            _mainWindowViewModel.ExplorerVm.CurrentImagePage = _mainWindowViewModel.ExplorerVm.SavedImagePage;
-            _mainWindowViewModel.ExplorerVm.TotalImagePages = _mainWindowViewModel.ExplorerVm.SavedTotalImagePages;
+            _mainWindowViewModel.ExplorerVm.CurrentFolderPage = SavedFolderPage;
+            _mainWindowViewModel.ExplorerVm.TotalFolderPages = SavedTotalFolderPages;
+            _mainWindowViewModel.ExplorerVm.CurrentImagePage = SavedImagePage;
+            _mainWindowViewModel.ExplorerVm.TotalImagePages = SavedTotalImagePages;
             _mainWindowViewModel.ExplorerVm.MaxPage = Math.Max(_mainWindowViewModel.ExplorerVm.TotalImagePages, _mainWindowViewModel.ExplorerVm.TotalFolderPages);
             _mainWindowViewModel.ExplorerVm.MaxCurrentPage = Math.Max(_mainWindowViewModel.ExplorerVm.CurrentImagePage, _mainWindowViewModel.ExplorerVm.CurrentFolderPage);
             if ((_mainWindowViewModel.SavedDirectoryFolders.Count > 0 || _mainWindowViewModel.SavedDirectoryImages.Count > 0) && LoadSavedDirectoryFromCache == true)
@@ -117,7 +148,7 @@ namespace ImagePerfect.ViewModels
                 // defer scroll until after layout
                 Dispatcher.UIThread.Post(() =>
                 {
-                    scrollViewer.Offset = _mainWindowViewModel.ExplorerVm.SavedOffsetVector;
+                    scrollViewer.Offset = SavedOffsetVector;
                 }, DispatcherPriority.Background);
             }
             else
@@ -128,7 +159,7 @@ namespace ImagePerfect.ViewModels
                 SetSavedDirectoryCache();
                 // now mark saved-dir as loaded so refreshes can update cache later
                 IsSavedDirectoryLoaded = true;
-                scrollViewer.Offset = _mainWindowViewModel.ExplorerVm.SavedOffsetVector;
+                scrollViewer.Offset = SavedOffsetVector;
             }
         }
     }

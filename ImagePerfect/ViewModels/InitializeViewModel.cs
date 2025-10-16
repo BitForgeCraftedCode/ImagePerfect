@@ -57,11 +57,11 @@ namespace ImagePerfect.ViewModels
             {
                 //update variables
                 _mainWindowViewModel.SavedDirectoryVm.SavedDirectory = saveDirectory.SavedDirectory;
-                _mainWindowViewModel.ExplorerVm.SavedFolderPage = saveDirectory.SavedFolderPage;
-                _mainWindowViewModel.ExplorerVm.SavedTotalFolderPages = saveDirectory.SavedTotalFolderPages;
-                _mainWindowViewModel.ExplorerVm.SavedImagePage = saveDirectory.SavedImagePage;
-                _mainWindowViewModel.ExplorerVm.SavedTotalImagePages = saveDirectory.SavedTotalImagePages;
-                _mainWindowViewModel.ExplorerVm.SavedOffsetVector = new Vector(saveDirectory.XVector, saveDirectory.YVector);
+                _mainWindowViewModel.SavedDirectoryVm.SavedFolderPage = saveDirectory.SavedFolderPage;
+                _mainWindowViewModel.SavedDirectoryVm.SavedTotalFolderPages = saveDirectory.SavedTotalFolderPages;
+                _mainWindowViewModel.SavedDirectoryVm.SavedImagePage = saveDirectory.SavedImagePage;
+                _mainWindowViewModel.SavedDirectoryVm.SavedTotalImagePages = saveDirectory.SavedTotalImagePages;
+                _mainWindowViewModel.SavedDirectoryVm.SavedOffsetVector = new Vector(saveDirectory.XVector, saveDirectory.YVector);
             }
             else
             {

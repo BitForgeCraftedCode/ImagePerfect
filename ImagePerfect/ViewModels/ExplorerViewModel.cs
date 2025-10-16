@@ -33,17 +33,10 @@ namespace ImagePerfect.ViewModels
         //see FolderPageSize in SettingsVm
         private int _totalFolderPages = 1;
         private int _currentFolderPage = 1;
-        private int _savedTotalFolderPages = 1;
-        private int _savedFolderPage = 1;
-
-        //used to save scrollviewer offset
-        private Vector _savedOffsetVector = new Vector();
 
         //see ImagePageSize in SettingsVm
         private int _totalImagePages = 1;
         private int _currentImagePage = 1;
-        private int _savedTotalImagePages = 1;
-        private int _savedImagePage = 1;
         //max value between TotalFolderPages or TotalImagePages
         private int _maxPage = 1;
         //max value between CurrentFolderPage or CurrentImagePage
@@ -131,36 +124,10 @@ namespace ImagePerfect.ViewModels
             get => _currentImagePage;
             set => this.RaiseAndSetIfChanged(ref _currentImagePage, value);
         }
-        public int SavedTotalImagePages
-        {
-            get => _savedTotalImagePages;
-            set => _savedTotalImagePages = value;
-        }
-        public int SavedImagePage
-        {
-            get => _savedImagePage;
-            set => _savedImagePage = value;
-        }
         public int TotalFolderPages
         {
             get => _totalFolderPages;
             set => this.RaiseAndSetIfChanged(ref _totalFolderPages, value);
-        }
-        public int SavedTotalFolderPages
-        {
-            get => _savedTotalFolderPages;
-            set => _savedTotalFolderPages = value;
-        }
-        public int SavedFolderPage
-        {
-            get => _savedFolderPage;
-            set => _savedFolderPage = value;
-        }
-
-        public Vector SavedOffsetVector
-        {
-            get => _savedOffsetVector;
-            set => _savedOffsetVector = value;
         }
         public int CurrentFolderPage
         {
