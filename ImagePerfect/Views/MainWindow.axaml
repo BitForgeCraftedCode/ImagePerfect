@@ -233,8 +233,12 @@
 				<AutoCompleteBox Grid.Row="2" Grid.Column="1" Margin="5" FilterMode="StartsWith" Width="200"
 								 ItemsSource="{Binding #Root.((vm:MainWindowViewModel)DataContext).TagsList}"
 								 ValueMemberBinding="{Binding TagName}"
-								 Text="{Binding ExplorerVm.ComboFolderFilterTag}" />
-				<Button Grid.Row="2" Grid.Column="2" Margin="5" Width="200" HorizontalContentAlignment="Center"
+								 Text="{Binding ExplorerVm.ComboFolderFilterTagOne}" />
+				<AutoCompleteBox Grid.Row="2" Grid.Column="2" Margin="5" FilterMode="StartsWith" Width="200"
+								 ItemsSource="{Binding #Root.((vm:MainWindowViewModel)DataContext).TagsList}"
+								 ValueMemberBinding="{Binding TagName}"
+								 Text="{Binding ExplorerVm.ComboFolderFilterTagTwo}" />
+				<Button Grid.Row="2" Grid.Column="3" Margin="5" Width="200" HorizontalContentAlignment="Center"
 						Command="{Binding FilterFolderOnRatingAndTagCommand}"
 						Classes="menu-btn">
 					Filter On Rating And Tag

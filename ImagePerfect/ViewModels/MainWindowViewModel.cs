@@ -222,7 +222,7 @@ namespace ImagePerfect.ViewModels
                 await ExplorerVm.RefreshFolders();
             });
             FilterFolderOnRatingAndTagCommand = ReactiveCommand.Create(async () => {
-                if (!string.IsNullOrEmpty(ExplorerVm.ComboFolderFilterTag))
+                if (!string.IsNullOrEmpty(ExplorerVm.ComboFolderFilterTagOne))
                 {
                     ExplorerVm.ResetPagination();
                     ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderTagAndRatingFilter;

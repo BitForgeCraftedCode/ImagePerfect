@@ -73,7 +73,8 @@ namespace ImagePerfect.ViewModels
         public string tagForFilter = string.Empty;
         public string textForFilter = string.Empty;
         private int _comboFolderFilterRating = 10;
-        private string _comboFolderFilterTag = string.Empty;
+        private string _comboFolderFilterTagOne = string.Empty;
+        private string _comboFolderFilterTagTwo = string.Empty;
         private bool _filterInCurrentDirectory = false;
         private bool _loadFoldersAscending = true;
 
@@ -141,10 +142,15 @@ namespace ImagePerfect.ViewModels
             set => this.RaiseAndSetIfChanged(ref _comboFolderFilterRating, value);
         }
 
-        public string ComboFolderFilterTag
+        public string ComboFolderFilterTagTwo
         {
-            get => _comboFolderFilterTag;
-            set => this.RaiseAndSetIfChanged(ref _comboFolderFilterTag, value);
+            get => _comboFolderFilterTagTwo;
+            set => this.RaiseAndSetIfChanged(ref _comboFolderFilterTagTwo, value);
+        }
+        public string ComboFolderFilterTagOne
+        {
+            get => _comboFolderFilterTagOne;
+            set => this.RaiseAndSetIfChanged(ref _comboFolderFilterTagOne, value);
         }
 
 
@@ -389,7 +395,7 @@ namespace ImagePerfect.ViewModels
                     await SetDisplayFoldersForRefreshFolders(folderTagResult);
                     break;
                 case Filters.FolderTagAndRatingFilter:
-                    (List<Folder> folders, List<FolderTag> tags) folderRatingAndTagResult = await _folderMethods.GetAllFoldersWithRatingAndTag(ComboFolderFilterRating, ComboFolderFilterTag, FilterInCurrentDirectory, CurrentDirectory);
+                    (List<Folder> folders, List<FolderTag> tags) folderRatingAndTagResult = await _folderMethods.GetAllFoldersWithRatingAndTag(ComboFolderFilterRating, ComboFolderFilterTagOne, ComboFolderFilterTagTwo, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolders(folderRatingAndTagResult);
                     break;
                 case Filters.FolderDescriptionFilter:
@@ -468,7 +474,7 @@ namespace ImagePerfect.ViewModels
                     await SetDisplayFoldersForRefreshFolderProps(folderTagResult, folderVm);
                     break;
                 case Filters.FolderTagAndRatingFilter:
-                    (List<Folder> folders, List<FolderTag> tags) folderRatingAndTagResult = await _folderMethods.GetAllFoldersWithRatingAndTag(ComboFolderFilterRating, ComboFolderFilterTag, FilterInCurrentDirectory, CurrentDirectory);
+                    (List<Folder> folders, List<FolderTag> tags) folderRatingAndTagResult = await _folderMethods.GetAllFoldersWithRatingAndTag(ComboFolderFilterRating, ComboFolderFilterTagOne, ComboFolderFilterTagTwo, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolderProps(folderRatingAndTagResult, folderVm);
                     break;
                 case Filters.FolderDescriptionFilter:
