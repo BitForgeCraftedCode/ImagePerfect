@@ -590,7 +590,7 @@ namespace ImagePerfect.ViewModels
         }
 
         //loads the previous X elements in CurrentDirectory
-        public async void PreviousPage()
+        public async Task PreviousPage()
         {
             if (CurrentFolderPage > 1)
             {
@@ -605,7 +605,7 @@ namespace ImagePerfect.ViewModels
         }
 
         //loads the next X elements in CurrentDirectory
-        public async void NextPage()
+        public async Task NextPage()
         {
             if (CurrentFolderPage < TotalFolderPages)
             {

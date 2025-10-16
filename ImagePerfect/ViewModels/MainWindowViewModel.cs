@@ -126,11 +126,11 @@ namespace ImagePerfect.ViewModels
             ScanFolderImagesForMetaDataCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
                 await ScanImagesForMetaDataVm.ScanFolderImagesForMetaData(folderVm, false);
             });
-            NextPageCommand = ReactiveCommand.Create(() => {
-                ExplorerVm.NextPage();
+            NextPageCommand = ReactiveCommand.Create(async () => {
+                await ExplorerVm.NextPage();
             });
-            PreviousPageCommand = ReactiveCommand.Create(() => {
-                ExplorerVm.PreviousPage();
+            PreviousPageCommand = ReactiveCommand.Create(async () => {
+                await ExplorerVm.PreviousPage();
             });
             GoToPageCommand = ReactiveCommand.Create(async (decimal pageNumber) => {
                 await ExplorerVm.GoToPage(Decimal.ToInt32(pageNumber));
@@ -469,9 +469,9 @@ namespace ImagePerfect.ViewModels
 
         public ReactiveCommand<FolderViewModel, Task> ScanFolderImagesForMetaDataCommand { get; }
 
-        public ReactiveCommand<Unit, Unit> NextPageCommand { get; }
+        public ReactiveCommand<Unit, Task> NextPageCommand { get; }
 
-        public ReactiveCommand<Unit, Unit> PreviousPageCommand { get; }
+        public ReactiveCommand<Unit, Task> PreviousPageCommand { get; }
 
         public ReactiveCommand<decimal, Task> GoToPageCommand { get; }
 
