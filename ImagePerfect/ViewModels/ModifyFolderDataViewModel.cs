@@ -168,8 +168,8 @@ namespace ImagePerfect.ViewModels
                             new ButtonDefinition { Name = "No", },
                         },
                 ContentTitle = "Add Tag To All Folders",
-                ContentMessage = $"You’re about to add the tag “{selectedTag.TagName}” to all {folders.Count} folders in the current directory.\n\n"
-                + "Important: This action affects only the folders in the current directory — not any folders shown because of filters or searches. \n\n"
+                ContentMessage = $"You're about to add the tag {selectedTag.TagName} to all {folders.Count} folders in the current directory.\n\n"
+                + "Important: This action affects only the folders in the current directory - not any folders shown because of filters or searches. \n\n"
                 + "Make sure you have the current directory loaded before continuing.\nDo you want to proceed?",
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
