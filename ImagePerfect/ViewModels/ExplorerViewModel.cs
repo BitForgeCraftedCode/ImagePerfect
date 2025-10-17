@@ -42,7 +42,7 @@ namespace ImagePerfect.ViewModels
         //max value between CurrentFolderPage or CurrentImagePage
         private int _maxCurrentPage = 1;
 
-        //Filters
+        //Filters -- if you add new filter variables be sure to update SavedDirectoryVM
         public enum Filters
         {
             None,

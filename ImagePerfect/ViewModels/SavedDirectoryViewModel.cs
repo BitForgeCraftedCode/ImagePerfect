@@ -28,6 +28,23 @@ namespace ImagePerfect.ViewModels
         private bool _isSavedDirectoryLoaded = false;
         private bool _loadSavedDirectoryFromCache = true;
 
+        //saved filter variables
+        public ExplorerViewModel.Filters savedCurrentFilter = ExplorerViewModel.Filters.None;
+        public string savedSelectedLetterForFilter = "A";
+        public int savedSelectedRatingForFilter = 0;
+        public int savedSelectedYearForFilter = 0;
+        public int savedSelectedMonthForFilter = 0;
+        public DateTimeOffset savedStartDateForFilter;
+        public DateTimeOffset savedEndDateForFilter;
+        public string savedTagForFilter = string.Empty;
+        public string savedTextForFilter = string.Empty;
+        public int savedComboFolderFilterRating = 10;
+        public string savedComboFolderFilterTagOne = string.Empty;
+        public string savedComboFolderFilterTagTwo = string.Empty;
+        public bool savedFilterInCurrentDirectory = false;
+        public bool savedLoadFoldersAscending = true;
+
+
         public SavedDirectoryViewModel(IUnitOfWork unitOfWork, MainWindowViewModel mainWindowViewModel)
         {
             _unitOfWork = unitOfWork;
@@ -91,6 +108,24 @@ namespace ImagePerfect.ViewModels
             double XVector = scrollViewer.Offset.X;
             double YVector = scrollViewer.Offset.Y;
             SavedOffsetVector = new Vector(XVector, YVector);
+
+            //update filter variables -- filter vars are NOT presisted to db
+            savedCurrentFilter = _mainWindowViewModel.ExplorerVm.currentFilter;
+            savedSelectedLetterForFilter = _mainWindowViewModel.ExplorerVm.selectedLetterForFilter;
+            savedSelectedRatingForFilter = _mainWindowViewModel.ExplorerVm.selectedRatingForFilter;
+            savedSelectedYearForFilter = _mainWindowViewModel.ExplorerVm.selectedYearForFilter;
+            savedSelectedMonthForFilter = _mainWindowViewModel.ExplorerVm.selectedMonthForFilter;
+            savedStartDateForFilter = _mainWindowViewModel.ExplorerVm.startDateForFilter;
+            savedEndDateForFilter = _mainWindowViewModel.ExplorerVm.endDateForFilter;
+            savedTagForFilter = _mainWindowViewModel.ExplorerVm.tagForFilter;
+            savedTextForFilter = _mainWindowViewModel.ExplorerVm.textForFilter;
+            savedComboFolderFilterRating = _mainWindowViewModel.ExplorerVm.ComboFolderFilterRating;
+            savedComboFolderFilterTagOne = _mainWindowViewModel.ExplorerVm.ComboFolderFilterTagOne;
+            savedComboFolderFilterTagTwo = _mainWindowViewModel.ExplorerVm.ComboFolderFilterTagTwo;
+            savedFilterInCurrentDirectory = _mainWindowViewModel.ExplorerVm.FilterInCurrentDirectory;
+            savedLoadFoldersAscending = _mainWindowViewModel.ExplorerVm.LoadFoldersAscending;
+
+
             //persist to database
             SaveDirectory saveDirectory = new()
             {
@@ -134,6 +169,23 @@ namespace ImagePerfect.ViewModels
             _mainWindowViewModel.ExplorerVm.TotalImagePages = SavedTotalImagePages;
             _mainWindowViewModel.ExplorerVm.MaxPage = Math.Max(_mainWindowViewModel.ExplorerVm.TotalImagePages, _mainWindowViewModel.ExplorerVm.TotalFolderPages);
             _mainWindowViewModel.ExplorerVm.MaxCurrentPage = Math.Max(_mainWindowViewModel.ExplorerVm.CurrentImagePage, _mainWindowViewModel.ExplorerVm.CurrentFolderPage);
+
+            //filter variables
+            _mainWindowViewModel.ExplorerVm.currentFilter = savedCurrentFilter;
+            _mainWindowViewModel.ExplorerVm.selectedLetterForFilter = savedSelectedLetterForFilter;
+            _mainWindowViewModel.ExplorerVm.selectedRatingForFilter = savedSelectedRatingForFilter;
+            _mainWindowViewModel.ExplorerVm.selectedYearForFilter = savedSelectedYearForFilter;
+            _mainWindowViewModel.ExplorerVm.selectedMonthForFilter = savedSelectedMonthForFilter;
+            _mainWindowViewModel.ExplorerVm.startDateForFilter = savedStartDateForFilter;
+            _mainWindowViewModel.ExplorerVm.endDateForFilter = savedEndDateForFilter;
+            _mainWindowViewModel.ExplorerVm.tagForFilter = savedTagForFilter;
+            _mainWindowViewModel.ExplorerVm.textForFilter = savedTextForFilter;
+            _mainWindowViewModel.ExplorerVm.ComboFolderFilterRating = savedComboFolderFilterRating;
+            _mainWindowViewModel.ExplorerVm.ComboFolderFilterTagOne = savedComboFolderFilterTagOne;
+            _mainWindowViewModel.ExplorerVm.ComboFolderFilterTagTwo = savedComboFolderFilterTagTwo;
+            _mainWindowViewModel.ExplorerVm.FilterInCurrentDirectory = savedFilterInCurrentDirectory;
+            _mainWindowViewModel.ExplorerVm.LoadFoldersAscending = savedLoadFoldersAscending;
+
             if ((SavedDirectoryFolders.Count > 0 || SavedDirectoryImages.Count > 0) && LoadSavedDirectoryFromCache == true)
             {
                 //fast path: restore from cache
@@ -157,7 +209,7 @@ namespace ImagePerfect.ViewModels
             else
             {
                 // slow path: full rebuild
-                await _mainWindowViewModel.DirectoryNavigationVm.LoadCurrentDirectory();
+                await _mainWindowViewModel.DirectoryNavigationVm.ReLoadSavedDirectory(SavedDirectory);
                 // populate the runtime cache now that the UI is showing the saved directory
                 SetSavedDirectoryCache();
                 // now mark saved-dir as loaded so refreshes can update cache later

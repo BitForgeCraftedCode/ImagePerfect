@@ -19,6 +19,11 @@ namespace ImagePerfect.ViewModels
             _mainWindowViewModel = mainWindowViewModel;
         }
 
+        public async Task ReLoadSavedDirectory(string savedDirectory)
+        {
+            await _mainWindowViewModel.ExplorerVm.RefreshFolders(savedDirectory);
+            await _mainWindowViewModel.ExplorerVm.RefreshImages(savedDirectory);
+        }
         public async Task LoadCurrentDirectory()
         {
             _mainWindowViewModel.ExplorerVm.currentFilter = ExplorerViewModel.Filters.None;
