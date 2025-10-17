@@ -35,6 +35,9 @@ namespace ImagePerfect.ViewModels
             _saveDirectoryMethods = new SaveDirectoryMethods(_unitOfWork);
         }
 
+        public List<FolderViewModel> SavedDirectoryFolders { get; } = new(); //runtime-only cache
+        public List<ImageViewModel> SavedDirectoryImages { get; } = new(); //runtime-only cache
+
         public bool LoadSavedDirectoryFromCache
         {
             get => _loadSavedDirectoryFromCache;
@@ -108,11 +111,11 @@ namespace ImagePerfect.ViewModels
         private void SetSavedDirectoryCache()
         {
             // update runtime cache
-            _mainWindowViewModel.SavedDirectoryFolders.Clear();
-            _mainWindowViewModel.SavedDirectoryImages.Clear();
+            SavedDirectoryFolders.Clear();
+            SavedDirectoryImages.Clear();
 
-            _mainWindowViewModel.SavedDirectoryFolders.AddRange(_mainWindowViewModel.LibraryFolders);
-            _mainWindowViewModel.SavedDirectoryImages.AddRange(_mainWindowViewModel.Images);
+            SavedDirectoryFolders.AddRange(_mainWindowViewModel.LibraryFolders);
+            SavedDirectoryImages.AddRange(_mainWindowViewModel.Images);
         }
         public void UpdateSavedDirectoryCache()
         {
@@ -131,15 +134,15 @@ namespace ImagePerfect.ViewModels
             _mainWindowViewModel.ExplorerVm.TotalImagePages = SavedTotalImagePages;
             _mainWindowViewModel.ExplorerVm.MaxPage = Math.Max(_mainWindowViewModel.ExplorerVm.TotalImagePages, _mainWindowViewModel.ExplorerVm.TotalFolderPages);
             _mainWindowViewModel.ExplorerVm.MaxCurrentPage = Math.Max(_mainWindowViewModel.ExplorerVm.CurrentImagePage, _mainWindowViewModel.ExplorerVm.CurrentFolderPage);
-            if ((_mainWindowViewModel.SavedDirectoryFolders.Count > 0 || _mainWindowViewModel.SavedDirectoryImages.Count > 0) && LoadSavedDirectoryFromCache == true)
+            if ((SavedDirectoryFolders.Count > 0 || SavedDirectoryImages.Count > 0) && LoadSavedDirectoryFromCache == true)
             {
                 //fast path: restore from cache
                 _mainWindowViewModel.LibraryFolders.Clear();
-                foreach(FolderViewModel folder in _mainWindowViewModel.SavedDirectoryFolders)
+                foreach(FolderViewModel folder in SavedDirectoryFolders)
                     _mainWindowViewModel.LibraryFolders.Add(folder);
 
                 _mainWindowViewModel.Images.Clear();
-                foreach(ImageViewModel image in _mainWindowViewModel.SavedDirectoryImages)
+                foreach(ImageViewModel image in SavedDirectoryImages)
                     _mainWindowViewModel.Images.Add(image);
 
                 // now that we've restored from cache, mark saved-dir as loaded
