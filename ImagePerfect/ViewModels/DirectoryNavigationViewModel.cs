@@ -26,6 +26,7 @@ namespace ImagePerfect.ViewModels
         }
         public async Task LoadCurrentDirectory()
         {
+            _mainWindowViewModel.ExplorerVm.ResetPagination();
             _mainWindowViewModel.ExplorerVm.currentFilter = ExplorerViewModel.Filters.None;
             await _mainWindowViewModel.ExplorerVm.RefreshFolders(_mainWindowViewModel.ExplorerVm.CurrentDirectory);
             await _mainWindowViewModel.ExplorerVm.RefreshImages(_mainWindowViewModel.ExplorerVm.CurrentDirectory);
