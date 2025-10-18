@@ -432,23 +432,23 @@
 					<TextBlock Margin="5" Text="{Binding CurrentDirectory}"/>
 					-->
 					<CheckBox ToolTip.Tip="Load Saved Directory From Cache" IsChecked="{Binding SavedDirectoryVm.LoadSavedDirectoryFromCache}"></CheckBox>
-					<Button Margin="5" Command="{Binding LoadSavedDirectoryCommand}" CommandParameter="{Binding #FoldersAndImagesScrollViewer}" Classes="menu-btn">
+					<Button Margin="5" Command="{Binding LoadSavedDirectoryCommand}" CommandParameter="{Binding #FoldersAndImagesScrollViewer}" HotKey="Ctrl+L" Classes="menu-btn">
 						<StackPanel Orientation="Horizontal" Spacing="5">
 							<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/reload-button-green-icon.png"></Image>
 							<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/pink-heart-icon.png"></Image>
 							<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/computer-folder-dual-tone-icon.png"></Image>
 						</StackPanel>
 					</Button>
-					<Button Margin="5" Command="{Binding BackFolderFromDirectoryOptionsPanelCommand}" Classes="menu-btn">
+					<Button Margin="5" Command="{Binding BackFolderFromDirectoryOptionsPanelCommand}" HotKey="Ctrl+B" Classes="menu-btn">
 						<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/arrow-left-direction-green-icon.png"></Image>
 					</Button>
-					<Button Margin="5" Command="{Binding LoadCurrentDirectoryCommand}" Classes="menu-btn">
+					<Button Margin="5" Command="{Binding LoadCurrentDirectoryCommand}" HotKey="Ctrl+R" Classes="menu-btn">
 						<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/reload-button-green-icon.png"></Image>
 					</Button>
-					<Button Margin="5" Command="{Binding OpenCurrentDirectoryWithExplorerCommand}" Classes="menu-btn">
+					<Button Margin="5" Command="{Binding OpenCurrentDirectoryWithExplorerCommand}" HotKey="Ctrl+O" Classes="menu-btn">
 						<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/music-open-eject-button-green-icon.png"></Image>
 					</Button>
-					<Button Margin="5" Command="{Binding SaveDirectoryCommand}" CommandParameter="{Binding #FoldersAndImagesScrollViewer}" Classes="btn-danger">
+					<Button Margin="5" Command="{Binding SaveDirectoryCommand}" CommandParameter="{Binding #FoldersAndImagesScrollViewer}" HotKey="Ctrl+S" Classes="btn-danger">
 						<StackPanel Orientation="Horizontal" Spacing="5">
 							<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/pink-heart-icon.png"></Image>
 							<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/computer-folder-dual-tone-icon.png"></Image>
@@ -606,7 +606,8 @@
 					</ItemsControl.ItemsPanel>
 					<ItemsControl.ItemTemplate>
 						<DataTemplate DataType="vm:FolderViewModel">
-							<StackPanel Margin="1" x:Name="FoldersStackPanel">
+							<!--see code behind for custom tab index-->
+							<StackPanel Margin="1" x:Name="FoldersStackPanel" Loaded="FolderCard_Loaded" Unloaded="FolderCard_Unloaded">
 								<StackPanel.ContextMenu>
 									<ContextMenu IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
 										<MenuItem>
@@ -745,12 +746,12 @@
 								<Grid RowDefinitions="Auto" ColumnDefinitions="*,*,*" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
 									<Button Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2" IsEnabled="{Binding !IsRoot}"
 											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).BackFolderCommand}"
-											CommandParameter="{Binding}" Classes="main-btn">
+											CommandParameter="{Binding}" Classes="main-btn tab-btn">
 										Back
 									</Button>
 									<Button Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2" IsEnabled="{Binding !ShowImportImagesButton}"
 											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).NextFolderCommand}"
-											CommandParameter="{Binding}" Classes="main-btn">
+											CommandParameter="{Binding}" Classes="main-btn tab-btn">
 										Open
 									</Button>
 									<Button Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2" IsEnabled="{Binding ShowImportImagesButton}"
@@ -835,7 +836,7 @@
 				</ItemsControl>
 				
 				<!--See code behind for SelectionChanged used to toggle VM IsSelected with ListBox Selection-->
-				<ListBox ItemsSource="{Binding Images}" x:Name="ImagesListBox" 
+				<ListBox ItemsSource="{Binding Images}" x:Name="ImagesListBox"
 						 SelectionMode="Multiple" 
 						 KeyboardNavigation.TabNavigation="Continue"
 						 SelectionChanged="ListBox_SelectionChanged">

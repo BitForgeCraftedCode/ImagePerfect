@@ -613,6 +613,20 @@ Optionally check **"Filter in Current Directory"**, then run the corresponding i
 
 Image Perfect was designed to mirror the file system so navigation will mostly be intuitive. However, there are a lot of buttons within the app and the pagination feature adds some complexity so getting used to navigating may take a bit. Navigation is done with a combination of on folder and on image buttons as well as two, always visible, toolbars.
 
+#### Hot Keys
+
+- Ctrl + L (Loads the saved directory)
+- Ctrl + B (Goes back one directory)
+- Ctrl + R (Reloads the current directory)
+- Ctrl + O (Open the directory in OS file explorer)
+- Ctrl + S (Saves the current directory)
+- Tab and Shift + Tab will tab through folder Back and Open buttons 
+	+ Enter will Open or go Back on a folder
+- Up Arrow will scroll up
+- Down Arrow Will scroll down
+- Right Arrow will go to Next Page 
+- Left Arrow will go the Previous Page
+	
 #### Top Directory Navigation Toolbar
 
 > 📌 **Note**: This is the directory navigation toolbar. It aids in directory navigation.

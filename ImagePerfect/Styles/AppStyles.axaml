@@ -15,6 +15,9 @@
 		Dark Red #3D0000
 		Ligher Dark Red #950101
 	-->
+	<Style Selector="Button.tab-btn:focus /template/ ContentPresenter#PART_ContentPresenter">
+		<Setter Property="Background" Value="#03346E" />
+	</Style>
 	
 	<Style Selector="StackPanel.menu-bg-color">
 		<Setter Property="Background" Value="#021526" />
