@@ -116,6 +116,12 @@ namespace ImagePerfect.ViewModels
                 case "200":
                     ImagePageSize = 200;
                     break;
+                case "300":
+                    ImagePageSize = 300;
+                    break;
+                case "400":
+                    ImagePageSize = 400;
+                    break;
             }
             await UpdateSettings();
             _mainWindowViewModel.ExplorerVm.ResetPagination();
@@ -152,6 +158,12 @@ namespace ImagePerfect.ViewModels
                     break;
                 case "200":
                     FolderPageSize = 200;
+                    break;
+                case "300":
+                    FolderPageSize = 300;
+                    break;
+                case "400":
+                    FolderPageSize = 400;
                     break;
             }
             await UpdateSettings();
