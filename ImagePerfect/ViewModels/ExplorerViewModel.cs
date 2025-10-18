@@ -75,7 +75,7 @@ namespace ImagePerfect.ViewModels
         private int _comboFolderFilterRating = 10;
         private string _comboFolderFilterTagOne = string.Empty;
         private string _comboFolderFilterTagTwo = string.Empty;
-        private bool _filterInCurrentDirectory = false;
+        private bool _filterInCurrentDirectory = true;
         private bool _loadFoldersAscending = true;
 
         public ExplorerViewModel(IUnitOfWork unitOfWork, MainWindowViewModel mainWindowViewModel)
