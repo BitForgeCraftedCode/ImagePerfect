@@ -83,14 +83,14 @@ namespace ImagePerfect.Views
                     vm.PreviousPageCommand.Execute().Subscribe();
                     e.Handled = true;
                     break;
-                case Key.Tab:
-                    MoveSelection(e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? -1 : 1);
-                    e.Handled = true;
-                    break;
-                case Key.Enter:
-                    ActivateSelectedButton();
-                    e.Handled = true;
-                    break;
+                //case Key.Tab:
+                //    MoveSelection(e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? -1 : 1);
+                //    e.Handled = true;
+                //    break;
+                //case Key.Enter:
+                //    ActivateSelectedButton();
+                //    e.Handled = true;
+                //    break;
             }
         }
         //direction is 1 for Tab, -1 for Shift+Tab

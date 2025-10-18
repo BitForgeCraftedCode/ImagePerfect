@@ -620,8 +620,6 @@ Image Perfect was designed to mirror the file system so navigation will mostly b
 - Ctrl + R (Reloads the current directory)
 - Ctrl + O (Open the directory in OS file explorer)
 - Ctrl + S (Saves the current directory)
-- Tab and Shift + Tab will tab through folder Back and Open buttons 
-	+ Enter will Open or go Back on a folder
 - Up Arrow will scroll up
 - Down Arrow Will scroll down
 - Right Arrow will go to Next Page 
