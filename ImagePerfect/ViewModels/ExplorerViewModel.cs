@@ -6,6 +6,8 @@ using ImagePerfect.Repository.IRepository;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using static Dapper.SqlMapper;
@@ -55,6 +57,7 @@ namespace ImagePerfect.ViewModels
             FolderTagAndRatingFilter,
             FolderDescriptionFilter,
             FolderAlphabeticalFilter,
+            FolderDateModifiedFilter,
             ImageYearFilter,
             ImageYearMonthFilter,
             ImageDateRangeFilter,
@@ -382,6 +385,12 @@ namespace ImagePerfect.ViewModels
                     }
                     await SetDisplayFoldersForRefreshFolders(folderResult);
                     break;
+                case Filters.FolderDateModifiedFilter:
+                    (List<Folder> folders, List<FolderTag> tags) foldersInCurrentDirectoryResult = await _folderMethods.GetFoldersInDirectory(CurrentDirectory, LoadFoldersAscending);
+                    //sort in C# on Date Modified
+                    foldersInCurrentDirectoryResult.folders = SortFoldersByDateModified(foldersInCurrentDirectoryResult.folders);
+                    await SetDisplayFoldersForRefreshFolders(foldersInCurrentDirectoryResult);
+                    break;
                 case Filters.FolderAlphabeticalFilter:
                     (List<Folder> folders, List<FolderTag> tags) folderAlphabeticalResult = await _folderMethods.GetFoldersInDirectoryByStartingLetter(CurrentDirectory, LoadFoldersAscending, selectedLetterForFilter);
                     await SetDisplayFoldersForRefreshFolders(folderAlphabeticalResult);
@@ -461,6 +470,12 @@ namespace ImagePerfect.ViewModels
                     (List<Folder> folders, List<FolderTag> tags) folderResult = await _folderMethods.GetFoldersInDirectory(path, LoadFoldersAscending);
                     await SetDisplayFoldersForRefreshFolderProps(folderResult, folderVm);
                     break;
+                case Filters.FolderDateModifiedFilter:
+                    (List<Folder> folders, List<FolderTag> tags) foldersInCurrentDirectoryResult = await _folderMethods.GetFoldersInDirectory(CurrentDirectory, LoadFoldersAscending);
+                    //sort in C# on Date Modified
+                    foldersInCurrentDirectoryResult.folders = SortFoldersByDateModified(foldersInCurrentDirectoryResult.folders);
+                    await SetDisplayFoldersForRefreshFolderProps(foldersInCurrentDirectoryResult, folderVm);
+                    break;
                 case Filters.FolderAlphabeticalFilter:
                     (List<Folder> folders, List<FolderTag> tags) folderAlphabeticalResult = await _folderMethods.GetFoldersInDirectoryByStartingLetter(CurrentDirectory, LoadFoldersAscending, selectedLetterForFilter);
                     await SetDisplayFoldersForRefreshFolderProps(folderAlphabeticalResult, folderVm);
@@ -501,6 +516,20 @@ namespace ImagePerfect.ViewModels
             _mainWindowViewModel.ShowLoading = false;
         }
 
+        private List<Folder> SortFoldersByDateModified(List<Folder> folders)
+        {
+            Parallel.ForEach(folders, new ParallelOptions { MaxDegreeOfParallelism = 4 }, folder => {
+                try
+                {
+                    folder.DateModified = Directory.GetLastWriteTime(folder.FolderPath);
+                }
+                catch
+                {
+                    folder.DateModified = DateTime.MinValue; // fallback for missing/deleted folders
+                }
+            });
+            return folders.OrderByDescending(f => f.DateModified).ToList();
+        }
         //loads the previous X elements in CurrentDirectory
         public async Task PreviousPage()
         {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -44,5 +45,8 @@ namespace ImagePerfect.Models
         //for many to many relationship folder_tags_join
         [NotMapped]
         public List<FolderTag> Tags { get; set; } = new List<FolderTag>();
+
+        [NotMapped]
+        public DateTime DateModified { get; set; }
     }
 }

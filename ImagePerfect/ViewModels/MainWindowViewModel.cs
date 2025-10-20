@@ -215,6 +215,11 @@ namespace ImagePerfect.ViewModels
                     await ExplorerVm.RefreshImages();
                 }
             });
+            FilterFoldersDateModifiedInCurrentDirectoryCommand = ReactiveCommand.Create(async () => {
+                ExplorerVm.ResetPagination();
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderDateModifiedFilter;
+                await ExplorerVm.RefreshFolders();
+            });
             FilterFoldersInCurrentDirectoryByStartingLetterCommand = ReactiveCommand.Create(async (string letter) => {
                 ExplorerVm.ResetPagination();
                 ExplorerVm.selectedLetterForFilter = letter;
@@ -500,6 +505,8 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<string, Task> FilterImagesOnYearMonthCommand {  get; }
 
         public ReactiveCommand<ImageDatesViewModel, Task> FilterImagesOnDateRangeCommand { get; }
+
+        public ReactiveCommand<Unit, Task> FilterFoldersDateModifiedInCurrentDirectoryCommand { get; }
 
         public ReactiveCommand<string, Task> FilterFoldersInCurrentDirectoryByStartingLetterCommand { get; }
 
