@@ -41,7 +41,7 @@ namespace ImagePerfect.ViewModels
         public int savedComboFolderFilterRating = 10;
         public string savedComboFolderFilterTagOne = string.Empty;
         public string savedComboFolderFilterTagTwo = string.Empty;
-        public bool savedFilterInCurrentDirectory = false;
+        public bool savedFilterInCurrentDirectory = true;
         public bool savedLoadFoldersAscending = true;
 
 
