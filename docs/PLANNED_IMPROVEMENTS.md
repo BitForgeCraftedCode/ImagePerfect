@@ -3,6 +3,7 @@
 <a id="planned-improvements"></a>
 ## 🧰 Planned Improvements
 
+- Rename Folders
 - Find duplicate images (Possible Pro Feature)
 - Facial recognition (Possible Pro Feature)
 - Image enhancement tools (Possible Pro Feature)

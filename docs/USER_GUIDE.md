@@ -9,17 +9,18 @@ The best way to get started is to run the app and explore. But here’s a guided
 
 **To start building your library:**
 
-- **File ➡️ Pick Library Folder** 
+- **Library Management ➡️ Pick Library Folder** 
 - Select the root folder that contains all your image folders
 - Image Perfect will scan the folder structure (but not import images yet)
 	+ If you have a large library this will take some time to import your folder structure
 	
-> 💡 **Tip**: Image Perfect works best when your photo collection is already organized into meaningful folders. Avoid dumping thousands of images into a single folder.
+> 💡 **Tip**: Image Perfect works best when your photo collection is already organized into meaningful folders. 
+Avoid dumping thousands of images into a single folder.
 	
 
 ### 🗑️ Deleting the Library
 
-- **File ➡️ Delete Library**
+- **Library Management ➡️ Delete Library**
 
 This removes the MySQL database but **does not delete your image files** from the file system.
 	
@@ -27,11 +28,18 @@ This removes the MySQL database but **does not delete your image files** from th
 
 You can add additional folders to your library after initial import.
 
-- **File ➡️ Add New Folders**
+- **File Management ➡️ Add New Folders**
 - Select one or more new folders from the file system 
 - The app will skip any folder that has already been imported
 
-> 📌 **Note Known issue**: folders imported containing only ZIP files cannot be opened. So ensure your new folders contain only images jpg, png, gif etc.
+> 📌 **Note Known issue**: folders imported containing only ZIP files cannot be opened. 
+So ensure your new folders contain only images jpg, png, gif etc.
+
+### Unzipping files
+- **File Management  ➡️ Pick Folders With Zips To Extract**
+- Select one or more folders containing zip files from the file system
+- The app will extract all images from the zip files and put them in a folder with the same name as the zip file name.
+- You can then add the new folders to your database
 	
 ### 🖼️ Importing Images & Scanning Metadata
 
@@ -57,17 +65,21 @@ You can add additional folders to your library after initial import.
 | **Import All Folders On Current Page** | Quickly imports all images for folders on the page |
 | **Scan All Folders On Current Page**   | Scans all images for metadata (Takes longer) |
 | **Add Cover Image On Current Page**    | Picks a random image as a folder cover (must import images first) |
+| **Get Folder Text**                    | Populates folder description with the contents of a text file in the folders. Intended to be used with "Back Up Folder Text" |
+| **Back Up Folder Text**                | Backs up the folder description to a text file in the folders. Intended as a good secondary back up of the folder description. |
 
 > ⏱️ **Performance Tip**:  
 > Scanning metadata can be time-consuming on large pages. Use a folder pagination size of 40–60 for best balance.  
-> A page size of 100 folders may take 10–30 minutes depending on number of images, image resolution, and computer specs.
+> A page size of 100 folders may take several minutes depending on number of images, image resolution, and computer specs.
 
 #### 🔍 Filter-Based Bulk Actions
 
-- **File ➡️ Filters ➡️ Get Folders With Images Not Imported**
-- **File ➡️ Filters ➡️ Get Folders With Metadata Not Scanned**
+- **Filters ➡️ Folder Filters ➡️ Get Folders With Images Not Imported**
+- **Filters ➡️ Folder Filters ➡️ Get Folders With Metadata Not Scanned**
+- **Filters ➡️ Folder Filters ➡️ Get Folders Without Covers**
 
-Optionally check **"Filter in Current Directory"**, then run the corresponding import/scan button from the **Import and Scan** toolbar.
+Optionally check **"Filter in Current Directory"**, then run the corresponding import/scan or add cover image button 
+from the **Import and Scan** toolbar.
 
 ### 🧭 Navigation 
 
@@ -87,16 +99,25 @@ Image Perfect was designed to mirror the file system so navigation will mostly b
 	
 #### Top Directory Navigation Toolbar
 
+![Image](../Screenshots/TopDirectoryNavToolBar2025-10-03.png)
+
 > 📌 **Note**: This is the directory navigation toolbar. It aids in directory navigation.
 
 > 📌 **Note**: To open a directory in app you have to click the **Open** button located on each folder.
 
-| Button                     | Description                                    |
-|----------------------------|------------------------------------------------|
-| **Open Current Directory** | Opens the current directory in your file system |
-| **Save Directory**         | Saves the current directory and page number for quick navigation back to this location |
-| **Load Saved Directory**   | Opens the user selected saved directory |
-| **Back Directory**         | Goes back one directory |
+> 📌 **Note**: From left to right follow the table below for the button actions.
+
+| Button                                | Description                                    |
+|---------------------------------------|------------------------------------------------|
+| **First Check Box**                   | Toggles load saved directory from cache or hard reload (checked loads from cache) |
+| **Reload Saved(Heart) Directory**     | Reloads the saved directory |
+| **Back Arrow**                        | Goes back one directory |
+| **Reload Button**                     | Reloads the current directory |
+| **Open Button**                       | Opens the current directory in operating system file explorer |
+| **Save Directory (Red Heart Folder)** | Saves the current directory and page number for quick navigation back to this location |
+| **5 Star Images**                     | Gets all 5 star images in the current directory |
+| **All Images In Sub Folders**         | Gets all the images in the current directory |
+| **Last Check Box**                    | Toggles show folders in Ascending or Descending order (checked is Ascending) |
 
 #### Bottom Pagination Navigation Toolbar
 
@@ -123,14 +144,17 @@ On each image there is a **Back** button. **Back** goes back one folder/director
 
 ### 📂 Create a New Folder
 
-- **File ➡️ Create New Folder** to open the new folder toolbar
+- **File Management ➡️ Create New Folder** to open the new folder toolbar
 - Type the name of the desired new folder and click **Create Folder** button
 
 > 📌 **Note**: You can only create new folders once you navigate into your library. You cannot create a new folder at the root location. This feature is useful if you want to move some images from one folder to a new one within the app.
 
 ### 🔍 Filters
 
-- **File ➡️ Filters** to open the filters toolbar
+- **Filters ➡️ Image Filters** to open the image filters toolbar
+- **Filters ➡️ Image Date Filters** to open the image date filters toolbar
+- **Filters ➡️ Folder Filters** to open the folder filters toolbar
+- **Filters ➡️ Folder Alphabetical Filters** to open the folder Alphabetical filters toolbar
 
 | Button | Description |
 |--------|-------------|
@@ -151,26 +175,26 @@ On each image there is a **Back** button. **Back** goes back one folder/director
 
 On each folder there is a **Favorite** button. Clicking that will add that folder to a favorite list in the database. There is also a button on the bottom toolbar called **Load Favorite Folders** that button will load all your favorite folders on the screen. To clear your favorites list:
 
-- **File ➡️ Clear Favorite Folders**
+- **File Management ➡️ Clear Favorite Folders**
 
 > 📌 **Note**: This will just remove that list from the database but the folders will remain in the file system. Also there is no pop up confirm when you click **Clear Favorite Folders** so clicking accidentally will clear them. 
 
 ### 🚚 Moving and 🗑️ Deleting Images
 
-- **File ➡️ Manage Images** to open the manage images toolbar
+- **File Management ➡️ Manage Images** to open the manage images toolbar
 - Open a folder containing images
 
 #### 🚚 Moving Images
 
-- Click **Select Move To Folder** button and choose the folder you want to move images to. 
-- Select/Check the images you want moved. (each image has a checkbox)	
-- Click **Move Selected** to move the selected images to the desired folder.
+- Select the images you want moved.	
+- Click **Move Selected** button and choose the folder you want the images moved to. 
+- After selecting the desired folder the selected images will move automatically.
 
 #### 🗑️ Deleting Images
 
 There is a **Trash** button on each image. Click that to delete a single image.
 
-- Select/Check the images you want trashed. (each image has a checkbox)
+- Select the images you want trashed.
 - Click **Trash Selected** to trash the selected images.
 
 > 📌 **Note**: Trashing images and folders just moves them to a folder called "ImagePerfectTRASH". This folder will be created by the app and placed inside your root library folder. 
@@ -181,20 +205,24 @@ There is a **Trash** button on each image. Click that to delete a single image.
 
 To get the total number of images currently imported in your library.
 
-- **File ➡️ Total Images**
+- **Settings ➡️ Total Images**
 
-### Show All Tags 🏷️
+### Modify And View All Tags 🏷️
 
-To view a list of all the tags currently in use; either on images or folders.
+- **Settings ➡️ Modify Tags**
 
-- **File ➡️ Show All Tags**
+Within this toolbar you can.
+
+- View a list of all the tags currently in use; either on images or folders
+- Select a tag and remove it from all images or all folders (remove will be done across the entire database)
+- Select a tag and add it to all folders in the current directory
 
 ### ⚙️ Settings
 
-- **File ➡️ Settings** to open the settings toolbar
+- **Settings ➡️ Settings** to open the settings toolbar
 
 | Radio Button | Description |
 |--------|-------------|
-| **Pick Image Width**| Select the radio buttons to adjust the desired image and folder width. From 300px to 600px |
-| **Pick Folder Pagination Size** | Select the radio buttons to adjust the number of folders that appear on each page. From 20 - 100 folders |
-| **Pick Image Pagination Size** | Select the radio buttons the adjust the number of images that appear on each page. From 20 - 200 images 
+| **Pick Image Width**| Select the radio buttons to adjust the desired image and folder width. From 400px to 600px |
+| **Pick Folder Pagination Size** | Select the radio buttons to adjust the number of folders that appear on each page. From 20 - 400 folders |
+| **Pick Image Pagination Size** | Select the radio buttons the adjust the number of images that appear on each page. From 20 - 400 images 

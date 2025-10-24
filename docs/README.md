@@ -14,6 +14,7 @@ You can always return to the [main README](../README.md).
 - [MySQL Server Setup Windows](MYSQL_SERVER_SETUP_WINDOWS.md)
 - [MySQL Server Setup Ubuntu](MYSQL_SERVER_SETUP_LINUX.md)
 - [Build & Install Guide](BUILD_INSTALL_DIRECTIONS.md)
+- [Create Database Commands](CREATE_DATABASE_COMMANDS.md)
 
 ---
 

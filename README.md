@@ -57,6 +57,8 @@ Your feedback now helps shape what both the free and Pro versions might look lik
 - Select **cover images** for folders
 - Add image tags individually or in bulk (folder bulk tagging planned)
 - Folder and image Tags can be removed one at a time or in bulk.
+	+ Bulk operation removes tag across the entire database.
+	+ Removing tags from individual images and folders is done one at a time.
 
 ### 🗲 Speed with Large Libraries
 - **No long import times** thanks to MySqlBulkLoader (insert data from a csv file)
@@ -73,8 +75,7 @@ Your feedback now helps shape what both the free and Pro versions might look lik
 		- Delete individual or multiple images
 		- Move individual or multiple images
 	+ #### File System Capabilities To Add
-		- Rename folders and images
-		- Re-import images in a folder (so you can add images to a folder from the file system then re-scan)
+		- Rename folders
 		
 	+ #### File System Issue/Bug/Limitations (Limitations have no plan to be "Fixed". Workarounds will be provided)
 		- Known limitation: Folders imported containing only ZIP files cannot be opened.
