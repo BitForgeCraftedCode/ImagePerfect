@@ -5,10 +5,10 @@
 ![.NET](https://img.shields.io/badge/.NET-8.0-blueviolet)
 
 ## 📚 Table Of Contents
+- ❓ [Why I Built Image Perfect](#why-i-built-image-perfect)
 - ℹ️ [About](#about)
 - 👀 [Core Features](#core-features)
 - 📷 [Screen Shots](docs/SCREEN_SHOTS.md)
-- ❓ [Why I Built Image Perfect](#why-i-built-image-perfect)
 - ⚠️ [Important Metadata Note](docs/IMPORTANT_METADATA_NOTICE.md)
 - 🖥️ [System Requirements](docs/SYSTEM_REQUIREMENTS.md)
 - 🚀 [Quick Start Windows](docs/QUICK_START_WINDOWS.md)
@@ -24,18 +24,36 @@
 - 🪪 [License](#license)
 - 📢 [Feedback And Contributions](docs/FEEDBACK_CONTRIBUTIONS.md)
 
+<a id="why-i-built-image-perfect"></a>
+## ❓Why I Built Image Perfect
+
+I built **Image Perfect** as a modern, high-performance alternative to **Shotwell** on Linux.
+While **Shotwell** remains a solid photo manager for smaller collections, it struggles to scale efficiently with very large libraries. **Image Perfect** was designed to overcome that limitation and focus on performance and usability.
+
+**Image Perfect’s goals are**:
+
+1. **Handle large libraries efficiently** — no long import times or excessive memory usage.
+
+2. **Provide excellent folder organization** — intuitive, fast, and file-system aware.
+
+3. **Deliver a great viewing experience** — large in-app previews (up to 600 px), not tiny thumbnails.
+
+4. **Enable easy migration from Shotwell** — Image Perfect reads image metadata to recover tags and ratings.
+
+> 📌 **Note**: To import your Shotwell tags and ratings, ensure that Shotwell is configured to write this information to image files.
+
 <a id="about"></a>
 ## ℹ️ About
 
-**Image Perfect** is a high-performance, cross-platform (Windows + Ubuntu) image viewer and photo management tool designed for **massive image libraries**. Whether you're organizing thousands or millions of photos, **Image Perfect** stays responsive and efficient.
+**Image Perfect** is a high-performance, cross-platform (Windows + Ubuntu) image viewer and photo management tool designed for **massive image libraries**. Whether you're organizing thousands or millions of photos, **Image Perfect** stays fast, responsive, and efficient.
 
-Written in **C#**, using **Avalonia UI**, **MySQL**, and the **MVVM** pattern, Image Perfect was created to address gaps in existing photo management tools — particularly around performance, usability with large collections, effective file organization, and offering large thumbnails for optimal viewing.
+Written in **C#**, using **Avalonia UI**, **MySQL**, and the **MVVM** architecture pattern. The app emphasizes **speed**, **clean design**, **direct file system folder organization**, and **scalable performance** — avoiding the long import times and tiny thumbnails in traditional photo managers.
 
-Instead of small, hard-to-see thumbnails and long import times, Image Perfect offers:
+**Key features include**:
 
 - Large adjustable thumbnails (up to 600px wide)
-- Fast performance on large libraries
-- Rich tagging and folder organization
+- Smooth performance with huge libraries
+- Rich tagging and folder-based organization
 - Direct image viewing (no thumbnails written to disk)
 
 > 💡 Future Plans:
@@ -87,10 +105,6 @@ Your feedback now helps shape what both the free and Pro versions might look lik
 ### 📷 Shotwell Import
 - Import existing tags and ratings from Shotwell (if written to images)
 
-<a id="why-i-built-image-perfect"></a>
-## ❓Why I Built Image Perfect
-
-I created Image Perfect both as a way to learn desktop application development and to solve personal pain points I experienced with existing photo organizers. Many tools struggled with large libraries, relied on tiny thumbnails, used excessive amounts of RAM, and were not great at folder organization. Shotwell on Linux came close to meeting my needs, but importing became painfully slow and memory-intensive at scale. This project is my solution to those challenges.
 
 <a id="license"></a>
 ## 🪪 License
