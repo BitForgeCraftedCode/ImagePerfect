@@ -1,3 +1,5 @@
+[← Back to Docs Index](README.md)
+
 <a id="tech-stack-and-notable-dependencies"></a>
 ## 📚 Tech Stack And Notable Dependencies
 

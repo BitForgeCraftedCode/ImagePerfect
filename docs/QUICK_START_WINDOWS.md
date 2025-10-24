@@ -1,3 +1,5 @@
+[← Back to Docs Index](README.md)
+
 <a id="quick-start-windows"></a>
 ## 🚀 Quick Start Windows
 ### Option 1: Easiest Install (Recommended)
@@ -29,8 +31,8 @@
 
 ### Option 2: Manual Setup (Advanced Users)
 
-1. **Install and Configure MySQL**: Follow the [MySQL setup instructions](#mysql-server-setup-windows-end-user) and execute the schema commands.
-2. **Build and Install ImagePerfect**: [Follow The Build And Install Directions](#build-and-install-directions)
+1. **Install and Configure MySQL**: Follow the [MySQL setup instructions](MYSQL_SERVER_SETUP_WINDOWS.md) and execute the schema commands.
+2. **Build and Install ImagePerfect**: [Follow The Build And Install Directions](BUILD_INSTALL_DIRECTIONS.md)
 3. Run `ImagePerfect.exe` from the build output folder.
 
 > See the [User Guide](USER_GUIDE.md) to begin organizing your images.

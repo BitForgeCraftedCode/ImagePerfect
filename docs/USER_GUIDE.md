@@ -1,3 +1,5 @@
+[← Back to Docs Index](README.md)
+
 <a id="user-guide"></a>
 ## 🔍 User Guide
 

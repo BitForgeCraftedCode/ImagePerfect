@@ -1,5 +1,9 @@
 # Image Perfect
 
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Ubuntu-blue)
+![License](https://img.shields.io/github/license/BitForgeCraftedCode/ImagePerfect)
+![.NET](https://img.shields.io/badge/.NET-8.0-blueviolet)
+
 ## 📚 Table Of Contents
 - ℹ️ [About](#about)
 - 👀 [Core Features](#core-features)
@@ -95,6 +99,10 @@ I created Image Perfect both as a way to learn desktop application development a
 You are free to use, modify, and distribute this software under the terms of the AGPL. If you modify and publicly distribute the software — including via a hosted service — you must make your source code available under the same license.
 
 [License v3.0 (AGPL-3.0)](LICENSE.md)
+
+---
+
+📘 **Full Documentation:** See the [docs/](docs/) folder for complete guides on installation, configuration, and usage.
 
 
  

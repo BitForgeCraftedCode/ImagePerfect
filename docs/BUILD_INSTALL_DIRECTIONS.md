@@ -1,3 +1,5 @@
+[← Back to Docs Index](README.md)
+
 <a id="build-and-install-directions"></a>
 ## 📋 Build And Install Directions
 

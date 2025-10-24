@@ -1,3 +1,5 @@
+[← Back to Docs Index](README.md)
+
 <a id="mysql-server-setup-windows"></a>
 ## 🖥️ MySQL Server Setup Windows
 

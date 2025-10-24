@@ -1,3 +1,5 @@
+[← Back to Docs Index](README.md)
+
 <a id="important-metadata-note"></a>
 ## ⚠️ Important Note On Metadata
 > Currently, ImagePerfect **only officially supports reading tags and ratings written by Shotwell**, and only if you had Shotwell write that data into the image files themselves (via its “Write Metadata to Files” option).

@@ -1,3 +1,5 @@
+[← Back to Docs Index](README.md)
+
 <a id="system-requirements"></a>
 ## 🖥️ System Requirements
 - Windows 10/11 64 bit or Ubuntu 64 bit

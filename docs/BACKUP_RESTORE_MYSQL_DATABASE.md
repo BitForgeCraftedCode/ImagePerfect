@@ -1,3 +1,5 @@
+[← Back to Docs Index](README.md)
+
 <a id="backing-up-and-restoring-the-mysql-database"></a>
 ## 📊 Backing Up And Restoring The MySQL Database
 
