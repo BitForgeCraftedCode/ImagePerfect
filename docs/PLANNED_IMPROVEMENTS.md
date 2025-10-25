@@ -13,6 +13,7 @@
 - GIF creation support (Possible Pro Feature)
 - Restore images and folders from trash
 - Backup and restore MySQL database assist (Possible Pro Feature)
+- Rsync intergration for Ubuntu Robocopy for Windows. To assist with photo backups.
 - History list
 - Saved and or custom filters
 - Have filters open in another window to save main page space
