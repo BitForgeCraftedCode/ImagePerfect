@@ -6,6 +6,7 @@ using ImagePerfect.Repository.IRepository;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -454,6 +455,26 @@ namespace ImagePerfect.ViewModels
             displayFolders = data.folders;
             displayFolderTags = data.tags;
             displayFolders = FolderPagination();
+            /*
+             * For FolderDateModifiedFilter, if a folder gets modified (e.g., a cover is copied to it from a child folder),
+             * a subsequent DB pull in RefreshFolderProps will return folders in a different order.
+             * That causes displayFolders to fall out of sync with LibraryFolders, and
+             * MapTagsToSingleFolderUpdateObservable will update the wrong folder.
+             * 
+             * To prevent this, for a quick refresh we preserve the original LibraryFolders order
+             * instead of using the new order from the DB pull.
+             */
+            if (currentFilter == Filters.FolderDateModifiedFilter)
+            {
+                // Build lookup of LibraryFolder order by FolderId
+                // this is the order of LibraryFolders in a Dictionary<FolderId, index>
+                Dictionary<int,int> libraryOrder = _mainWindowViewModel.LibraryFolders
+                    .Select((f, index) => new { f.FolderId, index })
+                    .ToDictionary(x => x.FolderId, x => x.index);
+
+                // Reorder display folders to match existing LibraryFolders order (if possible)
+                displayFolders = displayFolders.OrderBy(f => libraryOrder.TryGetValue(f.FolderId, out var idx) ? idx : int.MaxValue).ToList();
+            }
             await MapTagsToSingleFolderUpdateObservable(folderVm);
         }
         //public so we can call from other view models
