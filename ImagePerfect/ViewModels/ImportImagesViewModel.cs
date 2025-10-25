@@ -69,55 +69,38 @@ namespace ImagePerfect.ViewModels
 
         public async Task ImportAllFoldersOnCurrentPage(ItemsControl foldersItemsControl)
         {
-            var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
-                new MessageBoxCustomParams
-                {
-                    ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Yes", },
-                            new ButtonDefinition { Name = "No", },
-                        },
-                    ContentTitle = "Import All Folders",
-                    ContentMessage = $"CAUTION this could take a long time are you sure?",
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                    MinWidth = 500  // optional, so it doesn’t wrap too soon
-                }
-            );
-            var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
-            if (boxResult == "Yes")
+            
+            _mainWindowViewModel.ShowLoading = true;
+            List<FolderViewModel> allFolders = foldersItemsControl.Items.OfType<FolderViewModel>().ToList();
+            foreach (FolderViewModel folder in allFolders)
             {
-                _mainWindowViewModel.ShowLoading = true;
-                List<FolderViewModel> allFolders = foldersItemsControl.Items.OfType<FolderViewModel>().ToList();
-                foreach (FolderViewModel folder in allFolders)
+                if (folder.HasFiles == true && folder.AreImagesImported == false)
                 {
-                    if (folder.HasFiles == true && folder.AreImagesImported == false)
+                    //make the csv file
+                    ImageCsvMethods.CopyMasterCsv(folder);
+                }
+            }
+            await Parallel.ForEachAsync(allFolders, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async (folder, cancellationToken) =>
+            {
+                if (folder.HasFiles == true && folder.AreImagesImported == false) 
+                {
+                    try
                     {
-                        //make the csv file
-                        ImageCsvMethods.CopyMasterCsv(folder);
+                        // Each folder uses its own CSV
+                        await ImportImages(folder, bulkScan: true);
+                    }
+                    finally
+                    {
+                        // Delete folder-specific CSV after import
+                        ImageCsvMethods.DeleteCsvCopy(folder.FolderId);
                     }
                 }
-                await Parallel.ForEachAsync(allFolders, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async (folder, cancellationToken) =>
-                {
-                    if (folder.HasFiles == true && folder.AreImagesImported == false) 
-                    {
-                        try
-                        {
-                            // Each folder uses its own CSV
-                            await ImportImages(folder, bulkScan: true);
-                        }
-                        finally
-                        {
-                            // Delete folder-specific CSV after import
-                            ImageCsvMethods.DeleteCsvCopy(folder.FolderId);
-                        }
-                    }
-                });
+            });
                
-                _mainWindowViewModel.ExplorerVm.ResetPagination();
-                await _mainWindowViewModel.ExplorerVm.RefreshFolders();
-                _mainWindowViewModel.ShowLoading = false;
-            }
+            _mainWindowViewModel.ExplorerVm.ResetPagination();
+            await _mainWindowViewModel.ExplorerVm.RefreshFolders();
+            _mainWindowViewModel.ShowLoading = false;
+            
         }
     }
 }
