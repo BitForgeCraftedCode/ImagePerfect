@@ -26,6 +26,18 @@ namespace ImagePerfect.Repository
             _connectionString = config.GetConnectionString("DefaultConnection");
         }
         //any Image model specific database methods here
+
+        // Parallel methods must create their own MySqlConnection:
+        // - MySqlConnection is NOT thread-safe across multiple parallel tasks.
+        // - Each task gets its own connection + transaction.
+        // - Connection pooling ensures this is efficient.
+        // This is the correct approach for parallel DB operations in a desktop MVVM app.
+        //
+        // NOTE: This bypasses the UnitOfWork connection intentionally.
+        //       UnitOfWork is designed for single-threaded operations (UI, sequential repo calls).
+        //       Do NOT pass the UoW's connection to parallel methods — create a new connection instead.
+
+        //Parallel Method
         public async Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesInFolder(int folderId)
         {
             await using MySqlConnection conn = new MySqlConnection(_connectionString); //need a new connection pre folder as this is a parallel method
@@ -44,7 +56,6 @@ namespace ImagePerfect.Repository
 
         public async Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesInFolder(string folderPath)
         {
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
 
             string sql1 = @"SELECT * FROM images WHERE ImageFolderPath = @folderPath ORDER BY FileName";
@@ -54,13 +65,11 @@ namespace ImagePerfect.Repository
                             JOIN tags ON image_tags_join.TagId = tags.TagId WHERE images.ImageFolderPath = @folderPath ORDER BY images.FileName;";
             List<ImageTag> tags = (List<ImageTag>)await _connection.QueryAsync<ImageTag>(sql2, new { folderPath }, transaction: txn);
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return (allImagesInFolder, tags);
         }
 
         public async Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesInFolderAndSubFolders(string folderPath)
         {
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             string path = PathHelper.FormatPathForLikeOperator(folderPath);
 
@@ -71,13 +80,11 @@ namespace ImagePerfect.Repository
                             JOIN tags ON image_tags_join.TagId = tags.TagId WHERE images.ImageFolderPath = @folderPath OR images.ImageFolderPath LIKE '" + path + "' ORDER BY images.ImageFolderPath, images.FileName;";
             List<ImageTag> tags = (List<ImageTag>)await _connection.QueryAsync<ImageTag>(sql2, new { folderPath }, transaction: txn);
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return (allImagesInFolder, tags);
         }
 
         public async Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesAtRating(int rating, bool filterInCurrentDirectory, string currentDirectory)
         {
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
@@ -99,13 +106,11 @@ namespace ImagePerfect.Repository
             List<Image> allImagesAtRating = (List<Image>)await _connection.QueryAsync<Image>(sql1, new { rating }, transaction: txn);           
             List<ImageTag> tags = (List<ImageTag>)await _connection.QueryAsync<ImageTag>(sql2, new { rating }, transaction: txn);
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return (allImagesAtRating, tags);
         }
 
         public async Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesAtYear(int year, bool filterInCurrentDirectory, string currentDirectory)
         {
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
@@ -127,13 +132,11 @@ namespace ImagePerfect.Repository
             List<Image> allImagesAtYear = (List<Image>)await _connection.QueryAsync<Image>(sql1, new { year }, transaction: txn);
             List<ImageTag> tags = (List<ImageTag>)await _connection.QueryAsync<ImageTag>(sql2, new { year }, transaction: txn);
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return (allImagesAtYear, tags);
         }
 
         public async Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesAtYearMonth(int year, int month, bool filterInCurrentDirectory, string currentDirectory)
         {
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
@@ -155,13 +158,11 @@ namespace ImagePerfect.Repository
             List<Image> allImagesAtYearMonth = (List<Image>)await _connection.QueryAsync<Image>(sql1, new { year, month }, transaction: txn);
             List<ImageTag> tags = (List<ImageTag>)await _connection.QueryAsync<ImageTag>(sql2, new { year, month }, transaction: txn);
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return (allImagesAtYearMonth, tags);
         }
 
         public async Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesInDateRange(DateTimeOffset startDate, DateTimeOffset endDate, bool filterInCurrentDirectory, string currentDirectory)
         {
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
@@ -183,13 +184,11 @@ namespace ImagePerfect.Repository
             List<Image> allImagesInDateRange = (List<Image>)await _connection.QueryAsync<Image>(sql1, new { startDate = startDate.Date, endDate = endDate.Date }, transaction: txn);
             List<ImageTag> tags = (List<ImageTag>)await _connection.QueryAsync<ImageTag>(sql2, new { startDate = startDate.Date, endDate = endDate.Date }, transaction: txn);
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return (allImagesInDateRange, tags);
         }
 
         public async Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesWithTag(string tag, bool filterInCurrentDirectory, string currentDirectory)
         {
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
@@ -216,7 +215,6 @@ namespace ImagePerfect.Repository
             List<Image> allImagesWithTag = (List<Image>)await _connection.QueryAsync<Image>(sql1, new { tag }, transaction: txn);
             List<ImageTag> tags = (List<ImageTag>)await _connection.QueryAsync<ImageTag>(sql2, new { tag }, transaction: txn);
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return (allImagesWithTag, tags);
         }
         public async Task<List<Image>> GetAllImagesInDirectoryTree(string directoryPath)
@@ -224,10 +222,10 @@ namespace ImagePerfect.Repository
             string regExpString = PathHelper.GetRegExpStringDirectoryTree(directoryPath);
             string sql = @"SELECT * FROM images WHERE REGEXP_LIKE(ImageFolderPath, '" + regExpString + "') ORDER BY FileName;";
             List<Image> images = (List<Image>)await _connection.QueryAsync<Image>(sql);
-            await _connection.CloseAsync();
             return images;
         }
 
+        //Parallel Method
         public async Task<bool> AddImageCsv(string filePath, int folderId)
         {
             await using MySqlConnection conn = new MySqlConnection(_connectionString); //need a new connection pre folder as this is a parallel method
@@ -235,7 +233,7 @@ namespace ImagePerfect.Repository
 
             int rowsEffectedA = 0;
             int rowsEffectedB = 0;
-            //await _connection.OpenAsync();
+        
             using (MySqlTransaction txn = await conn.BeginTransactionAsync())
             {
                 MySqlBulkLoader bulkLoader = new MySqlBulkLoader(conn)
@@ -268,7 +266,6 @@ namespace ImagePerfect.Repository
         {
             int rowsEffectedA = 0;
             int rowsEffectedB = 0;
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             //insert newTag if its already there IGNORE
             string sql1 = @"INSERT IGNORE INTO tags (TagName) VALUES (@newTag)";
@@ -281,7 +278,6 @@ namespace ImagePerfect.Repository
             rowsEffectedB = await _connection.ExecuteAsync(sql3, new { imageId = image.ImageId, tagId = newTagId }, transaction: txn);
 
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return rowsEffectedA + rowsEffectedB >= 1 ? true : false;
 
         }
@@ -289,7 +285,6 @@ namespace ImagePerfect.Repository
         public async Task<bool> AddMultipleImageTags(string sql)
         {
             int rowsEffected = await _connection.ExecuteAsync(sql);
-            await _connection.CloseAsync();
             return rowsEffected > 0 ? true : false;
         }
 
@@ -298,21 +293,18 @@ namespace ImagePerfect.Repository
             int rowsEffected = 0;
             string sql = @"DELETE FROM image_tags_join WHERE ImageId = @imageId AND TagId = @tagId";
             rowsEffected = await _connection.ExecuteAsync(sql, new { imageId = tag.ImageId, tagId = tag.TagId });
-            await _connection.CloseAsync();
             return rowsEffected > 0 ? true : false;
         }
 
         public async Task<bool> DeleteSelectedImages(string sql)
         {
             int rowsEffected = await _connection.ExecuteAsync(sql);
-            await _connection.CloseAsync();
             return rowsEffected > 0 ? true : false;
         }
 
         public async Task<bool> MoveSelectedImageToNewFolder(string sql)
         {
             int rowsEffected = await _connection.ExecuteAsync(sql);
-            await _connection.CloseAsync();
             return rowsEffected > 0 ? true : false;
         }
 
@@ -320,10 +312,10 @@ namespace ImagePerfect.Repository
         {
             string sql = @"SELECT * FROM tags";
             List<Tag> tags = (List<Tag>)await _connection.QueryAsync<Tag>(sql);
-            await _connection.CloseAsync();
             return tags;
         }
 
+        //Parallel Method
         public async Task<bool> UpdateImageTagsAndRatingFromMetaData(List<Image> imagesPlusUpdatedMetaData, int folderId)
         {
             await using MySqlConnection conn = new MySqlConnection(_connectionString); //need a new connection pre folder as this is a parallel method
@@ -393,7 +385,6 @@ namespace ImagePerfect.Repository
         {
             int rowsEffectedA = 0;
             int rowsEffectedB = 0;
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
 
             //remove from image_tags_join 
@@ -412,7 +403,6 @@ namespace ImagePerfect.Repository
                 rowsEffectedB = await _connection.ExecuteAsync(removeFromTagsTable, new { tagId = selectedTag.TagId }, transaction: txn);
             }
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return rowsEffectedA + rowsEffectedB >= 1 ? true : false;
         }
         public async Task<int> GetTotalImages()
@@ -423,7 +413,6 @@ namespace ImagePerfect.Repository
 
         public async Task UpdateImageDates()
         {
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             //clear existing dates
             string sql1 = @"TRUNCATE TABLE image_dates;";
@@ -441,7 +430,6 @@ namespace ImagePerfect.Repository
             await _connection.ExecuteAsync(sql2 , transaction: txn);
 
             await txn.CommitAsync();
-            await _connection.CloseAsync();
         }
 
         public async Task<ImageDatesViewModel> GetImageDates()
@@ -471,7 +459,6 @@ namespace ImagePerfect.Repository
                 viewModel.EndDate = maxDate;
             }
 
-            await _connection.CloseAsync();
             return viewModel;
         }
     }

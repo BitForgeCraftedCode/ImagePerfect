@@ -2,10 +2,13 @@ using Avalonia.Controls;
 using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.ObjectMappers;
+using ImagePerfect.Repository;
 using ImagePerfect.Repository.IRepository;
+using Microsoft.Extensions.Configuration;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Models;
+using MySqlConnector;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -20,15 +23,15 @@ namespace ImagePerfect.ViewModels
 {
 	public class FolderDescriptionTextFileViewModel : ViewModelBase
 	{
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly FolderMethods _folderMethods;
+        private readonly MySqlDataSource _dataSource;
+        private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
 
-        public FolderDescriptionTextFileViewModel(IUnitOfWork unitOfWork, MainWindowViewModel mainWindowViewModel)
+        public FolderDescriptionTextFileViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel)
         {
-            _unitOfWork = unitOfWork;
+            _dataSource = dataSource;
+            _configuration = config;
             _mainWindowViewModel = mainWindowViewModel;
-            _folderMethods = new FolderMethods(_unitOfWork);
         }
 
         public async Task CopyFolderDescriptionToContainingFolder(FolderViewModel folderVm)
@@ -69,7 +72,9 @@ namespace ImagePerfect.ViewModels
                ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
-            Folder containingFolder = await _folderMethods.GetFolderAtDirectory(PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath));
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            FolderMethods folderMethods = new FolderMethods(uow);
+            Folder containingFolder = await folderMethods.GetFolderAtDirectory(PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath));
             if (!string.IsNullOrEmpty(containingFolder.FolderDescription))
             {
                 var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
@@ -95,11 +100,14 @@ namespace ImagePerfect.ViewModels
             }
             containingFolder.FolderDescription = folderVm.FolderDescription;
             //update db
-            await _folderMethods.UpdateFolder(containingFolder);
+            await folderMethods.UpdateFolder(containingFolder);
 
         }
         public async Task GetFolderDescriptionFromTextFileOnCurrentPage(ItemsControl foldersItemsControl)
         {
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            FolderMethods folderMethods = new FolderMethods(uow);
+
             List<FolderViewModel> allFolders = foldersItemsControl.Items.OfType<FolderViewModel>().ToList();
             List<string> errors = new List<string>();
             foreach (FolderViewModel folder in allFolders) 
@@ -153,7 +161,7 @@ namespace ImagePerfect.ViewModels
 
                         folder.FolderDescription = fileContent;
                         //update db
-                        await _folderMethods.UpdateFolder(FolderMapper.GetFolderFromVm(folder));
+                        await folderMethods.UpdateFolder(FolderMapper.GetFolderFromVm(folder));
                     }
                     catch (Exception ex) 
                     {
@@ -166,11 +174,11 @@ namespace ImagePerfect.ViewModels
             //add folder description to parent folder as well
             if (!errors.Any() && _mainWindowViewModel.CopyFolderTextToParentFolder == true)
             {
-                Folder containingFolder = await _folderMethods.GetFolderAtDirectory(PathHelper.RemoveOneFolderFromPath(allFolders[0].FolderPath));
+                Folder containingFolder = await folderMethods.GetFolderAtDirectory(PathHelper.RemoveOneFolderFromPath(allFolders[0].FolderPath));
                 if (string.IsNullOrEmpty(containingFolder.FolderDescription))
                 {
                     containingFolder.FolderDescription = allFolders[0].FolderDescription;
-                    await _folderMethods.UpdateFolder(containingFolder);
+                    await folderMethods.UpdateFolder(containingFolder);
                 }
             }
 

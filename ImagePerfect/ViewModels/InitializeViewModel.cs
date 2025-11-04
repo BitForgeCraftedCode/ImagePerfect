@@ -1,11 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Avalonia;
 using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.ObjectMappers;
+using ImagePerfect.Repository;
 using ImagePerfect.Repository.IRepository;
+using Microsoft.Extensions.Configuration;
+using MySqlConnector;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 
 namespace ImagePerfect.ViewModels
@@ -13,18 +16,14 @@ namespace ImagePerfect.ViewModels
 	public class InitializeViewModel : ViewModelBase
 	{
         private string _rootFolderLocation = string.Empty;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly SaveDirectoryMethods _saveDirectoryMethods;
-        private readonly FolderMethods _folderMethods;
-        private readonly ImageMethods _imageMethods;
+        private readonly MySqlDataSource _dataSource;
+        private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
-        public InitializeViewModel(IUnitOfWork unitOfWork, MainWindowViewModel mainWindowViewModel) 
-		{
-            _unitOfWork = unitOfWork;
+        public InitializeViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel)
+        {
+            _dataSource = dataSource;
+            _configuration = config;
             _mainWindowViewModel = mainWindowViewModel;
-            _saveDirectoryMethods = new SaveDirectoryMethods(_unitOfWork);
-            _folderMethods = new FolderMethods(_unitOfWork);
-            _imageMethods = new ImageMethods(_unitOfWork);
         }
 
         public string RootFolderLocation
@@ -33,9 +32,10 @@ namespace ImagePerfect.ViewModels
             set => _rootFolderLocation = value;
         }
 
-        private async Task GetRootFolder()
+        private async Task GetRootFolder(UnitOfWork uow)
         {
-            Folder? rootFolder = await _folderMethods.GetRootFolder();
+            FolderMethods folderMethods = new FolderMethods(uow);
+            Folder? rootFolder = await folderMethods.GetRootFolder();
             if (rootFolder != null)
             {
                 FolderViewModel rootFolderVm = await FolderMapper.GetFolderVm(rootFolder);
@@ -47,12 +47,16 @@ namespace ImagePerfect.ViewModels
 
         public async void Initialize()
         {
-            await GetRootFolder();
-            await _mainWindowViewModel.GetTagsList();
-            await _mainWindowViewModel.SettingsVm.GetSettings();
-            _mainWindowViewModel.ImageDatesVm = await _imageMethods.GetImageDates();
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            ImageMethods imageMethods = new ImageMethods(uow);
+            SaveDirectoryMethods saveDirectoryMethods = new SaveDirectoryMethods(uow);
 
-            SaveDirectory saveDirectory = await _saveDirectoryMethods.GetSavedDirectory();
+            await GetRootFolder(uow);
+            await _mainWindowViewModel.GetTagsList(uow);
+            await _mainWindowViewModel.SettingsVm.GetSettings(uow);
+            _mainWindowViewModel.ImageDatesVm = await imageMethods.GetImageDates();
+
+            SaveDirectory saveDirectory = await saveDirectoryMethods.GetSavedDirectory();
             if (saveDirectory.SavedDirectory != "")
             {
                 //update variables

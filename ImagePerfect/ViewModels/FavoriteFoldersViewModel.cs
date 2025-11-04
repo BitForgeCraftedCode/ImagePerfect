@@ -1,31 +1,36 @@
+using Avalonia.Controls;
+using ImagePerfect.Models;
+using ImagePerfect.Repository;
+using ImagePerfect.Repository.IRepository;
+using Microsoft.Extensions.Configuration;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Enums;
+using MsBox.Avalonia.Models;
+using MySqlConnector;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ImagePerfect.Models;
-using ImagePerfect.Repository.IRepository;
-using MsBox.Avalonia.Enums;
-using MsBox.Avalonia;
-using ReactiveUI;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
-using Avalonia.Controls;
 
 namespace ImagePerfect.ViewModels
 {
 	public class FavoriteFoldersViewModel : ViewModelBase
 	{
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly FolderMethods _folderMethods;
+        private readonly MySqlDataSource _dataSource;
+        private readonly IConfiguration _configuration;
 
-        public FavoriteFoldersViewModel(IUnitOfWork unitOfWork)
+        public FavoriteFoldersViewModel(MySqlDataSource dataSource, IConfiguration config)
         {
-            _unitOfWork = unitOfWork;
-            _folderMethods = new FolderMethods(_unitOfWork);
+            _dataSource = dataSource;
+            _configuration = config;
         }
 
         public async Task SaveFolderAsFavorite(FolderViewModel folderVm)
         {
-            await _folderMethods.SaveFolderToFavorites(folderVm.FolderId);
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            FolderMethods folderMethods = new FolderMethods(uow);
+            await folderMethods.SaveFolderToFavorites(folderVm.FolderId);
         }
 
         public async Task RemoveAllFavoriteFolders()
@@ -48,7 +53,9 @@ namespace ImagePerfect.ViewModels
             var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
             if (boxResult == "Yes")
             {
-                await _folderMethods.RemoveAllFavoriteFolders();
+                await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+                FolderMethods folderMethods = new FolderMethods(uow);
+                await folderMethods.RemoveAllFavoriteFolders();
             }
             else
             {

@@ -1,34 +1,37 @@
+using Avalonia.Controls;
+using ImagePerfect.Helpers;
+using ImagePerfect.Models;
+using ImagePerfect.ObjectMappers;
+using ImagePerfect.Repository;
+using ImagePerfect.Repository.IRepository;
+using Microsoft.Extensions.Configuration;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Enums;
+using MsBox.Avalonia.Models;
+using MySqlConnector;
+using ReactiveUI;
+using SixLabors.ImageSharp;
 using System;
 using System.Collections.Generic;
-using Avalonia.Controls;
-using Image = ImagePerfect.Models.Image;
-using System.Threading.Tasks;
-using ImagePerfect.Models;
-using ImagePerfect.Repository.IRepository;
-using ReactiveUI;
-using System.Linq;
-using ImagePerfect.ObjectMappers;
-using MsBox.Avalonia.Enums;
-using MsBox.Avalonia;
-using ImagePerfect.Helpers;
+using System.Data.Common;
 using System.IO;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
+using System.Linq;
+using System.Threading.Tasks;
+using Image = ImagePerfect.Models.Image;
 
 namespace ImagePerfect.ViewModels
 {
 	public class CoverImageViewModel : ViewModelBase
 	{
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly FolderMethods _folderMethods;
-		private readonly ImageMethods _imageMethods;
+        private readonly MySqlDataSource _dataSource;
+        private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
-        public CoverImageViewModel(IUnitOfWork unitOfWork, MainWindowViewModel mainWindowViewModel) 
+        public CoverImageViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel) 
 		{
-            _unitOfWork = unitOfWork;
+            _dataSource = dataSource;
+            _configuration = config;
             _mainWindowViewModel = mainWindowViewModel;
-            _folderMethods = new FolderMethods(_unitOfWork);
-            _imageMethods = new ImageMethods(_unitOfWork);
         }
 
         public async Task CopyCoverImageToContainingFolder(FolderViewModel folderVm)
@@ -69,11 +72,12 @@ namespace ImagePerfect.ViewModels
                 ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
-
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            FolderMethods folderMethods = new FolderMethods(uow);
 
             string coverImageCurrentPath = folderVm.CoverImagePath;
             string coverImageNewPath = PathHelper.GetCoverImagePathForCopyCoverImageToContainingFolder(folderVm);
-            Folder containingFolder = await _folderMethods.GetFolderAtDirectory(PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath));
+            Folder containingFolder = await folderMethods.GetFolderAtDirectory(PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath));
             if (containingFolder.CoverImagePath != "")
             {
                 var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
@@ -116,7 +120,7 @@ namespace ImagePerfect.ViewModels
                 return;
             }
             //add cover image path to containing folder
-            bool success = await _folderMethods.UpdateCoverImage(coverImageNewPath, containingFolder.FolderId);
+            bool success = await folderMethods.UpdateCoverImage(coverImageNewPath, containingFolder.FolderId);
             //copy file in file system
             if (success)
             {
@@ -128,11 +132,14 @@ namespace ImagePerfect.ViewModels
         {
             List<FolderViewModel> allFolders = foldersItemsControl.Items.OfType<FolderViewModel>().ToList();
             Random random = new Random();
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            ImageMethods imageMethods = new ImageMethods(uow);
+            FolderMethods folderMethods = new FolderMethods(uow);
             foreach (FolderViewModel folder in allFolders)
             {
                 if (folder.HasFiles == true && folder.AreImagesImported == true)
                 {
-                    (List<Image> images, List<ImageTag> tags) imageResult = await _imageMethods.GetAllImagesInFolder(folder.FolderId);
+                    (List<Image> images, List<ImageTag> tags) imageResult = await imageMethods.GetAllImagesInFolder(folder.FolderId);
                     List<Image> images = imageResult.images;
                     int randomIndex = random.Next(0, images.Count - 1);
                     //set random fall back cover
@@ -171,10 +178,10 @@ namespace ImagePerfect.ViewModels
                         }
                     }
                     folder.CoverImagePath = cover;
-                    await _folderMethods.UpdateFolder(FolderMapper.GetFolderFromVm(folder));
+                    await folderMethods.UpdateFolder(FolderMapper.GetFolderFromVm(folder));
                 }
             }
-            await _mainWindowViewModel.ExplorerVm.RefreshFolders();
+            await _mainWindowViewModel.ExplorerVm.RefreshFolders("", uow);
         }
 
     }

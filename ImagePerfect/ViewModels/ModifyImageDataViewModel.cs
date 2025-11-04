@@ -1,39 +1,45 @@
+using Avalonia.Controls;
+using ImagePerfect.Helpers;
+using ImagePerfect.Models;
+using ImagePerfect.ObjectMappers;
+using ImagePerfect.Repository;
+using ImagePerfect.Repository.IRepository;
+using Microsoft.Extensions.Configuration;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Enums;
+using MsBox.Avalonia.Models;
+using MySqlConnector;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
-using ImagePerfect.Models;
-using ImagePerfect.Repository.IRepository;
-using MsBox.Avalonia.Enums;
-using MsBox.Avalonia;
-using ReactiveUI;
-using ImagePerfect.ObjectMappers;
-using ImagePerfect.Helpers;
-using System.Linq;
-using Avalonia.Controls;
-using Image = ImagePerfect.Models.Image;
-using System.Threading.Tasks;
 using System.Diagnostics;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
+using System.Linq;
+using System.Threading.Tasks;
+using Image = ImagePerfect.Models.Image;
 
 namespace ImagePerfect.ViewModels
 {
 	public class ModifyImageDataViewModel : ViewModelBase
 	{
-        private readonly IUnitOfWork _unitOfWork;
-		private readonly ImageMethods _imageMethods;
+        private readonly MySqlDataSource _dataSource;
+        private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
-        public ModifyImageDataViewModel(IUnitOfWork unitOfWork, MainWindowViewModel mainWindowViewModel) 
+        public ModifyImageDataViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel) 
 		{
-            _unitOfWork = unitOfWork;
+            _dataSource = dataSource;
+            _configuration = config;
             _mainWindowViewModel = mainWindowViewModel;
-            _imageMethods = new ImageMethods(_unitOfWork);
         }
 
         //update image sql and metadata only. 
         public async Task UpdateImage(ImageViewModel imageVm, string fieldUpdated)
         {
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            ImageMethods imageMethods = new ImageMethods(uow);
+
             Image image = ImageMapper.GetImageFromVm(imageVm);
-            bool success = await _imageMethods.UpdateImage(image);
+            bool success = await imageMethods.UpdateImage(image);
             if (!success)
             {
                 await MessageBoxManager.GetMessageBoxCustom(
@@ -63,11 +69,14 @@ namespace ImagePerfect.ViewModels
         //Also need to remove imageMetaData
         public async Task EditImageTag(ImageViewModel imageVm)
         {
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            ImageMethods imageMethods = new ImageMethods(uow);
+
             if (imageVm.ImageTags == null || imageVm.ImageTags == "")
             {
                 if (imageVm.Tags.Count == 1)
                 {
-                    await _imageMethods.DeleteImageTag(imageVm.Tags[0]);
+                    await imageMethods.DeleteImageTag(imageVm.Tags[0]);
                     //remove tag from image metadata
                     await ImageMetaDataHelper.WriteTagToImage(imageVm);
                 }
@@ -87,7 +96,7 @@ namespace ImagePerfect.ViewModels
             }
             if (tagToRemove != null)
             {
-                await _imageMethods.DeleteImageTag(tagToRemove);
+                await imageMethods.DeleteImageTag(tagToRemove);
                 //remove tag from image metadata
                 await ImageMetaDataHelper.WriteTagToImage(imageVm);
             }
@@ -110,15 +119,18 @@ namespace ImagePerfect.ViewModels
             {
                 imageVm.ImageTags = imageVm.ImageTags + "," + imageVm.NewTag;
             }
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            ImageMethods imageMethods = new ImageMethods(uow);
+
             Image image = ImageMapper.GetImageFromVm(imageVm);
             //update image table and tags table in db -- success will be false if you try to input a duplicate tag
-            bool success = await _imageMethods.UpdateImageTags(image, imageVm.NewTag);
+            bool success = await imageMethods.UpdateImageTags(image, imageVm.NewTag);
             if (success)
             {
                 //write new tag to image metadata
                 await ImageMetaDataHelper.WriteTagToImage(imageVm);
                 //Update TagsList to show in UI AutoCompleteBox clear NewTag in box as well
-                await _mainWindowViewModel.GetTagsList();
+                await _mainWindowViewModel.GetTagsList(uow);
                 imageVm.NewTag = "";
             }
             else
@@ -156,12 +168,15 @@ namespace ImagePerfect.ViewModels
             var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
             if (boxResult != "Yes")
                 return;
-            
+
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            ImageMethods imageMethods = new ImageMethods(uow);
+
             _mainWindowViewModel.ShowLoading = true;
             try
             {
                 //select all images from db with tag get as List<Image>
-                (List<Image> images, List<ImageTag> tags) imageTagResult = await _imageMethods.GetAllImagesWithTag(selectedTag.TagName, false, _mainWindowViewModel.ExplorerVm.CurrentDirectory);
+                (List<Image> images, List<ImageTag> tags) imageTagResult = await imageMethods.GetAllImagesWithTag(selectedTag.TagName, false, _mainWindowViewModel.ExplorerVm.CurrentDirectory);
                 List<Image> taggedImags = imageTagResult.images;
                 //no taggedImages returned just exit
                 if (taggedImags == null || taggedImags.Count == 0)
@@ -173,9 +188,9 @@ namespace ImagePerfect.ViewModels
                 //if thats a success remove from data base
                 if (success)
                 {
-                    await _imageMethods.RemoveTagOnAllImages(selectedTag);
+                    await imageMethods.RemoveTagOnAllImages(selectedTag);
                     //Update TagsList to show in UI
-                    await _mainWindowViewModel.GetTagsList();
+                    await _mainWindowViewModel.GetTagsList(uow);
                 }
             }
             finally 
@@ -225,10 +240,14 @@ namespace ImagePerfect.ViewModels
                         imageVm.ImageTags = imageVm.ImageTags + "," + selectedTag.TagName;
                     }
                 }
+
+                await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+                ImageMethods imageMethods = new ImageMethods(uow);
+
                 //build sql for bulk insert
                 string sql = SqlStringBuilder.BuildSqlForAddMultipleImageTags(tagsToAdd, imageVm);
                 //update sql db
-                bool success = await _imageMethods.AddMultipleImageTags(sql);
+                bool success = await imageMethods.AddMultipleImageTags(sql);
                 //write new tags to image file
                 if (success)
                 {

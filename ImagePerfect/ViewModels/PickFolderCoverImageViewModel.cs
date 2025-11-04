@@ -1,30 +1,33 @@
+using Avalonia.Controls;
+using ImagePerfect.Helpers;
+using ImagePerfect.Models;
+using ImagePerfect.Repository;
+using ImagePerfect.Repository.IRepository;
+using Microsoft.Extensions.Configuration;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Enums;
+using MsBox.Avalonia.Models;
+using MySqlConnector;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using ImagePerfect.Helpers;
-using ImagePerfect.Models;
-using ImagePerfect.Repository.IRepository;
-using MsBox.Avalonia.Enums;
-using MsBox.Avalonia;
-using ReactiveUI;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
-using Avalonia.Controls;
 
 namespace ImagePerfect.ViewModels
 {
     public class PickFolderCoverImageViewModel : ViewModelBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly FolderMethods _folderMethods;
+        private readonly MySqlDataSource _dataSource;
+        private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
-        public PickFolderCoverImageViewModel(IUnitOfWork unitOfWork, MainWindowViewModel mainWindowViewModel)
+        public PickFolderCoverImageViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel)
         {
-            _unitOfWork = unitOfWork;
+            _dataSource = dataSource;
+            _configuration = config;
             _mainWindowViewModel = mainWindowViewModel;
-            _folderMethods = new FolderMethods(_unitOfWork);
             _SelectCoverImageInteraction = new Interaction<string, List<string>?>();
             SelectCoverImageCommand = ReactiveCommand.CreateFromTask((FolderViewModel folderVm) => SelectCoverImage(folderVm));
         }
@@ -68,12 +71,14 @@ namespace ImagePerfect.ViewModels
                 ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
-            bool success = await _folderMethods.UpdateCoverImage(PathHelper.FormatPathFromFilePicker(_CoverImagePath[0]), folderVm.FolderId);
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            FolderMethods folderMethods = new FolderMethods(uow);
+            bool success = await folderMethods.UpdateCoverImage(PathHelper.FormatPathFromFilePicker(_CoverImagePath[0]), folderVm.FolderId);
             //update lib folders to show the new cover !!
             if (success)
             {
                 string foldersDirectoryPath = PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath);
-                await _mainWindowViewModel.ExplorerVm.RefreshFolderProps(foldersDirectoryPath, folderVm);
+                await _mainWindowViewModel.ExplorerVm.RefreshFolderProps(foldersDirectoryPath, folderVm, uow);
             }
         }
     }

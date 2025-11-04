@@ -5,11 +5,14 @@ using Avalonia.Threading;
 using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.ObjectMappers;
+using ImagePerfect.Repository;
 using ImagePerfect.Repository.IRepository;
+using Microsoft.Extensions.Configuration;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Enums;
 using MsBox.Avalonia.Models;
+using MySqlConnector;
 using ReactiveUI;
 using System;
 using System.Collections;
@@ -25,9 +28,9 @@ namespace ImagePerfect.ViewModels
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly FolderMethods _folderMethods;
-        private readonly ImageMethods _imageMethods;
+        private readonly MySqlDataSource _dataSource;
+        private readonly IConfiguration _configuration;
+
         private bool _showLoading;
         private bool _suppressImageRefresh = false;
         private int _totalImages = 0;
@@ -36,29 +39,29 @@ namespace ImagePerfect.ViewModels
         private List<Tag> _tagsList = new List<Tag>();
 
         public MainWindowViewModel() { }
-        public MainWindowViewModel(IUnitOfWork unitOfWork)
+        public MainWindowViewModel(MySqlDataSource dataSource, IConfiguration config)
         {
-            _unitOfWork = unitOfWork;
-            _folderMethods = new FolderMethods(_unitOfWork);
-            _imageMethods = new ImageMethods(_unitOfWork);
+            _dataSource = dataSource;
+            _configuration = config;
+
             _showLoading = false;
 
             DirectoryNavigationVm = new DirectoryNavigationViewModel(this);
-            ExplorerVm = new ExplorerViewModel(_unitOfWork, this);
-            ModifyFolderDataVm = new ModifyFolderDataViewModel(_unitOfWork, this);
-            ModifyImageDataVm = new ModifyImageDataViewModel(_unitOfWork, this);
+            ExplorerVm = new ExplorerViewModel(_dataSource, _configuration, this);
+            ModifyFolderDataVm = new ModifyFolderDataViewModel(_dataSource, _configuration, this);
+            ModifyImageDataVm = new ModifyImageDataViewModel(_dataSource, _configuration, this);
             ExternalProgramVm = new ExternalProgramViewModel(this);
-            CoverImageVm = new CoverImageViewModel(_unitOfWork, this);
-            FolderDescriptionTextFileVm = new FolderDescriptionTextFileViewModel(_unitOfWork, this);
-            ScanImagesForMetaDataVm = new ScanImagesForMetaDataViewModel(_unitOfWork, this);
-            ImportImagesVm = new ImportImagesViewModel(_unitOfWork, this);
-            InitializeVm = new InitializeViewModel(_unitOfWork, this);
-            SavedDirectoryVm = new SavedDirectoryViewModel(_unitOfWork, this);
-            FavoriteFoldersVm = new FavoriteFoldersViewModel(_unitOfWork);
-            SettingsVm = new SettingsViewModel(_unitOfWork, this);
-            MoveImages = new MoveImagesViewModel(_unitOfWork, this);
-            MoveFolderToTrash = new MoveFolderToTrashViewModel(_unitOfWork, this);
-            CreateNewFolder = new CreateNewFolderViewModel(_unitOfWork, this);
+            CoverImageVm = new CoverImageViewModel(_dataSource, _configuration, this);
+            FolderDescriptionTextFileVm = new FolderDescriptionTextFileViewModel(_dataSource, _configuration, this);
+            ScanImagesForMetaDataVm = new ScanImagesForMetaDataViewModel(_dataSource, _configuration, this);
+            ImportImagesVm = new ImportImagesViewModel(_dataSource, _configuration, this);
+            InitializeVm = new InitializeViewModel(_dataSource, _configuration, this);
+            SavedDirectoryVm = new SavedDirectoryViewModel(_dataSource, _configuration, this);
+            FavoriteFoldersVm = new FavoriteFoldersViewModel(_dataSource, _configuration);
+            SettingsVm = new SettingsViewModel(_dataSource, _configuration, this);
+            MoveImages = new MoveImagesViewModel(_dataSource, _configuration, this);
+            MoveFolderToTrash = new MoveFolderToTrashViewModel(_dataSource, _configuration, this);
+            CreateNewFolder = new CreateNewFolderViewModel(_dataSource, _configuration, this);
 
             NextFolderCommand = ReactiveCommand.Create(async (FolderViewModel currentFolder) => {
                 await DirectoryNavigationVm.NextFolder(currentFolder);
@@ -151,7 +154,9 @@ namespace ImagePerfect.ViewModels
                 ToggleUI.ToggleGetTotalImages();
                 if (ToggleUI.ShowTotalImages == true)
                 {
-                    TotalImages = await _imageMethods.GetTotalImages();
+                    await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+                    ImageMethods imageMethods = new ImageMethods(uow);
+                    TotalImages = await imageMethods.GetTotalImages();
                 }
             });
             ToggleImportAndScanCommand = ReactiveCommand.Create(() => {
@@ -258,9 +263,11 @@ namespace ImagePerfect.ViewModels
                 ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderDescriptionFilter;
                 await ExplorerVm.RefreshFolders();
             });
-            UpdateImageDatesCommand = ReactiveCommand.Create(async () => { 
-                await _imageMethods.UpdateImageDates();
-                ImageDatesVm = await _imageMethods.GetImageDates();
+            UpdateImageDatesCommand = ReactiveCommand.Create(async () => {
+                await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+                ImageMethods imageMethods = new ImageMethods(uow);
+                await imageMethods.UpdateImageDates();
+                ImageDatesVm = await imageMethods.GetImageDates();
             });
             GetAllFoldersWithNoImportedImagesCommand = ReactiveCommand.Create(async () => {
                 ExplorerVm.ResetPagination();
@@ -408,19 +415,19 @@ namespace ImagePerfect.ViewModels
         public ToggleUIViewModel ToggleUI { get; } = new ToggleUIViewModel();
 
         //pass in this MainWindowViewModel so we can refresh UI
-        public PickRootFolderViewModel PickRootFolder { get => new PickRootFolderViewModel(_unitOfWork, this); }
+        public PickRootFolderViewModel PickRootFolder { get => new PickRootFolderViewModel(_dataSource, _configuration, this); }
 
-        public PickNewFoldersViewModel PickNewFolders { get => new PickNewFoldersViewModel(_unitOfWork, this); }
+        public PickNewFoldersViewModel PickNewFolders { get => new PickNewFoldersViewModel(_dataSource, _configuration, this); }
 
-        public PickFoldersToExtractZipsViewModel PickZipFolders { get => new PickFoldersToExtractZipsViewModel(_unitOfWork, this); }
+        public PickFoldersToExtractZipsViewModel PickZipFolders { get => new PickFoldersToExtractZipsViewModel(_dataSource, _configuration, this); }
 
-        public PickMoveToFolderViewModel PickMoveToFolder { get => new PickMoveToFolderViewModel(_unitOfWork, this); }
+        public PickMoveToFolderViewModel PickMoveToFolder { get => new PickMoveToFolderViewModel(_dataSource, _configuration, this); }
 
-        public PickImageMoveToFolderViewModel PickImageMoveToFolder { get => new PickImageMoveToFolderViewModel(_unitOfWork, this); }
+        public PickImageMoveToFolderViewModel PickImageMoveToFolder { get => new PickImageMoveToFolderViewModel(_dataSource, _configuration, this); }
 
-        public PickFolderCoverImageViewModel PickCoverImage { get => new PickFolderCoverImageViewModel(_unitOfWork, this); }
+        public PickFolderCoverImageViewModel PickCoverImage { get => new PickFolderCoverImageViewModel(_dataSource, _configuration, this); }
 
-        public PickExternalImageViewerExeViewModel PickExternalImageViewerExe { get => new PickExternalImageViewerExeViewModel(_unitOfWork, this); }
+        public PickExternalImageViewerExeViewModel PickExternalImageViewerExe { get => new PickExternalImageViewerExeViewModel(this); }
 
         public ObservableCollection<FolderViewModel> LibraryFolders { get; } = new ObservableCollection<FolderViewModel>();
        
@@ -573,9 +580,19 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<Unit, Unit> ExitAppCommand { get; }
 
         //should technically have its own repo but only plan on having only this one method just keeping it in images repo.
-        public async Task GetTagsList()
+        public async Task GetTagsList(UnitOfWork? uow = null)
         {
-            TagsList = await _imageMethods.GetTagsList();
+            if (uow != null)
+            {
+                // Use the provided UnitOfWork
+                var imageMethods = new ImageMethods(uow);
+                TagsList = await imageMethods.GetTagsList();
+                return;
+            }
+            // Create and dispose automatically using await using
+            await using UnitOfWork localUow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            ImageMethods localImageMethods = new ImageMethods(localUow);
+            TagsList = await localImageMethods.GetTagsList();
         }
         private void ExitApp()
         {
@@ -607,7 +624,9 @@ namespace ImagePerfect.ViewModels
             if (boxResult == "Yes")
             {
                 //remove all folders -- this will drop images as well. 
-                bool success = await _folderMethods.DeleteAllFolders();
+                await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+                FolderMethods folderMethods = new FolderMethods(uow);
+                bool success = await folderMethods.DeleteAllFolders();
                 if (success) 
                 {
                     //refresh UI

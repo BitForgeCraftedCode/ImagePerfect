@@ -1,11 +1,14 @@
 using Avalonia.Controls;
 using ImagePerfect.Helpers;
 using ImagePerfect.Models;
+using ImagePerfect.Repository;
 using ImagePerfect.Repository.IRepository;
+using Microsoft.Extensions.Configuration;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Enums;
 using MsBox.Avalonia.Models;
+using MySqlConnector;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -18,14 +21,14 @@ namespace ImagePerfect.ViewModels
 {
 	public class ScanImagesForMetaDataViewModel : ViewModelBase
 	{
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly ImageMethods _imageMethods;
+        private readonly MySqlDataSource _dataSource;
+        private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
-        public ScanImagesForMetaDataViewModel(IUnitOfWork unitOfWork, MainWindowViewModel mainWindowViewModel) 
+        public ScanImagesForMetaDataViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel) 
 		{
-            _unitOfWork = unitOfWork;
+            _dataSource = dataSource;
+            _configuration = config;
             _mainWindowViewModel = mainWindowViewModel;
-            _imageMethods = new ImageMethods(_unitOfWork);
         }
 
         /*
@@ -54,15 +57,18 @@ namespace ImagePerfect.ViewModels
          */
         public async Task ScanFolderImagesForMetaData(FolderViewModel folderVm, bool bulkScan)
         {
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            ImageMethods imageMethods = new ImageMethods(uow);
+
             if (bulkScan == false)
                 _mainWindowViewModel.ShowLoading = true;
             //get all images at folder id
-            (List<Image> images, List<ImageTag> tags) imageResultA = await _imageMethods.GetAllImagesInFolder(folderVm.FolderId);
+            (List<Image> images, List<ImageTag> tags) imageResultA = await imageMethods.GetAllImagesInFolder(folderVm.FolderId);
             List<Image> images = imageResultA.images;
             //scan images for metadata
             List<Image> imagesPlusUpdatedMetaData = await ImageMetaDataHelper.ScanImagesForMetaData(images);
 
-            bool success = await _imageMethods.UpdateImageTagsAndRatingFromMetaData(imagesPlusUpdatedMetaData, folderVm.FolderId);
+            bool success = await imageMethods.UpdateImageTagsAndRatingFromMetaData(imagesPlusUpdatedMetaData, folderVm.FolderId);
 
             //show data scanned success
             if (success)
@@ -70,16 +76,16 @@ namespace ImagePerfect.ViewModels
                 if (bulkScan == false)
                 {
                     //Update TagsList to show in UI AutoCompleteBox
-                    await _mainWindowViewModel.GetTagsList();
+                    await _mainWindowViewModel.GetTagsList(uow);
                     //refresh UI
                     if (_mainWindowViewModel.ExplorerVm.currentFilter == ExplorerViewModel.Filters.AllFoldersWithMetadataNotScanned || _mainWindowViewModel.ExplorerVm.currentFilter == ExplorerViewModel.Filters.AllFoldersWithNoImportedImages)
                     {
                         //have to call hard refresh for these two cases as they will not be returned from the query to update props
-                        await _mainWindowViewModel.ExplorerVm.RefreshFolders();
+                        await _mainWindowViewModel.ExplorerVm.RefreshFolders("", uow);
                     }
                     else
                     {
-                        await _mainWindowViewModel.ExplorerVm.RefreshFolderProps(_mainWindowViewModel.ExplorerVm.CurrentDirectory, folderVm);
+                        await _mainWindowViewModel.ExplorerVm.RefreshFolderProps(_mainWindowViewModel.ExplorerVm.CurrentDirectory, folderVm, uow);
                     }
                 } 
             }

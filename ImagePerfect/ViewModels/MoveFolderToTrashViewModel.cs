@@ -1,34 +1,39 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using Avalonia.Controls;
 using ImagePerfect.Helpers;
 using ImagePerfect.Models;
+using ImagePerfect.Repository;
 using ImagePerfect.Repository.IRepository;
+using Microsoft.Extensions.Configuration;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Enums;
 using MsBox.Avalonia.Models;
+using MySqlConnector;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace ImagePerfect.ViewModels
 {
 	public class MoveFolderToTrashViewModel : ViewModelBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly FolderMethods _folderMethods;
+        private readonly MySqlDataSource _dataSource;
+        private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
-        public MoveFolderToTrashViewModel(IUnitOfWork unitOfWork, MainWindowViewModel mainWindowViewModel) 
+        public MoveFolderToTrashViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel) 
 		{
-            _unitOfWork = unitOfWork;
+            _dataSource = dataSource;
+            _configuration = config;
             _mainWindowViewModel = mainWindowViewModel;
-            _folderMethods = new FolderMethods(_unitOfWork);
         }
 
         public async Task MoveFolderToTrash(FolderViewModel folderVm)
         {
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            FolderMethods folderMethods = new FolderMethods(uow);
             //only allow delete if folder does not contain children/sub directories
-            List<Folder> folderAndSubFolders = await _folderMethods.GetDirectoryTree(folderVm.FolderPath);
+            List<Folder> folderAndSubFolders = await folderMethods.GetDirectoryTree(folderVm.FolderPath);
             if (folderAndSubFolders.Count > 1) 
             {
                 await MessageBoxManager.GetMessageBoxCustom(
@@ -70,7 +75,7 @@ namespace ImagePerfect.ViewModels
                 _mainWindowViewModel.ShowLoading = true;
                 //the folders parent
                 string pathThatContainsFolder = PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath);                
-                Folder? rootFolder = await _folderMethods.GetRootFolder();
+                Folder? rootFolder = await folderMethods.GetRootFolder();
                 string trashFolderPath = PathHelper.GetTrashFolderPath(rootFolder.FolderPath);
 
                 //create ImagePerfectTRASH if it doesnt exist
@@ -82,27 +87,27 @@ namespace ImagePerfect.ViewModels
                 {
                     //delete folder from db -- does not delete sub folders.
                     //images table child of folders ON DELETE CASCADE is applied on sql to delete all images if a folder is deleted
-                    bool success = await _folderMethods.DeleteFolder(folderVm.FolderId);
+                    bool success = await folderMethods.DeleteFolder(folderVm.FolderId);
                     if (success) 
                     {
                         //move folder to trash folder
                         string newFolderPath = PathHelper.GetFolderTrashPath(folderVm, trashFolderPath);
                         Directory.Move(folderVm.FolderPath, newFolderPath);
                         //update the parent folder HasChildren prop
-                        List<Folder> parentFolderDirTree = await _folderMethods.GetDirectoryTree(pathThatContainsFolder);
-                        Folder parentFolder = await _folderMethods.GetFolderAtDirectory(pathThatContainsFolder);
+                        List<Folder> parentFolderDirTree = await folderMethods.GetDirectoryTree(pathThatContainsFolder);
+                        Folder parentFolder = await folderMethods.GetFolderAtDirectory(pathThatContainsFolder);
                         if (parentFolderDirTree.Count > 1)
                         {
                             parentFolder.HasChildren = true;
-                            await _folderMethods.UpdateFolder(parentFolder);
+                            await folderMethods.UpdateFolder(parentFolder);
                         }
                         else
                         {
                             parentFolder.HasChildren = false;
-                            await _folderMethods.UpdateFolder(parentFolder);
+                            await folderMethods.UpdateFolder(parentFolder);
                         }
                         //refresh UI
-                        await _mainWindowViewModel.ExplorerVm.RefreshFolders(pathThatContainsFolder);
+                        await _mainWindowViewModel.ExplorerVm.RefreshFolders(pathThatContainsFolder, uow);
                         _mainWindowViewModel.ShowLoading = false;
                     }
                 }

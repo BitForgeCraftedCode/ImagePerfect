@@ -1,36 +1,37 @@
+using Avalonia.Controls;
+using ImagePerfect.Helpers;
+using ImagePerfect.Models;
+using ImagePerfect.Repository;
+using ImagePerfect.Repository.IRepository;
+using Microsoft.Extensions.Configuration;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Enums;
+using MsBox.Avalonia.Models;
+using MySqlConnector;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using ImagePerfect.Helpers;
-using MsBox.Avalonia.Enums;
-using MsBox.Avalonia;
-using ReactiveUI;
-using ImagePerfect.Models;
-using ImagePerfect.Repository.IRepository;
-using System.IO;
-using System.Diagnostics;
-using System.Linq;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
-using Avalonia.Controls;
 using Image = ImagePerfect.Models.Image;
 
 namespace ImagePerfect.ViewModels
 {
 	public class PickMoveToFolderViewModel : ViewModelBase
 	{
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly FolderMethods _folderMethods;
-        private readonly ImageMethods _imageMethods;
+        private readonly MySqlDataSource _dataSource;
+        private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
-        public PickMoveToFolderViewModel(IUnitOfWork unitOfWork, MainWindowViewModel mainWindowViewModel) 
+        public PickMoveToFolderViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel) 
 		{
-            _unitOfWork = unitOfWork;
+            _dataSource = dataSource;
+            _configuration = config;
             _mainWindowViewModel = mainWindowViewModel;
-            _folderMethods = new FolderMethods(_unitOfWork);
-            _imageMethods = new ImageMethods(_unitOfWork);
 
             _SelectMoveToFolderInteration = new Interaction<string, List<string>?>();
 			SelectMoveToFolderCommand = ReactiveCommand.CreateFromTask((FolderViewModel folderVm) => SelectMoveToFolder(folderVm));
@@ -46,7 +47,10 @@ namespace ImagePerfect.ViewModels
 
 		private async Task SelectMoveToFolder(FolderViewModel folderVm)
 		{
-            Folder? rootFolder = await _folderMethods.GetRootFolder();
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            FolderMethods folderMethods = new FolderMethods(uow);
+            ImageMethods imageMethods = new ImageMethods(uow);
+            Folder? rootFolder = await folderMethods.GetRootFolder();
             if (rootFolder == null)
             {
                 await MessageBoxManager.GetMessageBoxCustom(
@@ -66,8 +70,8 @@ namespace ImagePerfect.ViewModels
                 return;
             }
             //pull current folder and sub folders from db
-            List<Folder> folders = await _folderMethods.GetDirectoryTree(folderVm.FolderPath);
-            List<Image> images = await _imageMethods.GetAllImagesInDirectoryTree(folderVm.FolderPath);
+            List<Folder> folders = await folderMethods.GetDirectoryTree(folderVm.FolderPath);
+            List<Image> images = await imageMethods.GetAllImagesInDirectoryTree(folderVm.FolderPath);
             if (!images.Any()) 
             {
                 await MessageBoxManager.GetMessageBoxCustom(
@@ -162,10 +166,10 @@ namespace ImagePerfect.ViewModels
             string folderMoveSql = SqlStringBuilder.BuildFolderSqlForFolderMove(folders);
             string imageMoveSql = SqlStringBuilder.BuildImageSqlForFolderMove(images);
            
-            Folder moveToFolder = await _folderMethods.GetFolderAtDirectory(newFolderPath);
-            Folder parentOfTheFolderToMove = await _folderMethods.GetFolderAtDirectory(PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath));
+            Folder moveToFolder = await folderMethods.GetFolderAtDirectory(newFolderPath);
+            Folder parentOfTheFolderToMove = await folderMethods.GetFolderAtDirectory(PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath));
             //move images and folders in db do both in a transaction
-            bool success = await _folderMethods.MoveFolder(folderMoveSql, imageMoveSql);
+            bool success = await folderMethods.MoveFolder(folderMoveSql, imageMoveSql);
             //move folder in filesystem if db move is successfull
             if (success)
             {
@@ -175,11 +179,11 @@ namespace ImagePerfect.ViewModels
                     //update the moveToFolder and parentOfTheFolderToMove HasChildren propery
                     moveToFolder.HasChildren = true;
                     parentOfTheFolderToMove.HasChildren = Directory.GetDirectories(parentOfTheFolderToMove.FolderPath).Any();
-                    await _folderMethods.UpdateFolder(moveToFolder);
-                    await _folderMethods.UpdateFolder(parentOfTheFolderToMove);
+                    await folderMethods.UpdateFolder(moveToFolder);
+                    await folderMethods.UpdateFolder(parentOfTheFolderToMove);
                     //update lib folders to show the folder has moved
                     string foldersDirectoryPath = PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath);
-                    await _mainWindowViewModel.ExplorerVm.RefreshFolders(foldersDirectoryPath);
+                    await _mainWindowViewModel.ExplorerVm.RefreshFolders(foldersDirectoryPath, uow);
                 }
                 catch (Exception e)
                 {

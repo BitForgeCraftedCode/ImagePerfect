@@ -25,7 +25,6 @@ namespace ImagePerfect.Repository
             string tableName = GetTableName();
             string sql = $"SELECT * FROM {tableName}";
             List<T> allDbRows = (List<T>)await _connection.QueryAsync<T>(sql);
-            await _connection.CloseAsync();
             return allDbRows;
         }
 
@@ -34,7 +33,6 @@ namespace ImagePerfect.Repository
             string tableName = GetTableName();
             string sql = $"SELECT * FROM {tableName} WHERE {column} = @Parameter";
             List<T> allDbRows = (List<T>)await _connection.QueryAsync<T>(sql, new { Parameter = value });
-            await _connection.CloseAsync();
             return allDbRows;
         }
         public async Task<T> GetById(int? id)
@@ -45,7 +43,6 @@ namespace ImagePerfect.Repository
             //string sql = $"SELECT * FROM {tableName} WHERE {keyColumn} = @{keyProperty}";
             string sql = $"SELECT * FROM {tableName} WHERE {keyColumn} = @id";
             T singleDbRow = await _connection.QuerySingleAsync<T>(sql, new { id });
-            await _connection.CloseAsync();
             return singleDbRow;
         }
 
@@ -54,7 +51,6 @@ namespace ImagePerfect.Repository
             string tableName = GetTableName();
             string sql = $"SELECT * FROM {tableName} ORDER BY RAND() LIMIT 1;";
             T singleDbRow = await _connection.QuerySingleAsync<T>(sql);
-            await _connection.CloseAsync();
             return singleDbRow;
         }
 
@@ -67,7 +63,6 @@ namespace ImagePerfect.Repository
             string query = $"INSERT INTO {tableName} ({columns}) VALUES ({properties})";
 
             rowsEffected = await _connection.ExecuteAsync(query, entity);
-            await _connection.CloseAsync();
             return rowsEffected > 0 ? true : false;
         }
 
@@ -98,7 +93,6 @@ namespace ImagePerfect.Repository
             //https://github.com/DapperLib/Dapper/issues/540
             rowsEffected = await _connection.ExecuteAsync(query.ToString(), entity);
 
-            await _connection.CloseAsync();
             return rowsEffected > 0 ? true : false;
         }
 
@@ -112,7 +106,6 @@ namespace ImagePerfect.Repository
 
             rowsEffected = await _connection.ExecuteAsync(query, new { Parameter = id });
 
-            await _connection.CloseAsync();
             return rowsEffected > 0 ? true : false;
         }
 
@@ -122,14 +115,12 @@ namespace ImagePerfect.Repository
             string tableName = GetTableName();
             string keyColumn = GetKeyColumnName();
 
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             string query1 = $"DELETE FROM {tableName} WHERE {keyColumn} >= 1";
             string query2 = $"ALTER TABLE {tableName} AUTO_INCREMENT = 1";
             rowsEffected = await _connection.ExecuteAsync(query1, transaction: txn);
             await _connection.ExecuteAsync(query2, transaction: txn);
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return rowsEffected > 0 ? true : false;
         }
 
@@ -139,7 +130,6 @@ namespace ImagePerfect.Repository
             string tableName = GetTableName();
             string sql = $"DELETE FROM {tableName} WHERE {column} = @Parameter";
             rowsEffected = await _connection.ExecuteAsync(sql, new { Parameter = value });
-            await _connection.CloseAsync();
             return rowsEffected > 0 ? true : false;
         }
         private static string GetTableName()

@@ -22,7 +22,6 @@ namespace ImagePerfect.Repository
         //any Folder model specific database methods here
         public async Task<Folder?> GetRootFolder()
         {
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             string sql1 = @"SELECT * FROM folders WHERE IsRoot = 1";
             Folder? rootFolder = await _connection.QuerySingleOrDefaultAsync<Folder>(sql1, transaction: txn);
@@ -35,7 +34,6 @@ namespace ImagePerfect.Repository
                 rootFolder.Tags = tags;
             }
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return rootFolder;
         }
         public async Task<bool> AddFolderCsv(string filePath)
@@ -53,14 +51,12 @@ namespace ImagePerfect.Repository
                 Local = true,
             };
             rowsEffected = await bulkLoader.LoadAsync();
-            await _connection.CloseAsync();
             return rowsEffected > 0 ? true : false;
         }
 
         //Only gets the folders in the path -- the folder itself or any sub directories within each folder are not returned
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetFoldersInDirectory(string directoryPath, bool ascending)
         {
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             string regExpString = PathHelper.GetRegExpStringAllFoldersInDirectory(directoryPath);
             string order = ascending ? "ASC" : "DESC";
@@ -71,13 +67,11 @@ namespace ImagePerfect.Repository
                             JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE REGEXP_LIKE(folders.FolderPath, '{regExpString}') ORDER BY folders.FolderPath {order}, folders.FolderName {order};";
             List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, transaction: txn);
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return (folders,tags);
         }
 
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetFoldersInDirectoryByStartingLetter(string directoryPath, bool ascending, string letter)
         {
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             string regExpString = PathHelper.GetRegExpStringAllFoldersInDirectory(directoryPath);
             string order = ascending ? "ASC" : "DESC";
@@ -88,7 +82,6 @@ namespace ImagePerfect.Repository
                             JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE REGEXP_LIKE(folders.FolderPath, '{regExpString}') AND FolderName LIKE '{letter}%' ORDER BY folders.FolderPath {order}, folders.FolderName {order};";
             List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, transaction: txn);
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return (folders, tags);
         }
 
@@ -104,7 +97,6 @@ namespace ImagePerfect.Repository
 
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersAtRating(int rating, bool filterInCurrentDirectory, string currentDirectory)
         {
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
@@ -127,13 +119,11 @@ namespace ImagePerfect.Repository
             List<Folder> allFoldersAtRating = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, new { rating }, transaction: txn);
             List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, new { rating }, transaction: txn);
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return (allFoldersAtRating,tags);
         }
 
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithRatingAndTag(int rating, string tagOne, string tagTwo, bool filterInCurrentDirectory, string currentDirectory)
         {
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
@@ -167,13 +157,11 @@ namespace ImagePerfect.Repository
             List<Folder> allFoldersWithRatingAndTag = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, new { rating, tagNames, requiredCount }, transaction: txn);
             List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, new { rating, tagNames, requiredCount }, transaction: txn);
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return (allFoldersWithRatingAndTag, tags);
         }
 
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithNoImportedImages(bool filterInCurrentDirectory, string currentDirectory)
         {
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
@@ -196,13 +184,11 @@ namespace ImagePerfect.Repository
             List<Folder> allFoldersWithNoImportedImages = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, transaction: txn);
             List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, transaction: txn);
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return (allFoldersWithNoImportedImages, tags);
         }
 
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithMetadataNotScanned(bool filterInCurrentDirectory, string currentDirectory)
         {
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
@@ -225,13 +211,11 @@ namespace ImagePerfect.Repository
             List<Folder> allFoldersWithMetadataNotScanned = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, transaction: txn);
             List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, transaction: txn);
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return (allFoldersWithMetadataNotScanned, tags);
         }
 
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithoutCovers(bool filterInCurrentDirectory, string currentDirectory)
         {
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
@@ -254,12 +238,10 @@ namespace ImagePerfect.Repository
             List<Folder> allFoldersWithoutCovers = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, transaction: txn);
             List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, transaction: txn);
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return (allFoldersWithoutCovers, tags);
         }
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithTag(string tag, bool filterInCurrentDirectory, string currentDirectory)
         {
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
@@ -286,13 +268,11 @@ namespace ImagePerfect.Repository
             List<Folder> allFoldersWithTag = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, new { tag }, transaction: txn);
             List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, new { tag }, transaction: txn);
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return (allFoldersWithTag, tags);
         }
 
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithDescriptionText(string text, bool filterInCurrentDirectory, string currentDirectory)
         {
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             string regExpString = PathHelper.GetRegExpStringAllFoldersInDirectory(currentDirectory);
             string sql1 = string.Empty;
@@ -315,13 +295,11 @@ namespace ImagePerfect.Repository
             List<Folder> allFoldersWithDescriptionText = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, new { text }, transaction: txn);
             List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, transaction: txn);
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return (allFoldersWithDescriptionText, tags);
         }
 
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFavoriteFolders()
         {
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             string sql1 = @"SELECT * FROM folders WHERE FolderId IN (SELECT FolderId FROM folder_saved_favorites) ORDER BY FolderPath, FolderName";
             string sql2 = @"SELECT tags.TagId, tags.TagName, folders.FolderId FROM folders
@@ -330,7 +308,6 @@ namespace ImagePerfect.Repository
             List<Folder> allFavoriteFolders = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, transaction: txn);
             List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, transaction: txn);
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return (allFavoriteFolders, tags);
         }
 
@@ -341,7 +318,6 @@ namespace ImagePerfect.Repository
             string regExpString = PathHelper.GetRegExpStringDirectoryTree(directoryPath);
             string sql = @"SELECT * FROM folders WHERE REGEXP_LIKE(FolderPath, '" + regExpString + "') ORDER BY FolderName;";
             List<Folder> folders = (List<Folder>)await _connection.QueryAsync<Folder>(sql);
-            await _connection.CloseAsync();
             return folders;
         }
 
@@ -350,7 +326,6 @@ namespace ImagePerfect.Repository
             int rowsEffected = 0;
             string sql = @"UPDATE folders SET CoverImagePath = @coverImagePath WHERE FolderId = @folderId";
             rowsEffected = await _connection.ExecuteAsync(sql, new { coverImagePath, folderId });
-            await _connection.CloseAsync();
             return rowsEffected > 0 ? true : false;
         }
 
@@ -358,12 +333,10 @@ namespace ImagePerfect.Repository
         {
             int rowsEffectedA = 0;
             int rowsEffectedB = 0;  
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             rowsEffectedA = await _connection.ExecuteAsync(folderMoveSql, transaction: txn);
             rowsEffectedB = await _connection.ExecuteAsync(imageMoveSql, transaction: txn);
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return rowsEffectedA > 0 && rowsEffectedB >= 0 ? true : false;
         }
 
@@ -371,7 +344,6 @@ namespace ImagePerfect.Repository
         {
             int rowsEffectedA = 0;
             int rowsEffectedB = 0;
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             //insert newTag if its already there IGNORE
             string sql1 = @"INSERT IGNORE INTO tags (TagName) VALUES (@newTag)";
@@ -384,28 +356,16 @@ namespace ImagePerfect.Repository
             rowsEffectedB = await _connection.ExecuteAsync(sql3, new { folderId = folder.FolderId, tagId = newTagId }, transaction: txn);
 
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return rowsEffectedA + rowsEffectedB >= 1 ? true : false;
         }
 
         public async Task<bool> AddTagToAllFoldersInCurrentDirectory(List<string> folderInsertTagSqlBatches)
         {
             int rowsEffected = 0;
-            // Open connection if needed
-            if (_connection.State == ConnectionState.Closed)
-                await _connection.OpenAsync();
-
-            try
+            foreach (string sql in folderInsertTagSqlBatches)
             {
-                foreach (string sql in folderInsertTagSqlBatches)
-                {
-                    int rows = await _connection.ExecuteAsync(sql);
-                    rowsEffected += rows;
-                }
-            }
-            finally
-            {
-                await _connection.CloseAsync();
+                int rows = await _connection.ExecuteAsync(sql);
+                rowsEffected += rows;
             }
             return rowsEffected > 0 ? true : false;
         }
@@ -414,14 +374,12 @@ namespace ImagePerfect.Repository
             int rowsEffected = 0;
             string sql = @"DELETE FROM folder_tags_join WHERE FolderId = @folderId AND TagId = @tagId";
             rowsEffected = await _connection.ExecuteAsync(sql, new { folderId = tag.FolderId, tagId = tag.TagId });
-            await _connection.CloseAsync();
             return rowsEffected > 0 ? true : false;
         }
 
         public async Task<bool> DeleteLibrary()
         {
             int rowsEffected = 0;
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             string sql1 = @"DELETE FROM folders WHERE FolderId >= 1";
             string sql2 = @"ALTER TABLE folders AUTO_INCREMENT = 1";
@@ -444,7 +402,6 @@ namespace ImagePerfect.Repository
             await _connection.ExecuteAsync(sql9, transaction: txn);
 
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return rowsEffected > 0 ? true : false;
         }
 
@@ -452,7 +409,6 @@ namespace ImagePerfect.Repository
         {
             int rowsEffectedA = 0;
             int rowsEffectedB = 0;
-            await _connection.OpenAsync();
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
 
             //remove from folder_tags_join
@@ -471,7 +427,6 @@ namespace ImagePerfect.Repository
                 rowsEffectedB = await _connection.ExecuteAsync(removeFromTagsTable, new { tagId = selectedTag.TagId }, transaction: txn);
             }
             await txn.CommitAsync();
-            await _connection.CloseAsync();
             return rowsEffectedA + rowsEffectedB >= 1 ? true : false;
         }
 

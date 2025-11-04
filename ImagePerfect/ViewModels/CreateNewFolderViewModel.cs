@@ -1,16 +1,19 @@
-using System;
-using MsBox.Avalonia.Enums;
-using MsBox.Avalonia;
-using System.IO;
-using ImagePerfect.Repository.IRepository;
-using ImagePerfect.Models;
-using ImagePerfect.Helpers;
-using System.Threading.Tasks;
-using ReactiveUI;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
-using System.Collections.Generic;
 using Avalonia.Controls;
+using ImagePerfect.Helpers;
+using ImagePerfect.Models;
+using ImagePerfect.Repository;
+using ImagePerfect.Repository.IRepository;
+using Microsoft.Extensions.Configuration;
+using MsBox.Avalonia;
+using MsBox.Avalonia.Dto;
+using MsBox.Avalonia.Enums;
+using MsBox.Avalonia.Models;
+using MySqlConnector;
+using ReactiveUI;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace ImagePerfect.ViewModels
 {
@@ -18,14 +21,15 @@ namespace ImagePerfect.ViewModels
 	{
         private string _newFolderName = string.Empty;
         private bool _isNewFolderEnabled;
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly FolderMethods _folderMethods;
+
+        private readonly MySqlDataSource _dataSource;
+        private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
-        public CreateNewFolderViewModel(IUnitOfWork unitOfWork, MainWindowViewModel mainWindowViewModel) 
+        public CreateNewFolderViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel) 
         {
-            _unitOfWork = unitOfWork;
+            _dataSource = dataSource;
+            _configuration = config;
             _mainWindowViewModel = mainWindowViewModel;
-            _folderMethods = new FolderMethods(_unitOfWork);
         }
 
         public string NewFolderName
@@ -73,6 +77,8 @@ namespace ImagePerfect.ViewModels
                 ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            FolderMethods folderMethods = new FolderMethods(uow);
             //add dir to database -- also need to update parent folders HasChildren bool value
             Folder newFolder = new Folder
             {
@@ -87,7 +93,7 @@ namespace ImagePerfect.ViewModels
                 FolderContentMetaDataScanned = false,
                 AreImagesImported = false,
             };
-            bool success = await _folderMethods.CreateNewFolder(newFolder);
+            bool success = await folderMethods.CreateNewFolder(newFolder);
 
             //create on disk
             if (success)
@@ -97,7 +103,7 @@ namespace ImagePerfect.ViewModels
                     Directory.CreateDirectory(newFolderPath);
                     //refresh UI
                     _mainWindowViewModel.ExplorerVm.currentFilter = ExplorerViewModel.Filters.None;
-                    await _mainWindowViewModel.ExplorerVm.RefreshFolders();
+                    await _mainWindowViewModel.ExplorerVm.RefreshFolders("", uow);
                 }
                 catch (Exception e)
                 {

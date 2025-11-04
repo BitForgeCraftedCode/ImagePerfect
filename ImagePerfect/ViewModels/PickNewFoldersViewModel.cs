@@ -3,11 +3,14 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using ImagePerfect.Helpers;
 using ImagePerfect.Models;
+using ImagePerfect.Repository;
 using ImagePerfect.Repository.IRepository;
+using Microsoft.Extensions.Configuration;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Enums;
 using MsBox.Avalonia.Models;
+using MySqlConnector;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -22,15 +25,13 @@ namespace ImagePerfect.ViewModels
 {
 	public class PickNewFoldersViewModel : ViewModelBase
 	{
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly FolderCsvMethods _folderCsvMethods;
-        private readonly FolderMethods _folderMethods;
+        private readonly MySqlDataSource _dataSource;
+        private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
-        public PickNewFoldersViewModel(IUnitOfWork unitOfWork, MainWindowViewModel mainWindowViewModel) 
+        public PickNewFoldersViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel) 
 		{
-            _unitOfWork = unitOfWork;
-            _folderMethods = new FolderMethods(_unitOfWork);
-            _folderCsvMethods = new FolderCsvMethods(_unitOfWork);
+            _dataSource = dataSource;
+            _configuration = config;
             _mainWindowViewModel = mainWindowViewModel;
             _SelectNewFoldersInteraction = new Interaction<string, List<string>?>();
 			SelectNewFoldersCommand = ReactiveCommand.CreateFromTask(SelectNewFolders);
@@ -46,7 +47,11 @@ namespace ImagePerfect.ViewModels
 
 		private async Task SelectNewFolders()
 		{
-            Folder? rootFolder = await _folderMethods.GetRootFolder();
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            FolderMethods folderMethods = new FolderMethods(uow);
+            FolderCsvMethods folderCsvMethods = new FolderCsvMethods(uow);
+
+            Folder? rootFolder = await folderMethods.GetRootFolder();
             if (rootFolder == null)
             {
                 await MessageBoxManager.GetMessageBoxCustom(
@@ -94,7 +99,7 @@ namespace ImagePerfect.ViewModels
             }
             //check for parent folder -- must add parent folder 1st to prevent double import
             string parentDirectory = PathHelper.RemoveOneFolderFromPath(PathHelper.FormatPathFromFolderPicker(_NewFolders[0]));
-            List<Folder> parentFolderDirTree = await _folderMethods.GetDirectoryTree(parentDirectory);
+            List<Folder> parentFolderDirTree = await folderMethods.GetDirectoryTree(parentDirectory);
             if (parentFolderDirTree.Count == 0)
             {
                 await MessageBoxManager.GetMessageBoxCustom(
@@ -156,7 +161,7 @@ namespace ImagePerfect.ViewModels
                 return;
             }
             //check if any folders are already in db
-            List<Folder> allFoldersInDb = await _folderMethods.GetAllFolders();
+            List<Folder> allFoldersInDb = await folderMethods.GetAllFolders();
             List<string> foldersNotToAdd = new List<string>();
             for (int i = 0; i < _NewFolders.Count; i++) 
             {
@@ -196,9 +201,9 @@ namespace ImagePerfect.ViewModels
             //write csv to database
             if (csvIsSet) 
             {
-                await _folderCsvMethods.AddFolderCsv();
+                await folderCsvMethods.AddFolderCsv();
                 //reload the page
-                await _mainWindowViewModel.ExplorerVm.RefreshFolders();
+                await _mainWindowViewModel.ExplorerVm.RefreshFolders("", uow);
             }
             _mainWindowViewModel.ShowLoading = false;
         }

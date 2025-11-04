@@ -2,11 +2,14 @@ using Avalonia.Controls;
 using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.ObjectMappers;
+using ImagePerfect.Repository;
 using ImagePerfect.Repository.IRepository;
+using Microsoft.Extensions.Configuration;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Enums;
 using MsBox.Avalonia.Models;
+using MySqlConnector;
 using ReactiveUI;
 using System;
 using System.Collections;
@@ -22,16 +25,14 @@ namespace ImagePerfect.ViewModels
 {
 	public class MoveImagesViewModel : ViewModelBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly FolderMethods _folderMethods;
-        private readonly ImageMethods _imageMethods;
+        private readonly MySqlDataSource _dataSource;
+        private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
-        public MoveImagesViewModel(IUnitOfWork unitOfWork, MainWindowViewModel mainWindowViewModel) 
+        public MoveImagesViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel) 
 		{
-            _unitOfWork = unitOfWork;
+            _dataSource = dataSource;
+            _configuration = config;
             _mainWindowViewModel = mainWindowViewModel;
-            _folderMethods = new FolderMethods(_unitOfWork);
-            _imageMethods = new ImageMethods(_unitOfWork);
         }
 
         public async Task MoveImageToTrash(ImageViewModel imageVm) 
@@ -54,10 +55,13 @@ namespace ImagePerfect.ViewModels
             var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
             if (boxResult == "Yes")
             {
+                await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+                ImageMethods imageMethods = new ImageMethods(uow);
+                FolderMethods folderMethods = new FolderMethods(uow);
                 _mainWindowViewModel.ShowLoading = true;
-                (List<Folder> folders, List<FolderTag> tags) folderResult = await _folderMethods.GetFoldersInDirectory(imageVm.ImageFolderPath, _mainWindowViewModel.ExplorerVm.LoadFoldersAscending);
+                (List<Folder> folders, List<FolderTag> tags) folderResult = await folderMethods.GetFoldersInDirectory(imageVm.ImageFolderPath, _mainWindowViewModel.ExplorerVm.LoadFoldersAscending);
                 _mainWindowViewModel.ExplorerVm.displayFolders = folderResult.folders;
-                (List<Image> images, List<ImageTag> tags) imageResultA = await _imageMethods.GetAllImagesInFolder(imageVm.FolderId);
+                (List<Image> images, List<ImageTag> tags) imageResultA = await imageMethods.GetAllImagesInFolder(imageVm.FolderId);
                 _mainWindowViewModel.ExplorerVm.displayImages = imageResultA.images;
                 if (_mainWindowViewModel.ExplorerVm.displayImages.Count == 1 && _mainWindowViewModel.ExplorerVm.displayFolders.Count == 0)
                 {
@@ -77,7 +81,7 @@ namespace ImagePerfect.ViewModels
                     ).ShowWindowDialogAsync(Globals.MainWindow);
                     return;
                 }
-                Folder? rootFolder = await _folderMethods.GetRootFolder();
+                Folder? rootFolder = await folderMethods.GetRootFolder();
                 string trashFolderPath = PathHelper.GetTrashFolderPath(rootFolder.FolderPath);
 
                 //create ImagePerfectTRASH if it doesnt exist
@@ -88,7 +92,7 @@ namespace ImagePerfect.ViewModels
                 if (File.Exists(imageVm.ImagePath))
                 {
                     //delete image from db
-                    bool success = await _imageMethods.DeleteImage(imageVm.ImageId);
+                    bool success = await imageMethods.DeleteImage(imageVm.ImageId);
 
                     if (success)
                     {
@@ -98,7 +102,7 @@ namespace ImagePerfect.ViewModels
 
                         //refresh UI
                         if(!_mainWindowViewModel.SuppressImageRefresh)
-                            await _mainWindowViewModel.ExplorerVm.RefreshImages("", imageVm.FolderId);
+                            await _mainWindowViewModel.ExplorerVm.RefreshImages("", imageVm.FolderId, uow);
                         _mainWindowViewModel.ShowLoading = false;
                     }
                 }
@@ -146,9 +150,12 @@ namespace ImagePerfect.ViewModels
             var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
             if (boxResult == "Yes")
             {
+                await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+                ImageMethods imageMethods = new ImageMethods(uow);
+                FolderMethods folderMethods = new FolderMethods(uow);
                 _mainWindowViewModel.ShowLoading = true;
-                Folder imagesFolder = await _folderMethods.GetFolderAtDirectory(imagesToDelete[0].ImageFolderPath);
-                Folder? rootFolder = await _folderMethods.GetRootFolder();
+                Folder imagesFolder = await folderMethods.GetFolderAtDirectory(imagesToDelete[0].ImageFolderPath);
+                Folder? rootFolder = await folderMethods.GetRootFolder();
                 string trashFolderPath = PathHelper.GetTrashFolderPath(rootFolder.FolderPath);
 
                 //create ImagePerfectTRASH if it doesnt exist
@@ -158,7 +165,7 @@ namespace ImagePerfect.ViewModels
                 }
 
                 string sql = SqlStringBuilder.BuildSqlForMoveImagesToTrash(imagesToDelete);
-                bool success = await _imageMethods.DeleteSelectedImages(sql);
+                bool success = await imageMethods.DeleteSelectedImages(sql);
                 if (success)
                 {
                     foreach (ImageViewModel image in imagesToDelete)
@@ -175,11 +182,11 @@ namespace ImagePerfect.ViewModels
                         imagesFolder.HasFiles = false;
                         imagesFolder.AreImagesImported = false;
                         imagesFolder.FolderContentMetaDataScanned = false;
-                        await _folderMethods.UpdateFolder(imagesFolder);
+                        await folderMethods.UpdateFolder(imagesFolder);
                     }
                     //refresh UI
                     if (!_mainWindowViewModel.SuppressImageRefresh)
-                        await _mainWindowViewModel.ExplorerVm.RefreshImages("", imagesToDelete[0].FolderId);
+                        await _mainWindowViewModel.ExplorerVm.RefreshImages("", imagesToDelete[0].FolderId, uow);
                     _mainWindowViewModel.ShowLoading = false;
                 }
                 _mainWindowViewModel.ShowLoading = false;
@@ -188,7 +195,9 @@ namespace ImagePerfect.ViewModels
 
         public async Task MoveAllImagesInFolderUpOneDirectory(FolderViewModel folderVm)
         {
-            (List<Image> images, List<ImageTag> tags) imageResult = await _imageMethods.GetAllImagesInFolder(folderVm.FolderId);
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            ImageMethods imageMethods = new ImageMethods(uow);
+            (List<Image> images, List<ImageTag> tags) imageResult = await imageMethods.GetAllImagesInFolder(folderVm.FolderId);
             List<Image> allImages = imageResult.images;
             if(allImages is null || allImages.Count == 0)
             {
@@ -255,11 +264,15 @@ namespace ImagePerfect.ViewModels
             List<ImageViewModel> imagesToMove = selectedImages.OfType<ImageViewModel>().ToList();
             if (imagesToMove.Count == 0)
                 return;
-            
-            Folder imagesCurrentFolder = await _folderMethods.GetFolderAtDirectory(imagesToMove[0].ImageFolderPath);
+
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            ImageMethods imageMethods = new ImageMethods(uow);
+            FolderMethods folderMethods = new FolderMethods(uow);
+
+            Folder imagesCurrentFolder = await folderMethods.GetFolderAtDirectory(imagesToMove[0].ImageFolderPath);
 
             //get folder at SelectedImagesNewDirectory
-            Folder imagesNewFolder = await _folderMethods.GetFolderAtDirectory(_mainWindowViewModel.SelectedImagesNewDirectory);
+            Folder imagesNewFolder = await folderMethods.GetFolderAtDirectory(_mainWindowViewModel.SelectedImagesNewDirectory);
             if (imagesNewFolder.FolderPath == imagesCurrentFolder.FolderPath)
             {
                 await MessageBoxManager.GetMessageBoxCustom(
@@ -323,7 +336,7 @@ namespace ImagePerfect.ViewModels
                 //get image move sql
                 string imageMoveSql = SqlStringBuilder.BuildSqlForMoveImagesToNewFolder(imagesToMoveModifiedPaths);
                 //move images in db
-                bool success = await _imageMethods.MoveSelectedImageToNewFolder(imageMoveSql);
+                bool success = await imageMethods.MoveSelectedImageToNewFolder(imageMoveSql);
                 //move images on disk
                 if (success)
                 {
@@ -333,13 +346,13 @@ namespace ImagePerfect.ViewModels
                     }
                     //after adding new images to a folder make sure the user is alerted to rescann them for metadata 
                     imagesNewFolder.FolderContentMetaDataScanned = false;
-                    await _folderMethods.UpdateFolder(imagesNewFolder);
+                    await folderMethods.UpdateFolder(imagesNewFolder);
                     //if new folder did not have images before it does now so set to true
                     if (imagesNewFolder.HasFiles == false)
                     {
                         imagesNewFolder.HasFiles = true;
                         imagesNewFolder.AreImagesImported = true;
-                        await _folderMethods.UpdateFolder(imagesNewFolder);
+                        await folderMethods.UpdateFolder(imagesNewFolder);
                     }
                     //update imagesCurrentFolder HasFiles, AreImagesImported, and FolderContentMetaDataScanned
                     //set all back to false if moved all images to new folder
@@ -349,7 +362,7 @@ namespace ImagePerfect.ViewModels
                         imagesCurrentFolder.HasFiles = false;
                         imagesCurrentFolder.AreImagesImported = false;
                         imagesCurrentFolder.FolderContentMetaDataScanned = false;
-                        await _folderMethods.UpdateFolder(imagesCurrentFolder);
+                        await folderMethods.UpdateFolder(imagesCurrentFolder);
                     }
                     //reset SelectedImageNewDirectory
                     _mainWindowViewModel.SelectedImagesNewDirectory = string.Empty;

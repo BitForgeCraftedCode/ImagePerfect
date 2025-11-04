@@ -21,7 +21,6 @@ namespace ImagePerfect.Services
             IConfigurationSection section = config.GetSection("ConnectionStrings");
 
             collection.AddMySqlDataSource(section["DefaultConnection"]);
-            collection.AddScoped<IUnitOfWork, UnitOfWork>();
             collection.AddTransient<MainWindowViewModel>();
             collection.AddSingleton(config);
         }

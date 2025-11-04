@@ -2,7 +2,10 @@ using Avalonia;
 using Avalonia.Threading;
 using ImagePerfect.Models;
 using ImagePerfect.ObjectMappers;
+using ImagePerfect.Repository;
 using ImagePerfect.Repository.IRepository;
+using Microsoft.Extensions.Configuration;
+using MySqlConnector;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -20,9 +23,8 @@ namespace ImagePerfect.ViewModels
      */
 	public class ExplorerViewModel : ViewModelBase
 	{
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly FolderMethods _folderMethods;
-        private readonly ImageMethods _imageMethods;
+        private readonly MySqlDataSource _dataSource;
+        private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
 
         private string _currentDirectory = string.Empty;
@@ -82,12 +84,11 @@ namespace ImagePerfect.ViewModels
         private bool _filterInCurrentDirectory = true;
         private bool _loadFoldersAscending = true;
 
-        public ExplorerViewModel(IUnitOfWork unitOfWork, MainWindowViewModel mainWindowViewModel)
+        public ExplorerViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel)
         {
-            _unitOfWork = unitOfWork;
+            _dataSource = dataSource;
+            _configuration = config;
             _mainWindowViewModel = mainWindowViewModel;
-            _folderMethods = new FolderMethods(_unitOfWork);
-            _imageMethods = new ImageMethods(_unitOfWork);
         }
 
         public string CurrentDirectory
@@ -231,8 +232,24 @@ namespace ImagePerfect.ViewModels
             displayImages = ImagePagination();
             await MapTagsToImagesAddToObservable();
         }
-        public async Task RefreshImages(string path = "", int folderId = 0)
+
+        public async Task RefreshImages(string path = "", int folderId = 0, UnitOfWork? uow = null)
         {
+            if (uow != null)
+            {
+                // Use the provided UoW (do NOT dispose here)
+                await RefreshImagesInternal(path, folderId, uow);
+            }
+            else
+            {
+                // Create and dispose automatically
+                await using UnitOfWork localUow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+                await RefreshImagesInternal(path, folderId, localUow);
+            }
+        }
+        private async Task RefreshImagesInternal(string path, int folderId, UnitOfWork uow)
+        {
+            ImageMethods imageMethods = new ImageMethods(uow);
             // Before clearing/reloading, capture the current UI state into cache
             if (_mainWindowViewModel.SavedDirectoryVm.IsSavedDirectoryLoaded && _mainWindowViewModel.SavedDirectoryVm.LoadSavedDirectoryFromCache)
             {
@@ -245,40 +262,40 @@ namespace ImagePerfect.ViewModels
                     (List<Image> images, List<ImageTag> tags) imageResult;
                     if (string.IsNullOrEmpty(path))
                     {
-                        imageResult = await _imageMethods.GetAllImagesInFolder(folderId);
+                        imageResult = await imageMethods.GetAllImagesInFolder(folderId);
                     }
                     else
                     {
-                        imageResult = await _imageMethods.GetAllImagesInFolder(path);
+                        imageResult = await imageMethods.GetAllImagesInFolder(path);
                     }
                     await SetDisplayImagesForRefreshImages(imageResult);
                     break;
                 case Filters.AllImagesInFolderAndSubFolders:
-                    (List<Image> images, List<ImageTag> tags) allImagesInFolderAndSubFoldersResult = await _imageMethods.GetAllImagesInFolderAndSubFolders(CurrentDirectory);
+                    (List<Image> images, List<ImageTag> tags) allImagesInFolderAndSubFoldersResult = await imageMethods.GetAllImagesInFolderAndSubFolders(CurrentDirectory);
                     await SetDisplayImagesForRefreshImages(allImagesInFolderAndSubFoldersResult);
                     break;
                 case Filters.ImageRatingFilter:
-                    (List<Image> images, List<ImageTag> tags) imageRatingResult = await _imageMethods.GetAllImagesAtRating(selectedRatingForFilter, FilterInCurrentDirectory, CurrentDirectory);
+                    (List<Image> images, List<ImageTag> tags) imageRatingResult = await imageMethods.GetAllImagesAtRating(selectedRatingForFilter, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayImagesForRefreshImages(imageRatingResult);
                     break;
                 case Filters.FiveStarImagesInCurrentDirectory:
-                    (List<Image> images, List<ImageTag> tags) fiveStarImageRatingResult = await _imageMethods.GetAllImagesAtRating(selectedRatingForFilter, true, CurrentDirectory);
+                    (List<Image> images, List<ImageTag> tags) fiveStarImageRatingResult = await imageMethods.GetAllImagesAtRating(selectedRatingForFilter, true, CurrentDirectory);
                     await SetDisplayImagesForRefreshImages(fiveStarImageRatingResult);
                     break;
                 case Filters.ImageTagFilter:
-                    (List<Image> images, List<ImageTag> tags) imageTagResult = await _imageMethods.GetAllImagesWithTag(tagForFilter, FilterInCurrentDirectory, CurrentDirectory);
+                    (List<Image> images, List<ImageTag> tags) imageTagResult = await imageMethods.GetAllImagesWithTag(tagForFilter, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayImagesForRefreshImages(imageTagResult);
                     break;
                 case Filters.ImageYearFilter:
-                    (List<Image> images, List<ImageTag> tags) imageYearResult = await _imageMethods.GetAllImagesAtYear(selectedYearForFilter, FilterInCurrentDirectory, CurrentDirectory);
+                    (List<Image> images, List<ImageTag> tags) imageYearResult = await imageMethods.GetAllImagesAtYear(selectedYearForFilter, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayImagesForRefreshImages(imageYearResult);
                     break;
                 case Filters.ImageYearMonthFilter:
-                    (List<Image> images, List<ImageTag> tags) imageYearMonthResult = await _imageMethods.GetAllImagesAtYearMonth(selectedYearForFilter, selectedMonthForFilter, FilterInCurrentDirectory, CurrentDirectory);
+                    (List<Image> images, List<ImageTag> tags) imageYearMonthResult = await imageMethods.GetAllImagesAtYearMonth(selectedYearForFilter, selectedMonthForFilter, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayImagesForRefreshImages(imageYearMonthResult);
                     break;
                 case Filters.ImageDateRangeFilter:
-                    (List<Image> images, List<ImageTag> tags) imageDateRangeResult = await _imageMethods.GetAllImagesInDateRange(startDateForFilter, endDateForFilter, FilterInCurrentDirectory, CurrentDirectory);
+                    (List<Image> images, List<ImageTag> tags) imageDateRangeResult = await imageMethods.GetAllImagesInDateRange(startDateForFilter, endDateForFilter, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayImagesForRefreshImages(imageDateRangeResult);
                     break;
             }
@@ -359,8 +376,21 @@ namespace ImagePerfect.ViewModels
 
         }
         //public so we can call from other view models
-        public async Task RefreshFolders(string path = "")
+        public async Task RefreshFolders(string path = "", UnitOfWork? uow = null)
         {
+            if(uow != null)
+            {
+                await RefreshFoldersInternal(path, uow);
+            }
+            else
+            {
+                await using UnitOfWork localUow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+                await RefreshFoldersInternal(path, localUow);
+            }
+        }
+        private async Task RefreshFoldersInternal(string path, UnitOfWork uow)
+        {
+            FolderMethods folderMethods = new FolderMethods(uow);
             /*
              * Do not call UpdateSavedDirectoryCache() in RefreshFolderProps() as that only incrementally updates the live UI
              * So calling there will only capture the 1st UI change. 
@@ -378,54 +408,54 @@ namespace ImagePerfect.ViewModels
                     (List<Folder> folders, List<FolderTag> tags) folderResult;
                     if (String.IsNullOrEmpty(path))
                     {
-                        folderResult = await _folderMethods.GetFoldersInDirectory(CurrentDirectory, LoadFoldersAscending);
+                        folderResult = await folderMethods.GetFoldersInDirectory(CurrentDirectory, LoadFoldersAscending);
                     }
                     else
                     {
-                        folderResult = await _folderMethods.GetFoldersInDirectory(path, LoadFoldersAscending);
+                        folderResult = await folderMethods.GetFoldersInDirectory(path, LoadFoldersAscending);
                     }
                     await SetDisplayFoldersForRefreshFolders(folderResult);
                     break;
                 case Filters.FolderDateModifiedFilter:
-                    (List<Folder> folders, List<FolderTag> tags) foldersInCurrentDirectoryResult = await _folderMethods.GetFoldersInDirectory(CurrentDirectory, LoadFoldersAscending);
+                    (List<Folder> folders, List<FolderTag> tags) foldersInCurrentDirectoryResult = await folderMethods.GetFoldersInDirectory(CurrentDirectory, LoadFoldersAscending);
                     //sort in C# on Date Modified
                     foldersInCurrentDirectoryResult.folders = SortFoldersByDateModified(foldersInCurrentDirectoryResult.folders);
                     await SetDisplayFoldersForRefreshFolders(foldersInCurrentDirectoryResult);
                     break;
                 case Filters.FolderAlphabeticalFilter:
-                    (List<Folder> folders, List<FolderTag> tags) folderAlphabeticalResult = await _folderMethods.GetFoldersInDirectoryByStartingLetter(CurrentDirectory, LoadFoldersAscending, selectedLetterForFilter);
+                    (List<Folder> folders, List<FolderTag> tags) folderAlphabeticalResult = await folderMethods.GetFoldersInDirectoryByStartingLetter(CurrentDirectory, LoadFoldersAscending, selectedLetterForFilter);
                     await SetDisplayFoldersForRefreshFolders(folderAlphabeticalResult);
                     break;
                 case Filters.FolderRatingFilter:
-                    (List<Folder> folders, List<FolderTag> tags) folderRatingResult = await _folderMethods.GetAllFoldersAtRating(selectedRatingForFilter, FilterInCurrentDirectory, CurrentDirectory);
+                    (List<Folder> folders, List<FolderTag> tags) folderRatingResult = await folderMethods.GetAllFoldersAtRating(selectedRatingForFilter, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolders(folderRatingResult);
                     break;
                 case Filters.FolderTagFilter:
-                    (List<Folder> folders, List<FolderTag> tags) folderTagResult = await _folderMethods.GetAllFoldersWithTag(tagForFilter, FilterInCurrentDirectory, CurrentDirectory);
+                    (List<Folder> folders, List<FolderTag> tags) folderTagResult = await folderMethods.GetAllFoldersWithTag(tagForFilter, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolders(folderTagResult);
                     break;
                 case Filters.FolderTagAndRatingFilter:
-                    (List<Folder> folders, List<FolderTag> tags) folderRatingAndTagResult = await _folderMethods.GetAllFoldersWithRatingAndTag(ComboFolderFilterRating, ComboFolderFilterTagOne, ComboFolderFilterTagTwo, FilterInCurrentDirectory, CurrentDirectory);
+                    (List<Folder> folders, List<FolderTag> tags) folderRatingAndTagResult = await folderMethods.GetAllFoldersWithRatingAndTag(ComboFolderFilterRating, ComboFolderFilterTagOne, ComboFolderFilterTagTwo, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolders(folderRatingAndTagResult);
                     break;
                 case Filters.FolderDescriptionFilter:
-                    (List<Folder> folders, List<FolderTag> tags) folderDescriptionResult = await _folderMethods.GetAllFoldersWithDescriptionText(textForFilter, FilterInCurrentDirectory, CurrentDirectory);
+                    (List<Folder> folders, List<FolderTag> tags) folderDescriptionResult = await folderMethods.GetAllFoldersWithDescriptionText(textForFilter, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolders(folderDescriptionResult);
                     break;
                 case Filters.AllFavoriteFolders:
-                    (List<Folder> folders, List<FolderTag> tags) allFavoriteFoldersResult = await _folderMethods.GetAllFavoriteFolders();
+                    (List<Folder> folders, List<FolderTag> tags) allFavoriteFoldersResult = await folderMethods.GetAllFavoriteFolders();
                     await SetDisplayFoldersForRefreshFolders(allFavoriteFoldersResult);
                     break;
                 case Filters.AllFoldersWithNoImportedImages:
-                    (List<Folder> folders, List<FolderTag> tags) allFoldersWithNoImportedImagesResult = await _folderMethods.GetAllFoldersWithNoImportedImages(FilterInCurrentDirectory, CurrentDirectory);
+                    (List<Folder> folders, List<FolderTag> tags) allFoldersWithNoImportedImagesResult = await folderMethods.GetAllFoldersWithNoImportedImages(FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolders(allFoldersWithNoImportedImagesResult);
                     break;
                 case Filters.AllFoldersWithMetadataNotScanned:
-                    (List<Folder> folders, List<FolderTag> tags) allFoldersWithMetadataNotScannedResult = await _folderMethods.GetAllFoldersWithMetadataNotScanned(FilterInCurrentDirectory, CurrentDirectory);
+                    (List<Folder> folders, List<FolderTag> tags) allFoldersWithMetadataNotScannedResult = await folderMethods.GetAllFoldersWithMetadataNotScanned(FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolders(allFoldersWithMetadataNotScannedResult);
                     break;
                 case Filters.AllFoldersWithoutCovers:
-                    (List<Folder> folders, List<FolderTag> tags) allFoldersWithoutCoversResult = await _folderMethods.GetAllFoldersWithoutCovers(FilterInCurrentDirectory, CurrentDirectory);
+                    (List<Folder> folders, List<FolderTag> tags) allFoldersWithoutCoversResult = await folderMethods.GetAllFoldersWithoutCovers(FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolders(allFoldersWithoutCoversResult);
                     break;
             }
@@ -478,8 +508,21 @@ namespace ImagePerfect.ViewModels
             await MapTagsToSingleFolderUpdateObservable(folderVm);
         }
         //public so we can call from other view models
-        public async Task RefreshFolderProps(string path, FolderViewModel folderVm)
+        public async Task RefreshFolderProps(string path, FolderViewModel folderVm, UnitOfWork? uow = null)
         {
+            if (uow != null)
+            {
+                await RefreshFolderPropsInternal(path, folderVm, uow);
+            }
+            else 
+            {
+                await using UnitOfWork localUow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+                await RefreshFolderPropsInternal(path, folderVm, localUow);
+            }
+        }
+        private async Task RefreshFolderPropsInternal(string path, FolderViewModel folderVm, UnitOfWork uow)
+        {
+            FolderMethods folderMethods = new FolderMethods(uow);            
             /*
              * Do not call UpdateSavedDirectoryCache() in RefreshFolderProps() as this only incrementally updates the live UI
              * So calling here will only capture the 1st UI change. 
@@ -488,49 +531,49 @@ namespace ImagePerfect.ViewModels
             switch (currentFilter)
             {
                 case Filters.None:
-                    (List<Folder> folders, List<FolderTag> tags) folderResult = await _folderMethods.GetFoldersInDirectory(path, LoadFoldersAscending);
+                    (List<Folder> folders, List<FolderTag> tags) folderResult = await folderMethods.GetFoldersInDirectory(path, LoadFoldersAscending);
                     await SetDisplayFoldersForRefreshFolderProps(folderResult, folderVm);
                     break;
                 case Filters.FolderDateModifiedFilter:
-                    (List<Folder> folders, List<FolderTag> tags) foldersInCurrentDirectoryResult = await _folderMethods.GetFoldersInDirectory(CurrentDirectory, LoadFoldersAscending);
+                    (List<Folder> folders, List<FolderTag> tags) foldersInCurrentDirectoryResult = await folderMethods.GetFoldersInDirectory(CurrentDirectory, LoadFoldersAscending);
                     //sort in C# on Date Modified
                     foldersInCurrentDirectoryResult.folders = SortFoldersByDateModified(foldersInCurrentDirectoryResult.folders);
                     await SetDisplayFoldersForRefreshFolderProps(foldersInCurrentDirectoryResult, folderVm);
                     break;
                 case Filters.FolderAlphabeticalFilter:
-                    (List<Folder> folders, List<FolderTag> tags) folderAlphabeticalResult = await _folderMethods.GetFoldersInDirectoryByStartingLetter(CurrentDirectory, LoadFoldersAscending, selectedLetterForFilter);
+                    (List<Folder> folders, List<FolderTag> tags) folderAlphabeticalResult = await folderMethods.GetFoldersInDirectoryByStartingLetter(CurrentDirectory, LoadFoldersAscending, selectedLetterForFilter);
                     await SetDisplayFoldersForRefreshFolderProps(folderAlphabeticalResult, folderVm);
                     break;
                 case Filters.FolderRatingFilter:
-                    (List<Folder> folders, List<FolderTag> tags) folderRatingResult = await _folderMethods.GetAllFoldersAtRating(selectedRatingForFilter, FilterInCurrentDirectory, CurrentDirectory);
+                    (List<Folder> folders, List<FolderTag> tags) folderRatingResult = await folderMethods.GetAllFoldersAtRating(selectedRatingForFilter, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolderProps(folderRatingResult, folderVm);
                     break;
                 case Filters.FolderTagFilter:
-                    (List<Folder> folders, List<FolderTag> tags) folderTagResult = await _folderMethods.GetAllFoldersWithTag(tagForFilter, FilterInCurrentDirectory, CurrentDirectory);
+                    (List<Folder> folders, List<FolderTag> tags) folderTagResult = await folderMethods.GetAllFoldersWithTag(tagForFilter, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolderProps(folderTagResult, folderVm);
                     break;
                 case Filters.FolderTagAndRatingFilter:
-                    (List<Folder> folders, List<FolderTag> tags) folderRatingAndTagResult = await _folderMethods.GetAllFoldersWithRatingAndTag(ComboFolderFilterRating, ComboFolderFilterTagOne, ComboFolderFilterTagTwo, FilterInCurrentDirectory, CurrentDirectory);
+                    (List<Folder> folders, List<FolderTag> tags) folderRatingAndTagResult = await folderMethods.GetAllFoldersWithRatingAndTag(ComboFolderFilterRating, ComboFolderFilterTagOne, ComboFolderFilterTagTwo, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolderProps(folderRatingAndTagResult, folderVm);
                     break;
                 case Filters.FolderDescriptionFilter:
-                    (List<Folder> folders, List<FolderTag> tags) folderDescriptionResult = await _folderMethods.GetAllFoldersWithDescriptionText(textForFilter, FilterInCurrentDirectory, CurrentDirectory);
+                    (List<Folder> folders, List<FolderTag> tags) folderDescriptionResult = await folderMethods.GetAllFoldersWithDescriptionText(textForFilter, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolderProps(folderDescriptionResult, folderVm);
                     break;
                 case Filters.AllFavoriteFolders:
-                    (List<Folder> folders, List<FolderTag> tags) allFavoriteFoldersResult = await _folderMethods.GetAllFavoriteFolders();
+                    (List<Folder> folders, List<FolderTag> tags) allFavoriteFoldersResult = await folderMethods.GetAllFavoriteFolders();
                     await SetDisplayFoldersForRefreshFolderProps(allFavoriteFoldersResult, folderVm);
                     break;
                 case Filters.AllFoldersWithNoImportedImages:
-                    (List<Folder> folders, List<FolderTag> tags) allFoldersWithNoImportedImagesResult = await _folderMethods.GetAllFoldersWithNoImportedImages(FilterInCurrentDirectory, CurrentDirectory);
+                    (List<Folder> folders, List<FolderTag> tags) allFoldersWithNoImportedImagesResult = await folderMethods.GetAllFoldersWithNoImportedImages(FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolderProps(allFoldersWithNoImportedImagesResult, folderVm);
                     break;
                 case Filters.AllFoldersWithMetadataNotScanned:
-                    (List<Folder> folders, List<FolderTag> tags) allFoldersWithMetadataNotScannedResult = await _folderMethods.GetAllFoldersWithMetadataNotScanned(FilterInCurrentDirectory, CurrentDirectory);
+                    (List<Folder> folders, List<FolderTag> tags) allFoldersWithMetadataNotScannedResult = await folderMethods.GetAllFoldersWithMetadataNotScanned(FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolderProps(allFoldersWithMetadataNotScannedResult, folderVm);
                     break;
                 case Filters.AllFoldersWithoutCovers:
-                    (List<Folder> folders, List<FolderTag> tags) allFoldersWithoutCoversResult = await _folderMethods.GetAllFoldersWithoutCovers(FilterInCurrentDirectory, CurrentDirectory);
+                    (List<Folder> folders, List<FolderTag> tags) allFoldersWithoutCoversResult = await folderMethods.GetAllFoldersWithoutCovers(FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolderProps(allFoldersWithoutCoversResult, folderVm);
                     break;
             }

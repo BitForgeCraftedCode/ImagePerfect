@@ -2,10 +2,13 @@ using Avalonia.Controls;
 using DynamicData;
 using ImagePerfect.Helpers;
 using ImagePerfect.Models;
+using ImagePerfect.Repository;
 using ImagePerfect.Repository.IRepository;
+using Microsoft.Extensions.Configuration;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Models;
+using MySqlConnector;
 using ReactiveUI;
 using System;
 using System.Collections.Concurrent;
@@ -22,13 +25,13 @@ namespace ImagePerfect.ViewModels
 {
 	public class PickFoldersToExtractZipsViewModel : ViewModelBase
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly FolderMethods _folderMethods;
+        private readonly MySqlDataSource _dataSource;
+        private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
-        public PickFoldersToExtractZipsViewModel(IUnitOfWork unitOfWork, MainWindowViewModel mainWindowViewModel) 
+        public PickFoldersToExtractZipsViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel) 
         {
-            _unitOfWork = unitOfWork;
-            _folderMethods = new FolderMethods(_unitOfWork);
+            _dataSource = dataSource;
+            _configuration = config;
             _mainWindowViewModel = mainWindowViewModel;
             _SelectZipFoldersInteraction = new Interaction<string, List<string>?>();
             SelectZipFoldersCommand = ReactiveCommand.CreateFromTask(SelectZipFolders);
@@ -43,7 +46,9 @@ namespace ImagePerfect.ViewModels
 
         private async Task SelectZipFolders()
         {
-            Folder? rootFolder = await _folderMethods.GetRootFolder();
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            FolderMethods folderMethods = new FolderMethods(uow);
+            Folder? rootFolder = await folderMethods.GetRootFolder();
             if (rootFolder == null)
             {
                 await MessageBoxManager.GetMessageBoxCustom(

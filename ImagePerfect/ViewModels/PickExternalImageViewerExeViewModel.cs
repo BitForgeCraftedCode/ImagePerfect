@@ -1,23 +1,20 @@
+using ImagePerfect.Helpers;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using ImagePerfect.Helpers;
-using ImagePerfect.Repository.IRepository;
-using ReactiveUI;
 
 namespace ImagePerfect.ViewModels
 {
 	public class PickExternalImageViewerExeViewModel : ViewModelBase
 	{
-        private readonly IUnitOfWork _unitOfWork;
         private readonly MainWindowViewModel _mainWindowViewModel;
 
-        public PickExternalImageViewerExeViewModel(IUnitOfWork unitOfWork, MainWindowViewModel mainWindowViewModel)
+        public PickExternalImageViewerExeViewModel(MainWindowViewModel mainWindowViewModel)
         {
-            _unitOfWork = unitOfWork;
             _mainWindowViewModel = mainWindowViewModel;
             _SelectExternalImageViewerExeInteraction = new Interaction<string, List<string>?>();
             SelectExternalImageViewerExeCommand = ReactiveCommand.CreateFromTask(SelectExternalImageViewerExe);

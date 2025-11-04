@@ -1,9 +1,12 @@
+using ImagePerfect.Models;
+using ImagePerfect.Repository;
+using ImagePerfect.Repository.IRepository;
+using Microsoft.Extensions.Configuration;
+using MySqlConnector;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ImagePerfect.Models;
-using ImagePerfect.Repository.IRepository;
-using ReactiveUI;
 
 namespace ImagePerfect.ViewModels
 {
@@ -18,15 +21,14 @@ namespace ImagePerfect.ViewModels
         private string? _externalImageViewerExePath;
         private string? _fileExplorerExePath;
 
-        private readonly IUnitOfWork _unitOfWork;
-        
-        private readonly SettingsMethods _settingsMethods;
+        private readonly MySqlDataSource _dataSource;
+        private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
-        public SettingsViewModel(IUnitOfWork unitOfWork, MainWindowViewModel mainWindowViewModel) 
+        public SettingsViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel) 
 		{
-            _unitOfWork = unitOfWork;
+            _dataSource = dataSource;
+            _configuration = config;
             _mainWindowViewModel = mainWindowViewModel;
-            _settingsMethods = new SettingsMethods(_unitOfWork);
         }
 
         public string? ExternalImageViewerExePath
@@ -62,6 +64,8 @@ namespace ImagePerfect.ViewModels
         }
         private async Task UpdateSettings()
         {
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            SettingsMethods settingsMethods = new SettingsMethods(uow);
             //update database
             Settings settings = new()
             {
@@ -72,12 +76,13 @@ namespace ImagePerfect.ViewModels
                 ExternalImageViewerExePath = ExternalImageViewerExePath,
                 FileExplorerExePath = FileExplorerExePath,
             };
-            await _settingsMethods.UpdateSettings(settings);
+            await settingsMethods.UpdateSettings(settings);
         }
 
-        public async Task GetSettings()
+        public async Task GetSettings(UnitOfWork uow)
         {
-            Settings settings = await _settingsMethods.GetSettings();
+            SettingsMethods settingsMethods = new SettingsMethods(uow);
+            Settings settings = await settingsMethods.GetSettings();
             MaxImageWidth = settings.MaxImageWidth;
             FolderPageSize = settings.FolderPageSize;
             ImagePageSize = settings.ImagePageSize;

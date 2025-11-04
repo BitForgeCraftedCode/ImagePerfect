@@ -2,7 +2,10 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using ImagePerfect.Models;
+using ImagePerfect.Repository;
 using ImagePerfect.Repository.IRepository;
+using Microsoft.Extensions.Configuration;
+using MySqlConnector;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -14,8 +17,8 @@ namespace ImagePerfect.ViewModels
     //see InitializeViewModel as that class initally sets up the SavedDirectory
     public class SavedDirectoryViewModel : ViewModelBase
 	{
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly SaveDirectoryMethods _saveDirectoryMethods;
+        private readonly MySqlDataSource _dataSource;
+        private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
 
         private string _savedDirectory = string.Empty;
@@ -45,11 +48,11 @@ namespace ImagePerfect.ViewModels
         public bool savedLoadFoldersAscending = true;
 
 
-        public SavedDirectoryViewModel(IUnitOfWork unitOfWork, MainWindowViewModel mainWindowViewModel)
+        public SavedDirectoryViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel)
         {
-            _unitOfWork = unitOfWork;
+            _dataSource = dataSource;
+            _configuration = config;
             _mainWindowViewModel = mainWindowViewModel;
-            _saveDirectoryMethods = new SaveDirectoryMethods(_unitOfWork);
         }
 
         public List<FolderViewModel> SavedDirectoryFolders { get; } = new(); //runtime-only cache
@@ -98,6 +101,8 @@ namespace ImagePerfect.ViewModels
 
         public async Task SaveDirectory(ScrollViewer scrollViewer)
         {
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            SaveDirectoryMethods saveDirectoryMethods = new SaveDirectoryMethods(uow);
             //update variables
             IsSavedDirectoryLoaded = true;
             SavedDirectory = _mainWindowViewModel.ExplorerVm.CurrentDirectory;
@@ -138,7 +143,7 @@ namespace ImagePerfect.ViewModels
                 XVector = scrollViewer.Offset.X,
                 YVector = scrollViewer.Offset.Y
             };
-            await _saveDirectoryMethods.UpdateSaveDirectory(saveDirectory);
+            await saveDirectoryMethods.UpdateSaveDirectory(saveDirectory);
 
             SetSavedDirectoryCache();
         }

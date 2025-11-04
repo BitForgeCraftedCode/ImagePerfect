@@ -11,23 +11,29 @@ using ReactiveUI;
 using System.Linq;
 using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Models;
+using Microsoft.Extensions.Configuration;
+using MySqlConnector;
+using ImagePerfect.Repository;
 
 namespace ImagePerfect.ViewModels
 {
 	public class ImportImagesViewModel : ViewModelBase
 	{
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly MySqlDataSource _dataSource;
+        private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
-        private readonly ImageCsvMethods _imageCsvMethods;
-        public ImportImagesViewModel(IUnitOfWork unitOfWork, MainWindowViewModel mainWindowViewModel) 
+        public ImportImagesViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel) 
 		{
-            _unitOfWork = unitOfWork;
+            _dataSource = dataSource;
+            _configuration = config;
             _mainWindowViewModel = mainWindowViewModel;
-            _imageCsvMethods = new ImageCsvMethods(_unitOfWork);
         }
 
         public async Task ImportImages(FolderViewModel imageFolder, bool bulkScan)
         {
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            ImageCsvMethods imageCsvMethods = new ImageCsvMethods(uow);
+
             string newPath = string.Empty;
             string imageFolderPath = imageFolder.FolderPath;
             int imageFolderId = imageFolder.FolderId;
@@ -43,7 +49,7 @@ namespace ImagePerfect.ViewModels
             //load again so the import button will go away
             if (csvIsSet)
             {
-                await _imageCsvMethods.AddImageCsv(imageFolderId);
+                await imageCsvMethods.AddImageCsv(imageFolderId);
                 if(bulkScan == false)
                 {
                     //remove one folder from path
@@ -52,11 +58,11 @@ namespace ImagePerfect.ViewModels
                     if (_mainWindowViewModel.ExplorerVm.currentFilter == ExplorerViewModel.Filters.AllFoldersWithMetadataNotScanned || _mainWindowViewModel.ExplorerVm.currentFilter == ExplorerViewModel.Filters.AllFoldersWithNoImportedImages)
                     {
                         //have to call hard refresh for these two cases as they will not be returned from the query to update props
-                        await _mainWindowViewModel.ExplorerVm.RefreshFolders();
+                        await _mainWindowViewModel.ExplorerVm.RefreshFolders("", uow);
                     }
                     else
                     {
-                        await _mainWindowViewModel.ExplorerVm.RefreshFolderProps(newPath, imageFolder);
+                        await _mainWindowViewModel.ExplorerVm.RefreshFolderProps(newPath, imageFolder, uow);
                     }
                 }
             }
