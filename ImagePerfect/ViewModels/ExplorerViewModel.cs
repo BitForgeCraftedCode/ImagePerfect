@@ -222,12 +222,12 @@ namespace ImagePerfect.ViewModels
             displayImageTags = data.tags;
             if(currentFilter == Filters.None) //dont clear folders -- folder may contain images and folders
             {
-                _mainWindowViewModel.Images.Clear(); 
+                _mainWindowViewModel.Images = new ObservableCollection<ImageViewModel>();
             }
             else
             {
-                _mainWindowViewModel.Images.Clear();
-                _mainWindowViewModel.LibraryFolders.Clear();
+                _mainWindowViewModel.Images = new ObservableCollection<ImageViewModel>();
+                _mainWindowViewModel.LibraryFolders = new ObservableCollection<FolderViewModel>();
             }
             displayImages = ImagePagination();
             await MapTagsToImagesAddToObservable();
@@ -364,12 +364,12 @@ namespace ImagePerfect.ViewModels
             displayFolderTags = data.tags;
             if (currentFilter == Filters.None) //dont clear images -- folder may have folders and images
             {
-                _mainWindowViewModel.LibraryFolders.Clear();
+                _mainWindowViewModel.LibraryFolders = new ObservableCollection<FolderViewModel>();
             }
             else
             {
-                _mainWindowViewModel.Images.Clear();
-                _mainWindowViewModel.LibraryFolders.Clear();
+                _mainWindowViewModel.Images = new ObservableCollection<ImageViewModel>();
+                _mainWindowViewModel.LibraryFolders = new ObservableCollection<FolderViewModel>();
             }
             displayFolders = FolderPagination();
             await MapTagsToFoldersAddToObservable();

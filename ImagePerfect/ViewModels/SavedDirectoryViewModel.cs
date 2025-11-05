@@ -9,6 +9,7 @@ using MySqlConnector;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
@@ -194,12 +195,12 @@ namespace ImagePerfect.ViewModels
             if ((SavedDirectoryFolders.Count > 0 || SavedDirectoryImages.Count > 0) && LoadSavedDirectoryFromCache == true)
             {
                 //fast path: restore from cache
-                _mainWindowViewModel.LibraryFolders.Clear();
-                foreach(FolderViewModel folder in SavedDirectoryFolders)
+                _mainWindowViewModel.LibraryFolders = new ObservableCollection<FolderViewModel>();
+                foreach (FolderViewModel folder in SavedDirectoryFolders)
                     _mainWindowViewModel.LibraryFolders.Add(folder);
 
-                _mainWindowViewModel.Images.Clear();
-                foreach(ImageViewModel image in SavedDirectoryImages)
+                _mainWindowViewModel.Images = new ObservableCollection<ImageViewModel>();
+                foreach (ImageViewModel image in SavedDirectoryImages)
                     _mainWindowViewModel.Images.Add(image);
 
                 // now that we've restored from cache, mark saved-dir as loaded

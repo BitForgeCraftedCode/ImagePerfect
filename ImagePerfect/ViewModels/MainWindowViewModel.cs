@@ -429,9 +429,19 @@ namespace ImagePerfect.ViewModels
 
         public PickExternalImageViewerExeViewModel PickExternalImageViewerExe { get => new PickExternalImageViewerExeViewModel(this); }
 
-        public ObservableCollection<FolderViewModel> LibraryFolders { get; } = new ObservableCollection<FolderViewModel>();
-       
-        public ObservableCollection<ImageViewModel> Images { get; } = new ObservableCollection<ImageViewModel>();
+        private ObservableCollection<FolderViewModel> _libraryFolders = new();
+        public ObservableCollection<FolderViewModel> LibraryFolders
+        {
+            get => _libraryFolders;
+            set => this.RaiseAndSetIfChanged(ref _libraryFolders, value);
+        }
+
+        private ObservableCollection<ImageViewModel> _images = new();
+        public ObservableCollection<ImageViewModel> Images
+        { 
+            get => _images;
+            set => this.RaiseAndSetIfChanged(ref _images, value);
+        }
 
         public ReactiveCommand<FolderViewModel, Task> NextFolderCommand { get; }
 
@@ -630,8 +640,8 @@ namespace ImagePerfect.ViewModels
                 if (success) 
                 {
                     //refresh UI
-                    LibraryFolders.Clear();
-                    Images.Clear();
+                    LibraryFolders = new ObservableCollection<FolderViewModel>();
+                    Images = new ObservableCollection<ImageViewModel>();
                 }
             }
             else 
