@@ -74,10 +74,19 @@
 					</MenuItem>
 				</MenuItem>
 				<MenuItem Header="_Settings">
+					<!--
 					<MenuItem>
 						<MenuItem.Template>
 							<ControlTemplate>
 								<Button Content="Settings" Command="{Binding ToggleSettingsCommand}" Classes="main-btn" Width="200" />
+							</ControlTemplate>
+						</MenuItem.Template>
+					</MenuItem>
+					-->
+					<MenuItem>
+						<MenuItem.Template>
+							<ControlTemplate>
+								<Button Content="Settings" Command="{Binding OpenSettingsWindowCommand}" Classes="main-btn" Width="200" />
 							</ControlTemplate>
 						</MenuItem.Template>
 					</MenuItem>

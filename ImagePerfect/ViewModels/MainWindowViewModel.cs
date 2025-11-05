@@ -33,6 +33,7 @@ namespace ImagePerfect.ViewModels
         private readonly IConfiguration _configuration;
 
         private FiltersWindow? _filtersWindow;
+        private SettingsWindow? _settingsWindow;
         private bool _showLoading;
         private bool _suppressImageRefresh = false;
         private int _totalImages = 0;
@@ -65,6 +66,32 @@ namespace ImagePerfect.ViewModels
             MoveFolderToTrash = new MoveFolderToTrashViewModel(_dataSource, _configuration, this);
             CreateNewFolder = new CreateNewFolderViewModel(_dataSource, _configuration, this);
 
+            OpenSettingsWindowCommand = ReactiveCommand.Create(() =>
+            {
+                /*
+                 * No window yet -> create a new one
+                 * OR
+                 * Window existed but is now closed -> create a new one
+                 */
+                if (_settingsWindow == null || !_settingsWindow.IsVisible)
+                {
+                    _settingsWindow = new SettingsWindow(this);
+
+                    // subscribe to close and reset reference when window closes
+                    _settingsWindow.Closed += (_, _) => _settingsWindow = null;
+
+                    _settingsWindow.Show(); // Non-modal, user can continue to use MainWindow
+                }
+                else
+                {
+                    // If already open, un-minimize it and bring it to the front
+                    if (_settingsWindow.WindowState == WindowState.Minimized)
+                    {
+                        _settingsWindow.WindowState = WindowState.Normal;
+                    }
+                    _settingsWindow.Activate();
+                }
+            });
             OpenFiltersWindowCommand = ReactiveCommand.Create(() => {
                 /*
                  * No window yet -> create a new one
@@ -470,6 +497,7 @@ namespace ImagePerfect.ViewModels
             set => this.RaiseAndSetIfChanged(ref _images, value);
         }
 
+        public ReactiveCommand<Unit, Unit> OpenSettingsWindowCommand { get; }
         public ReactiveCommand<Unit, Unit> OpenFiltersWindowCommand { get; }
 
         public ReactiveCommand<FolderViewModel, Task> NextFolderCommand { get; }
