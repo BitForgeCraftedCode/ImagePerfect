@@ -9,6 +9,7 @@
         x:Class="ImagePerfect.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/icons8-image-256.ico"
+		WindowState="Maximized"
         Title="ImagePerfect">
 
     <Design.DataContext>
@@ -61,6 +62,13 @@
 						<MenuItem.Template>
 							<ControlTemplate>
 								<Button Content="Folder Alphabetical Filters" Command="{Binding ToggleFiltersCommand}" CommandParameter="FolderAlphabeticalFilters" Classes="main-btn" Width="200" />
+							</ControlTemplate>
+						</MenuItem.Template>
+					</MenuItem>
+					<MenuItem>
+						<MenuItem.Template>
+							<ControlTemplate>
+								<Button Content="Open Filters Window" Command="{Binding OpenFiltersWindowCommand}" Classes="main-btn" Width="200" />
 							</ControlTemplate>
 						</MenuItem.Template>
 					</MenuItem>

@@ -7,6 +7,7 @@ using ImagePerfect.Models;
 using ImagePerfect.ObjectMappers;
 using ImagePerfect.Repository;
 using ImagePerfect.Repository.IRepository;
+using ImagePerfect.Views;
 using Microsoft.Extensions.Configuration;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Dto;
@@ -31,6 +32,7 @@ namespace ImagePerfect.ViewModels
         private readonly MySqlDataSource _dataSource;
         private readonly IConfiguration _configuration;
 
+        private FiltersWindow? _filtersWindow;
         private bool _showLoading;
         private bool _suppressImageRefresh = false;
         private int _totalImages = 0;
@@ -63,6 +65,31 @@ namespace ImagePerfect.ViewModels
             MoveFolderToTrash = new MoveFolderToTrashViewModel(_dataSource, _configuration, this);
             CreateNewFolder = new CreateNewFolderViewModel(_dataSource, _configuration, this);
 
+            OpenFiltersWindowCommand = ReactiveCommand.Create(() => {
+                /*
+                 * No window yet -> create a new one
+                 * OR
+                 * Window existed but is now closed -> create a new one
+                 */
+                if (_filtersWindow == null || !_filtersWindow.IsVisible)
+                {
+                    _filtersWindow = new FiltersWindow(this);
+
+                    // subscribe to close and reset reference when window closes
+                    _filtersWindow.Closed += (_, _) => _filtersWindow = null;
+
+                    _filtersWindow.Show(); // Non-modal, user can continue to use MainWindow
+                }
+                else
+                {
+                    // If already open, un-minimize it and bring it to the front
+                    if (_filtersWindow.WindowState == WindowState.Minimized)
+                    {
+                        _filtersWindow.WindowState = WindowState.Normal;
+                    }
+                    _filtersWindow.Activate();
+                }
+            });
             NextFolderCommand = ReactiveCommand.Create(async (FolderViewModel currentFolder) => {
                 await DirectoryNavigationVm.NextFolder(currentFolder);
             });
@@ -442,6 +469,8 @@ namespace ImagePerfect.ViewModels
             get => _images;
             set => this.RaiseAndSetIfChanged(ref _images, value);
         }
+
+        public ReactiveCommand<Unit, Unit> OpenFiltersWindowCommand { get; }
 
         public ReactiveCommand<FolderViewModel, Task> NextFolderCommand { get; }
 

@@ -1,0 +1,207 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:vm="using:ImagePerfect.ViewModels"
+		xmlns:v="using:ImagePerfect.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="ImagePerfect.Views.FiltersWindow"
+		x:DataType="vm:MainWindowViewModel"
+		Icon="/Assets/icons8-image-256.ico"
+		Topmost="False"
+		ShowInTaskbar="True"
+		WindowState="Maximized"
+        Title="Filters">
+
+	<ScrollViewer VerticalScrollBarVisibility="Auto">
+		<StackPanel Orientation="Vertical" Classes="menu-bg-color">
+			<!--Folder Filters-->
+			<StackPanel Orientation="Vertical" Classes="menu-bg-color" IsEnabled="{Binding !ShowLoading}">
+				<TextBlock FontSize="16" FontWeight="Bold" TextAlignment="Center" Margin="10">Folder Filters</TextBlock>
+				<Grid RowDefinitions="Auto, Auto, Auto" ColumnDefinitions="Auto, Auto, Auto, Auto" HorizontalAlignment="Center">
+					<NumericUpDown Grid.Row="0" Grid.Column="0" Minimum="0" Value="10" Maximum="10" Width="200"
+								   Margin="5" ParsingNumberStyle="Integer" FormatString="0"
+								   x:Name="FilterFolderRating"/>
+					<Button Grid.Row="0" Grid.Column="1" Margin="5" Width="200" HorizontalContentAlignment="Center"
+							Command="{Binding FilterFoldersOnRatingCommand}"
+							CommandParameter="{Binding #FilterFolderRating.Value}" Classes="menu-btn">
+						Filter Folders on Rating
+					</Button>
+
+					<AutoCompleteBox Grid.Row="0" Grid.Column="2" Margin="5" FilterMode="StartsWith" Width="200"
+									 ItemsSource="{Binding TagsList}"
+									 ValueMemberBinding="{Binding TagName}"
+									 x:Name="FilterFolderTag"/>
+					<Button Grid.Row="0" Grid.Column="3" Margin="5" Width="200" HorizontalContentAlignment="Center"
+							Command="{Binding FilterFoldersOnTagCommand}"
+							CommandParameter="{Binding #FilterFolderTag.Text}" Classes="menu-btn">
+						Filter Folders on Tags
+					</Button>
+
+					<TextBox Grid.Row="1" Grid.Column="0" Margin="5" MaxLength="200" Width="200" x:Name="FilterFolderDescriptionText"/>
+					<Button Grid.Row="1" Grid.Column="1" Margin="5" Width="200" HorizontalContentAlignment="Center"
+							Command="{Binding FilterFoldersOnDescriptionCommand}"
+							CommandParameter="{Binding #FilterFolderDescriptionText.Text}" Classes="menu-btn">
+						Seach Folder Description
+					</Button>
+
+					
+
+					
+
+					<NumericUpDown Grid.Row="2" Grid.Column="0" Minimum="0" Maximum="10" Width="200"
+								   Margin="5" ParsingNumberStyle="Integer" FormatString="0"
+								   Value="{Binding ExplorerVm.ComboFolderFilterRating}" />
+					<AutoCompleteBox Grid.Row="2" Grid.Column="1" Margin="5" FilterMode="StartsWith" Width="200"
+									 ItemsSource="{Binding TagsList}"
+									 ValueMemberBinding="{Binding TagName}"
+									 Text="{Binding ExplorerVm.ComboFolderFilterTagOne}" />
+					<AutoCompleteBox Grid.Row="2" Grid.Column="2" Margin="5" FilterMode="StartsWith" Width="200"
+									 ItemsSource="{Binding TagsList}"
+									 ValueMemberBinding="{Binding TagName}"
+									 Text="{Binding ExplorerVm.ComboFolderFilterTagTwo}" />
+					<Button Grid.Row="2" Grid.Column="3" Margin="5" Width="200" HorizontalContentAlignment="Center"
+							Command="{Binding FilterFolderOnRatingAndTagCommand}"
+							Classes="menu-btn">
+						Filter On Rating And Tag
+					</Button>
+				</Grid>
+				<Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, *" HorizontalAlignment="Center">
+					<Button Grid.Row="0" Grid.Column="0" Margin="5" Width="300" HorizontalContentAlignment="Center"
+							Command="{Binding GetAllFoldersWithNoImportedImagesCommand}" Classes="menu-btn">
+						Get Folders With Images Not Imported
+					</Button>
+					<Button Grid.Row="0" Grid.Column="1" Margin="5" Width="300" HorizontalContentAlignment="Center"
+							Command="{Binding GetAllFoldersWithMetadataNotScannedCommand}" Classes="menu-btn">
+						Get Folders With Metadata Not Scanned
+					</Button>
+					<Button Grid.Row="1" Grid.Column="0" Margin="5" Width="300" HorizontalContentAlignment="Center"
+							Command="{Binding GetAllFoldersWithoutCoversCommand}" Classes="menu-btn">
+						Get Folders Without Covers
+					</Button>
+					<Button Grid.Row="1" Grid.Column="1" Margin="5" Width="300" HorizontalContentAlignment="Center"
+							ToolTip.Tip="Gets The Folders In The Current Directory And Sorts Them By Most Recent Date Modified"
+							Command="{Binding FilterFoldersDateModifiedInCurrentDirectoryCommand}" Classes="menu-btn">
+						Get Folders By Date Modified
+					</Button>
+					
+				</Grid>
+			</StackPanel>
+			<Border Height="1" BorderThickness="0,0,0,1" BorderBrush="Gray" Margin="0,10,0,10"/>
+			<!--Image Filters-->
+			<StackPanel Orientation="Vertical" Classes="menu-bg-color" IsEnabled="{Binding !ShowLoading}">
+				<TextBlock FontSize="16" FontWeight="Bold" TextAlignment="Center" Margin="10">Image Filters</TextBlock>
+				<Grid RowDefinitions="Auto" ColumnDefinitions="Auto, Auto, Auto, Auto" HorizontalAlignment="Center">
+					<NumericUpDown Grid.Row="0" Grid.Column="0" Minimum="0" Value="5" Maximum="5" Width="200"
+								   Margin="5" ParsingNumberStyle="Integer" FormatString="0"
+								   x:Name="FilterImageRating"/>
+					<Button Grid.Row="0" Grid.Column="1" Margin="5" Width="200" HorizontalContentAlignment="Center"
+							Command="{Binding FilterImagesOnRatingCommand}"
+							CommandParameter="{Binding #FilterImageRating.Value}" Classes="menu-btn">
+						Filter Images on Rating
+					</Button>
+
+					<AutoCompleteBox Grid.Row="0" Grid.Column="2" Margin="5" FilterMode="StartsWith" Width="200"
+									 ItemsSource="{Binding TagsList}"
+									 ValueMemberBinding="{Binding TagName}"
+									 x:Name="FilterImageTag"/>
+					<Button Grid.Row="0" Grid.Column="3" Margin="5" Width="200" HorizontalContentAlignment="Center"
+							Command="{Binding FilterImagesOnTagCommand}"
+							CommandParameter="{Binding #FilterImageTag.Text}" Classes="menu-btn">
+						Filter Images on Tags
+					</Button>
+				</Grid>
+				
+			</StackPanel>
+			<Border Height="1" BorderThickness="0,0,0,1" BorderBrush="Gray" Margin="0,10,0,10"/>
+			<!--Image Date Filters-->
+			<StackPanel Orientation="Vertical" Classes="menu-bg-color" IsEnabled="{Binding !ShowLoading}">
+				<TextBlock FontSize="16" FontWeight="Bold" TextAlignment="Center" Margin="10">Image Date Filters</TextBlock>
+				<Grid RowDefinitions="Auto" ColumnDefinitions="Auto, Auto, Auto, Auto" HorizontalAlignment="Center">
+					<ComboBox x:Name="Years" Grid.Row="0" Grid.Column="0" ItemsSource="{Binding ImageDatesVm.Years}" Width="125" Margin="5" />
+					<Button Grid.Row="0" Grid.Column="1" Margin="5" Classes="menu-btn"
+							Command="{Binding FilterImagesOnYearCommand}"
+							CommandParameter="{Binding SelectedItem, ElementName=Years}">
+						Filter By Year
+					</Button>
+					<ComboBox x:Name="YearMonth" Grid.Row="0" Grid.Column="2" ItemsSource="{Binding ImageDatesVm.YearMonths}" Width="125" Margin="5" />
+					<Button Grid.Row="0" Grid.Column="3" Classes="menu-btn"
+							Command="{Binding FilterImagesOnYearMonthCommand}"
+							CommandParameter="{Binding SelectedItem, ElementName=YearMonth}">
+						Filter By Year And Month
+					</Button>
+				</Grid>
+				<Grid RowDefinitions="Auto" ColumnDefinitions="Auto" HorizontalAlignment="Center">
+					<StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Center">
+						<DatePicker SelectedDate="{Binding ImageDatesVm.StartDate}" Margin="5"/>
+						<TextBlock Text="to" VerticalAlignment="Center"/>
+						<DatePicker SelectedDate="{Binding ImageDatesVm.EndDate}" Margin="5"/>
+						<Button Classes="menu-btn" Margin="5"
+								Command="{Binding FilterImagesOnDateRangeCommand}"
+								CommandParameter="{Binding ImageDatesVm}">
+							Filter On Range
+						</Button>
+					</StackPanel>
+				</Grid>
+				<Grid RowDefinitions="Auto" ColumnDefinitions="Auto" HorizontalAlignment="Center">
+					
+					<Button Grid.Row="0" Grid.Column="0" Margin="5"
+							Command="{Binding UpdateImageDatesCommand}" Classes="menu-btn">
+						Refresh Available Dates
+					</Button>
+				</Grid>
+			</StackPanel>
+			<Border Height="1" BorderThickness="0,0,0,1" BorderBrush="Gray" Margin="0,10,0,10"/>
+			<!--Filter In Current Directory and Load Current Directory-->
+			<StackPanel Orientation="Vertical" Classes="menu-bg-color" IsEnabled="{Binding !ShowLoading}">
+				<TextBlock FontSize="14" TextAlignment="Center" Margin="0 0 0 5">Filter In Current Directory Applies To All Above Filters</TextBlock>
+				<Grid RowDefinitions="Auto" ColumnDefinitions="Auto, Auto" HorizontalAlignment="Center">
+					<CheckBox Grid.Row="0" Grid.Column="0" Margin="5" IsChecked="{Binding ExplorerVm.FilterInCurrentDirectory}">
+						Filter In Current Directory
+					</CheckBox>
+					<Button Grid.Row="0" Grid.Column="1" Margin="5"
+							Command="{Binding LoadCurrentDirectoryCommand}" Classes="menu-btn">
+						Load Current Directory
+					</Button>
+				</Grid>
+			</StackPanel>
+			<Border Height="1" BorderThickness="0,0,0,1" BorderBrush="Gray" Margin="0,10,0,10"/>
+			<!--Folder Alphabetical Filters-->
+			<StackPanel Classes="menu-bg-color">
+				<TextBlock FontSize="16" FontWeight="Bold" TextAlignment="Center" Margin="10">Folder Alphabetical Filters</TextBlock>
+				<TextBlock FontSize="14" TextAlignment="Center" Margin="0 0 0 5">Alphabetical Filters Are Always In The Current Directory</TextBlock>
+				<Grid RowDefinitions="Auto" ColumnDefinitions="*" HorizontalAlignment="Center" IsEnabled="{Binding !ShowLoading}">
+					<StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0">
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="A" Classes="menu-btn">A</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="B" Classes="menu-btn">B</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="C" Classes="menu-btn">C</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="D" Classes="menu-btn">D</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="E" Classes="menu-btn">E</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="F" Classes="menu-btn">F</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="G" Classes="menu-btn">G</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="H" Classes="menu-btn">H</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="I" Classes="menu-btn">I</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="J" Classes="menu-btn">J</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="K" Classes="menu-btn">K</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="L" Classes="menu-btn">L</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="M" Classes="menu-btn">M</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="N" Classes="menu-btn">N</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="O" Classes="menu-btn">O</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="P" Classes="menu-btn">P</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="Q" Classes="menu-btn">Q</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="R" Classes="menu-btn">R</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="S" Classes="menu-btn">S</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="T" Classes="menu-btn">T</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="U" Classes="menu-btn">U</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="V" Classes="menu-btn">V</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="W" Classes="menu-btn">W</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="X" Classes="menu-btn">X</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="Y" Classes="menu-btn">Y</Button>
+						<Button Command="{Binding FilterFoldersInCurrentDirectoryByStartingLetterCommand}" CommandParameter="Z" Classes="menu-btn">Z</Button>
+					</StackPanel>
+				</Grid>
+			</StackPanel>
+		</StackPanel>
+		
+	</ScrollViewer>
+</Window>
