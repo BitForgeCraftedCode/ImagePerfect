@@ -206,13 +206,11 @@ namespace ImagePerfect.ViewModels
                     ImageViewModel imageViewModel = await ImageMapper.GetImageVm(taggedImage);
                     results[i] = imageViewModel;
                 });
+            List<ImageViewModel> temp = new List<ImageViewModel>(results);
             // This must be on the UI thread
             await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                foreach (ImageViewModel imageViewModel in results)
-                {
-                    _mainWindowViewModel.Images.Add(imageViewModel);
-                }
+                _mainWindowViewModel.Images = new ObservableCollection<ImageViewModel>(temp);
             });
         }
 
@@ -220,14 +218,37 @@ namespace ImagePerfect.ViewModels
         {
             displayImages = data.images;
             displayImageTags = data.tags;
-            if(currentFilter == Filters.None) //dont clear folders -- folder may contain images and folders
+            /*
+             * Copy the current ObservableCollection<ImageViewModel> into a new List<ImageViewModel> oldImag (this is a reference copy)
+             * so we can safely dispose their unmanaged bitmap resources after detaching the UI.
+             * Disposing immediately releases GPU/VRAM and unmanaged memory, which are not freed
+             * automatically when clearing the ObservableCollection. This keeps navigation smooth
+             * and prevents memory buildup from old image bitmaps.
+             */
+            if (currentFilter == Filters.None) //dont clear folders -- folder may contain images and folders
             {
+                List<ImageViewModel> oldImages = _mainWindowViewModel.Images.ToList();
                 _mainWindowViewModel.Images = new ObservableCollection<ImageViewModel>();
+                await Task.Run(() =>
+                {
+                    foreach (ImageViewModel img in oldImages)
+                        img.ImageBitmap?.Dispose();
+                });
             }
             else
             {
+                List<FolderViewModel> oldFolders = _mainWindowViewModel.LibraryFolders.ToList();
+                List<ImageViewModel> oldImages = _mainWindowViewModel.Images.ToList();
                 _mainWindowViewModel.Images = new ObservableCollection<ImageViewModel>();
                 _mainWindowViewModel.LibraryFolders = new ObservableCollection<FolderViewModel>();
+                await Task.Run(() => 
+                {
+                    foreach (ImageViewModel img in oldImages)
+                        img.ImageBitmap?.Dispose();
+
+                    foreach (FolderViewModel folder in oldFolders)
+                        folder.CoverImageBitmap?.Dispose();
+                });
             }
             displayImages = ImagePagination();
             await MapTagsToImagesAddToObservable();
@@ -253,7 +274,7 @@ namespace ImagePerfect.ViewModels
             // Before clearing/reloading, capture the current UI state into cache
             if (_mainWindowViewModel.SavedDirectoryVm.IsSavedDirectoryLoaded && _mainWindowViewModel.SavedDirectoryVm.LoadSavedDirectoryFromCache)
             {
-                _mainWindowViewModel.SavedDirectoryVm.UpdateSavedDirectoryCache();
+                await _mainWindowViewModel.SavedDirectoryVm.UpdateSavedDirectoryCache();
             }
             _mainWindowViewModel.ShowLoading = true;
             switch (currentFilter)
@@ -348,13 +369,10 @@ namespace ImagePerfect.ViewModels
                         FolderViewModel folderViewModel = await FolderMapper.GetFolderVm(taggedFolder);
                         results[i] = folderViewModel;
                     });
-
+            List<FolderViewModel> temp = new List<FolderViewModel>(results);
             // This must be on the UI thread
             await Dispatcher.UIThread.InvokeAsync(() => {
-                foreach (FolderViewModel folderViewModel in results)
-                {
-                    _mainWindowViewModel.LibraryFolders.Add(folderViewModel);
-                }
+                _mainWindowViewModel.LibraryFolders = new ObservableCollection<FolderViewModel>(temp);
             });
         }
 
@@ -364,12 +382,28 @@ namespace ImagePerfect.ViewModels
             displayFolderTags = data.tags;
             if (currentFilter == Filters.None) //dont clear images -- folder may have folders and images
             {
+                List<FolderViewModel> oldFolders = _mainWindowViewModel.LibraryFolders.ToList();
                 _mainWindowViewModel.LibraryFolders = new ObservableCollection<FolderViewModel>();
+                await Task.Run(() =>
+                {
+                    foreach (FolderViewModel folder in oldFolders)
+                        folder.CoverImageBitmap?.Dispose();
+                });
             }
             else
             {
+                List<FolderViewModel> oldFolders = _mainWindowViewModel.LibraryFolders.ToList();
+                List<ImageViewModel> oldImages = _mainWindowViewModel.Images.ToList();
                 _mainWindowViewModel.Images = new ObservableCollection<ImageViewModel>();
                 _mainWindowViewModel.LibraryFolders = new ObservableCollection<FolderViewModel>();
+                await Task.Run(() =>
+                {
+                    foreach (ImageViewModel img in oldImages)
+                        img.ImageBitmap?.Dispose();
+
+                    foreach (FolderViewModel folder in oldFolders)
+                        folder.CoverImageBitmap?.Dispose();
+                });
             }
             displayFolders = FolderPagination();
             await MapTagsToFoldersAddToObservable();
@@ -398,7 +432,7 @@ namespace ImagePerfect.ViewModels
             // Before clearing/reloading, capture the current UI state into cache
             if (_mainWindowViewModel.SavedDirectoryVm.IsSavedDirectoryLoaded && _mainWindowViewModel.SavedDirectoryVm.LoadSavedDirectoryFromCache)
             {
-                _mainWindowViewModel.SavedDirectoryVm.UpdateSavedDirectoryCache();
+                await _mainWindowViewModel.SavedDirectoryVm.UpdateSavedDirectoryCache();
             }
 
             _mainWindowViewModel.ShowLoading = true;

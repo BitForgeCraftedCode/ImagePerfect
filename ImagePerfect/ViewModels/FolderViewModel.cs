@@ -17,7 +17,7 @@ namespace ImagePerfect.ViewModels
 		private string? _coverImagePath;
 		private string? _folderDescription;
 		private string? _folderTags;
-        private string _newTag;
+        private string? _newTag;
         private int _folderRating;
 		private bool _hasFiles;
 		private bool _isRoot;
@@ -31,7 +31,7 @@ namespace ImagePerfect.ViewModels
                 star.IsFilled = star.Number <= FolderRating;
         }
 
-        public ObservableCollection<StarItem> Stars { get; } = new ObservableCollection<StarItem>(
+        public ObservableCollection<StarItem> Stars { get; set; } = new ObservableCollection<StarItem>(
            Enumerable.Range(1, 10).Select(i => new StarItem(i))
         );
         public int FolderId 
@@ -76,17 +76,19 @@ namespace ImagePerfect.ViewModels
 			get => _folderTags;
 			set => this.RaiseAndSetIfChanged(ref _folderTags, value);
 		}
-        public string NewTag
+        public string? NewTag
         {
             get => _newTag;
 			set 
 			{
 				this.RaiseAndSetIfChanged(ref _newTag, value);
-				if(value.Contains(" "))
+				if (value != null) 
 				{
-					_newTag = _newTag.Trim();
-				}
-					
+                    if (value.Contains(" "))
+                    {
+                        _newTag = _newTag.Trim();
+                    }
+                }			
 			}
         }
         public int FolderRating

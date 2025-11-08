@@ -4,6 +4,7 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 
 namespace ImagePerfect.ViewModels
@@ -28,7 +29,8 @@ namespace ImagePerfect.ViewModels
         private bool _showAddMultipleImageTags = false;
 
         public ImageViewModel() { }
-		//copy constructor so i can make a deep copy of this object
+		//copy constructor so i can make a deep copy of this object -- see PathHelper for the one use case for this.
+		//I dont need to deep copy the bitmap there
         public ImageViewModel(ImageViewModel imageVm)
         {
 			ImageId = imageVm.ImageId;
@@ -47,8 +49,17 @@ namespace ImagePerfect.ViewModels
 			DateTakenDay = imageVm.DateTakenDay;
 			IsSelected = imageVm.IsSelected;
 			ShowAddMultipleImageTags = imageVm.ShowAddMultipleImageTags;
-			Tags = imageVm.Tags;
-			Stars = imageVm.Stars;
+            // Deep copy Tags list
+            Tags = imageVm.Tags.Select(t => new ImageTag
+            {
+				TagId = t.TagId,
+				TagName = t.TagName,
+				ImageId = t.ImageId
+            }).ToList();
+            // Deep copy Stars collection
+            Stars = new ObservableCollection<StarItem>(
+                imageVm.Stars.Select(s => new StarItem(s.Number) { IsFilled = s.IsFilled })
+            );
         }
 
         private void UpdateStars()
@@ -57,7 +68,7 @@ namespace ImagePerfect.ViewModels
                 star.IsFilled = star.Number <= ImageRating;
         }
 
-        public ObservableCollection<StarItem> Stars { get; } = new ObservableCollection<StarItem>(
+        public ObservableCollection<StarItem> Stars { get; set; } = new ObservableCollection<StarItem>(
            Enumerable.Range(1, 5).Select(i => new StarItem(i))
 		);
        

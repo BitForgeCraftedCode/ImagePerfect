@@ -64,7 +64,8 @@ namespace ImagePerfect.Helpers
                     using (MemoryStream ms = new MemoryStream())
                     using (var image = await Image.LoadAsync(path))
                     {
-                        image.Mutate(x => {
+                        image.Mutate(x =>
+                        {
                             x.AutoOrient();
                             x.Resize(600, 0);
                         });
@@ -85,7 +86,7 @@ namespace ImagePerfect.Helpers
             {
                 return LoadFromResource(new Uri("avares://ImagePerfect/Assets/missing_image.png"));
             }
-            
+
         }
     }
 }

@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.Repository;
 using ImagePerfect.Repository.IRepository;
@@ -11,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ImagePerfect.ViewModels
@@ -102,6 +104,7 @@ namespace ImagePerfect.ViewModels
 
         public async Task SaveDirectory(ScrollViewer scrollViewer)
         {
+            _mainWindowViewModel.ShowLoading = true;
             await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
             SaveDirectoryMethods saveDirectoryMethods = new SaveDirectoryMethods(uow);
             //update variables
@@ -146,22 +149,43 @@ namespace ImagePerfect.ViewModels
             };
             await saveDirectoryMethods.UpdateSaveDirectory(saveDirectory);
 
-            SetSavedDirectoryCache();
+            await SetSavedDirectoryCache();
+            _mainWindowViewModel.ShowLoading = false;
         }
 
-        private void SetSavedDirectoryCache()
+        private async Task SetSavedDirectoryCache()
         {
             // update runtime cache
             SavedDirectoryFolders.Clear();
             SavedDirectoryImages.Clear();
 
-            SavedDirectoryFolders.AddRange(_mainWindowViewModel.LibraryFolders);
-            SavedDirectoryImages.AddRange(_mainWindowViewModel.Images);
+            //Because the image bitmaps are disposed we have to make a deep copy
+            FolderViewModel[] folderVmArray = new FolderViewModel[_mainWindowViewModel.LibraryFolders.Count];
+            await Parallel.ForEachAsync(
+                Enumerable.Range(0, _mainWindowViewModel.LibraryFolders.Count),
+                new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
+                async (i, ct) => 
+                {
+                    folderVmArray[i] = await DeepCopy.CopyFolderVm(_mainWindowViewModel.LibraryFolders[i]);
+                });
+            SavedDirectoryFolders.AddRange(folderVmArray);
+            
+            ImageViewModel[] imageVmArray = new ImageViewModel[_mainWindowViewModel.Images.Count];
+            await Parallel.ForEachAsync(
+                Enumerable.Range(0, _mainWindowViewModel.Images.Count),
+                new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
+                async (i, ct) => 
+                {
+                    imageVmArray[i] = await DeepCopy.CopyImageVm(_mainWindowViewModel.Images[i]);
+                });
+            SavedDirectoryImages.AddRange(imageVmArray);
         }
-        public void UpdateSavedDirectoryCache()
+        public async Task UpdateSavedDirectoryCache()
         {
-            SetSavedDirectoryCache();
+            _mainWindowViewModel.ShowLoading = true;
+            await SetSavedDirectoryCache();
             IsSavedDirectoryLoaded = false;
+            _mainWindowViewModel.ShowLoading = false;
         }
         public async Task LoadSavedDirectory(ScrollViewer scrollViewer)
         {
@@ -195,14 +219,30 @@ namespace ImagePerfect.ViewModels
             if ((SavedDirectoryFolders.Count > 0 || SavedDirectoryImages.Count > 0) && LoadSavedDirectoryFromCache == true)
             {
                 //fast path: restore from cache
+                List<FolderViewModel> oldFolders = _mainWindowViewModel.LibraryFolders.ToList();
                 _mainWindowViewModel.LibraryFolders = new ObservableCollection<FolderViewModel>();
-                foreach (FolderViewModel folder in SavedDirectoryFolders)
-                    _mainWindowViewModel.LibraryFolders.Add(folder);
+                await Task.Run(() =>
+                {
+                    foreach (FolderViewModel folder in oldFolders)
+                        folder.CoverImageBitmap?.Dispose();
+                });
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    _mainWindowViewModel.LibraryFolders = new ObservableCollection<FolderViewModel>(SavedDirectoryFolders);
+                });
 
+                List<ImageViewModel> oldImages = _mainWindowViewModel.Images.ToList();
                 _mainWindowViewModel.Images = new ObservableCollection<ImageViewModel>();
-                foreach (ImageViewModel image in SavedDirectoryImages)
-                    _mainWindowViewModel.Images.Add(image);
-
+                await Task.Run(() =>
+                {
+                    foreach (ImageViewModel img in oldImages)
+                        img.ImageBitmap?.Dispose();
+                });
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    _mainWindowViewModel.Images = new ObservableCollection<ImageViewModel>(SavedDirectoryImages);
+                });
+               
                 // now that we've restored from cache, mark saved-dir as loaded
                 IsSavedDirectoryLoaded = true;
 
@@ -217,7 +257,7 @@ namespace ImagePerfect.ViewModels
                 // slow path: full rebuild
                 await _mainWindowViewModel.DirectoryNavigationVm.ReLoadSavedDirectory(SavedDirectory);
                 // populate the runtime cache now that the UI is showing the saved directory
-                SetSavedDirectoryCache();
+                await SetSavedDirectoryCache();
                 // now mark saved-dir as loaded so refreshes can update cache later
                 IsSavedDirectoryLoaded = true;
                 scrollViewer.Offset = SavedOffsetVector;
