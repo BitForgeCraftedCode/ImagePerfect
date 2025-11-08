@@ -224,7 +224,13 @@ namespace ImagePerfect.ViewModels
                 await Task.Run(() =>
                 {
                     foreach (FolderViewModel folder in oldFolders)
-                        folder.CoverImageBitmap?.Dispose();
+                    {
+                        // Prevent NullReferenceExceptions when reloading the same saved directory.
+                        // On a second load, oldFolders may reference the same objects in SavedDirectoryFolders.
+                        // Only dispose bitmaps that are not part of the saved cache.
+                        if (!SavedDirectoryFolders.Contains(folder))
+                            folder.CoverImageBitmap?.Dispose();
+                    }  
                 });
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
@@ -235,8 +241,12 @@ namespace ImagePerfect.ViewModels
                 _mainWindowViewModel.Images = new ObservableCollection<ImageViewModel>();
                 await Task.Run(() =>
                 {
-                    foreach (ImageViewModel img in oldImages)
-                        img.ImageBitmap?.Dispose();
+                    foreach (ImageViewModel img in oldImages) 
+                    { 
+                        //see above folder comment same applies here
+                        if(!SavedDirectoryImages.Contains(img))
+                            img.ImageBitmap?.Dispose();
+                    }
                 });
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
