@@ -97,6 +97,7 @@ namespace ImagePerfect.ViewModels
                         SavedDirectory = _mainWindowViewModel.ExplorerVm.CurrentDirectory
                     };
                     _mainWindowViewModel.HistoryVm.SaveDirectoryItemsList.Add(saveDirectoryItem);
+                    _mainWindowViewModel.InitializeVm.HasRootLibrary = true;
                 }
             }
             _mainWindowViewModel.ShowLoading = false;

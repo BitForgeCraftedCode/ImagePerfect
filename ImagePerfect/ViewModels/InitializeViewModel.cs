@@ -6,6 +6,7 @@ using ImagePerfect.Repository;
 using ImagePerfect.Repository.IRepository;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,6 +18,7 @@ namespace ImagePerfect.ViewModels
 	public class InitializeViewModel : ViewModelBase
 	{
         private string _rootFolderLocation = string.Empty;
+        private bool _hasRootLibrary = true;
         private readonly MySqlDataSource _dataSource;
         private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
@@ -27,6 +29,12 @@ namespace ImagePerfect.ViewModels
             _mainWindowViewModel = mainWindowViewModel;
         }
 
+        //used to hide UI buttons if no RootLibrary is selected
+        public bool HasRootLibrary
+        {
+            get => _hasRootLibrary;
+            set => this.RaiseAndSetIfChanged(ref _hasRootLibrary, value);
+        }
         public string RootFolderLocation
         {
             get => _rootFolderLocation;
@@ -56,6 +64,11 @@ namespace ImagePerfect.ViewModels
             await _mainWindowViewModel.GetTagsList(uow);
             await _mainWindowViewModel.SettingsVm.GetSettings(uow);
             _mainWindowViewModel.ImageDatesVm = await imageMethods.GetImageDates();
+
+            if (string.IsNullOrEmpty(RootFolderLocation))
+            {
+                HasRootLibrary = false;
+            }
 
             SaveDirectory saveDirectory = await saveDirectoryMethods.GetSavedDirectory();
             if (saveDirectory.SavedDirectory != "")

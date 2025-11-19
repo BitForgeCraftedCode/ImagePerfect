@@ -21,8 +21,11 @@
     </Design.DataContext>
 
 	<Grid ColumnDefinitions="*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,*,Auto,Auto" x:Name="Root">
+		<StackPanel Grid.Row="0" Classes="menu-bg-color" IsVisible="{Binding !InitializeVm.HasRootLibrary}">
+			<v:PickRootFolderView DataContext="{Binding PickRootFolder}" x:Name="PickRootFolder"/>
+		</StackPanel>
 		<!--File Menu-->
-		<StackPanel Grid.Row="0" Classes="menu-bg-color">
+		<StackPanel Grid.Row="0" Classes="menu-bg-color" IsVisible="{Binding InitializeVm.HasRootLibrary}">
 			<Menu>
 				<MenuItem Header="_File">
 					<MenuItem>
@@ -154,6 +157,7 @@
 					</MenuItem>
 				</MenuItem>
 				<MenuItem Header="_Library Management">
+					<!--
 					<MenuItem>
 						<MenuItem.Template>
 							<ControlTemplate>
@@ -161,6 +165,7 @@
 							</ControlTemplate>
 						</MenuItem.Template>
 					</MenuItem>
+					-->
 					<MenuItem>
 						<MenuItem.Template>
 							<ControlTemplate>
@@ -463,7 +468,7 @@
 			</Grid>
 		</StackPanel>
 		<!--Directory Options Always Visible Nav Panel-->
-		<StackPanel Grid.Row="7" Classes="menu-bg-color">
+		<StackPanel Grid.Row="7" Classes="menu-bg-color" IsVisible="{Binding InitializeVm.HasRootLibrary}">
 			<Grid RowDefinitions="Auto" ColumnDefinitions="*" HorizontalAlignment="Center" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
 				<StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0">
 					<!--
@@ -1079,7 +1084,7 @@
 			</StackPanel>
 		</ScrollViewer>
 		<!--Pagination-->
-		<StackPanel Grid.Row="14" Orientation="Vertical" HorizontalAlignment="Stretch" Classes="menu-bg-color">
+		<StackPanel Grid.Row="14" Orientation="Vertical" HorizontalAlignment="Stretch" Classes="menu-bg-color" IsVisible="{Binding InitializeVm.HasRootLibrary}">
 			<Grid RowDefinitions="Auto" ColumnDefinitions="Auto, Auto, Auto, Auto, Auto" HorizontalAlignment="Center" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
 				<Button Margin="5" Grid.Row="0" Grid.Column="0"
 					Command="{Binding PreviousPageCommand}" Classes="menu-btn">
@@ -1100,7 +1105,7 @@
 				</Button>
 			</Grid>
 		</StackPanel>
-		<StackPanel Grid.Row="15" HorizontalAlignment="Stretch"  Classes="menu-bg-color">
+		<StackPanel Grid.Row="15" HorizontalAlignment="Stretch"  Classes="menu-bg-color" IsVisible="{Binding InitializeVm.HasRootLibrary}">
 			<Grid RowDefinitions="Auto" ColumnDefinitions="Auto,Auto,Auto,Auto" HorizontalAlignment="Center" Margin="0 0 0 10">
 				<Label Grid.Row="0" Grid.Column="0">Total Pages:</Label>
 				<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ExplorerVm.MaxPage}" VerticalAlignment="Center"></TextBlock>

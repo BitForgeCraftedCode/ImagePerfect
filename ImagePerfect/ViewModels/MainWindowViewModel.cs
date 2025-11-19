@@ -705,6 +705,7 @@ namespace ImagePerfect.ViewModels
                     //refresh UI
                     LibraryFolders = new ObservableCollection<FolderViewModel>();
                     Images = new ObservableCollection<ImageViewModel>();
+                    InitializeVm.HasRootLibrary = false;
                 }
             }
             else 
