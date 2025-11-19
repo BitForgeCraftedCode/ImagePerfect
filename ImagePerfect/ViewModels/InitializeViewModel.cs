@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 
@@ -45,7 +46,7 @@ namespace ImagePerfect.ViewModels
             }
         }
 
-        public async void Initialize()
+        public async Task Initialize()
         {
             await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
             ImageMethods imageMethods = new ImageMethods(uow);
@@ -60,17 +61,28 @@ namespace ImagePerfect.ViewModels
             if (saveDirectory.SavedDirectory != "")
             {
                 //update variables
-                _mainWindowViewModel.SavedDirectoryVm.SavedDirectory = saveDirectory.SavedDirectory;
-                _mainWindowViewModel.SavedDirectoryVm.SavedFolderPage = saveDirectory.SavedFolderPage;
-                _mainWindowViewModel.SavedDirectoryVm.SavedTotalFolderPages = saveDirectory.SavedTotalFolderPages;
-                _mainWindowViewModel.SavedDirectoryVm.SavedImagePage = saveDirectory.SavedImagePage;
-                _mainWindowViewModel.SavedDirectoryVm.SavedTotalImagePages = saveDirectory.SavedTotalImagePages;
-                _mainWindowViewModel.SavedDirectoryVm.SavedOffsetVector = new Vector(saveDirectory.XVector, saveDirectory.YVector);
+                SaveDirectory saveDirectoryItem = new SaveDirectory
+                {
+                    DisplayName = PathHelper.GetFolderNameFromFolderPath(saveDirectory.SavedDirectory),
+                    SavedDirectory = saveDirectory.SavedDirectory,
+                    SavedFolderPage = saveDirectory.SavedFolderPage,
+                    SavedTotalFolderPages = saveDirectory.SavedTotalFolderPages,
+                    SavedImagePage = saveDirectory.SavedImagePage,
+                    SavedTotalImagePages = saveDirectory.SavedTotalImagePages,
+                    SavedOffsetVector = new Vector(saveDirectory.XVector, saveDirectory.YVector)
+                };
+                _mainWindowViewModel.HistoryVm.SaveDirectoryItemsList.Add(saveDirectoryItem);
+
             }
-            else
+            else if(RootFolderLocation != "")
             {
                 //initially set SavedDirectory to CurrentDirectory so method wont fail if btn clicked before saving a directory
-                _mainWindowViewModel.SavedDirectoryVm.SavedDirectory = _mainWindowViewModel.ExplorerVm.CurrentDirectory;
+                SaveDirectory saveDirectoryItem = new SaveDirectory
+                {
+                    DisplayName = PathHelper.GetFolderNameFromFolderPath(_mainWindowViewModel.ExplorerVm.CurrentDirectory),
+                    SavedDirectory = _mainWindowViewModel.ExplorerVm.CurrentDirectory
+                };
+                _mainWindowViewModel.HistoryVm.SaveDirectoryItemsList.Add(saveDirectoryItem);
             }
 
         }

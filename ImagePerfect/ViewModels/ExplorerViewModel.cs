@@ -214,6 +214,17 @@ namespace ImagePerfect.ViewModels
             });
         }
 
+        public bool IsInSessionHistory(ImageViewModel image)
+        {
+            return _mainWindowViewModel.HistoryVm.SaveDirectoryItemsList
+                .Any(item => item.SavedDirectoryImages.Any(i => i.ImagePath == image.ImagePath));
+        }
+        public bool IsInSessionHistory(FolderViewModel folder)
+        {
+            return _mainWindowViewModel.HistoryVm.SaveDirectoryItemsList
+                .Any(item => item.SavedDirectoryFolders.Any(f => f.FolderPath == folder.FolderPath));
+        }
+
         private async Task SetDisplayImagesForRefreshImages((List<Image> images, List<ImageTag> tags) data)
         {
             displayImages = data.images;
@@ -231,8 +242,14 @@ namespace ImagePerfect.ViewModels
                 _mainWindowViewModel.Images = new ObservableCollection<ImageViewModel>();
                 await Task.Run(() =>
                 {
+                    //only dispose of image bitmaps that are not in SessionHistory
                     foreach (ImageViewModel img in oldImages)
-                        img.ImageBitmap?.Dispose();
+                    {
+                        if (!IsInSessionHistory(img))
+                        {
+                            img.ImageBitmap?.Dispose();
+                        }
+                    }
                 });
             }
             else
@@ -244,10 +261,20 @@ namespace ImagePerfect.ViewModels
                 await Task.Run(() => 
                 {
                     foreach (ImageViewModel img in oldImages)
-                        img.ImageBitmap?.Dispose();
+                    {
+                        if (!IsInSessionHistory(img))
+                        {
+                            img.ImageBitmap?.Dispose();
+                        }
+                    }
 
                     foreach (FolderViewModel folder in oldFolders)
-                        folder.CoverImageBitmap?.Dispose();
+                    {
+                        if (!IsInSessionHistory(folder))
+                        {
+                            folder.CoverImageBitmap?.Dispose();
+                        }
+                    }
                 });
             }
             displayImages = ImagePagination();
@@ -272,9 +299,9 @@ namespace ImagePerfect.ViewModels
         {
             ImageMethods imageMethods = new ImageMethods(uow);
             // Before clearing/reloading, capture the current UI state into cache
-            if (_mainWindowViewModel.SavedDirectoryVm.IsSavedDirectoryLoaded && _mainWindowViewModel.SavedDirectoryVm.LoadSavedDirectoryFromCache)
+            if (_mainWindowViewModel.HistoryVm.IsSavedHistoryDirectoryLoaded && _mainWindowViewModel.HistoryVm.LoadSavedHistoryDirectoryFromCache)
             {
-                await _mainWindowViewModel.SavedDirectoryVm.UpdateSavedDirectoryCache();
+                await _mainWindowViewModel.HistoryVm.UpdateSavedHistoryDirectoryCache();
             }
             _mainWindowViewModel.ShowLoading = true;
             switch (currentFilter)
@@ -387,7 +414,12 @@ namespace ImagePerfect.ViewModels
                 await Task.Run(() =>
                 {
                     foreach (FolderViewModel folder in oldFolders)
-                        folder.CoverImageBitmap?.Dispose();
+                    {
+                        if (!IsInSessionHistory(folder))
+                        {
+                            folder.CoverImageBitmap?.Dispose();
+                        }
+                    }
                 });
             }
             else
@@ -399,10 +431,20 @@ namespace ImagePerfect.ViewModels
                 await Task.Run(() =>
                 {
                     foreach (ImageViewModel img in oldImages)
-                        img.ImageBitmap?.Dispose();
+                    {
+                        if (!IsInSessionHistory(img))
+                        {
+                            img.ImageBitmap?.Dispose();
+                        }
+                    }
 
                     foreach (FolderViewModel folder in oldFolders)
-                        folder.CoverImageBitmap?.Dispose();
+                    {
+                        if (!IsInSessionHistory(folder))
+                        {
+                            folder.CoverImageBitmap?.Dispose();
+                        }
+                    }
                 });
             }
             displayFolders = FolderPagination();
@@ -426,13 +468,13 @@ namespace ImagePerfect.ViewModels
         {
             FolderMethods folderMethods = new FolderMethods(uow);
             /*
-             * Do not call UpdateSavedDirectoryCache() in RefreshFolderProps() as that only incrementally updates the live UI
+             * Do not call UpdateSavedHistoryDirectoryCache() in RefreshFolderProps() as that only incrementally updates the live UI
              * So calling there will only capture the 1st UI change. 
              */
             // Before clearing/reloading, capture the current UI state into cache
-            if (_mainWindowViewModel.SavedDirectoryVm.IsSavedDirectoryLoaded && _mainWindowViewModel.SavedDirectoryVm.LoadSavedDirectoryFromCache)
+            if (_mainWindowViewModel.HistoryVm.IsSavedHistoryDirectoryLoaded && _mainWindowViewModel.HistoryVm.LoadSavedHistoryDirectoryFromCache)
             {
-                await _mainWindowViewModel.SavedDirectoryVm.UpdateSavedDirectoryCache();
+                await _mainWindowViewModel.HistoryVm.UpdateSavedHistoryDirectoryCache();
             }
 
             _mainWindowViewModel.ShowLoading = true;
@@ -556,9 +598,9 @@ namespace ImagePerfect.ViewModels
         }
         private async Task RefreshFolderPropsInternal(string path, FolderViewModel folderVm, UnitOfWork uow)
         {
-            FolderMethods folderMethods = new FolderMethods(uow);            
+            FolderMethods folderMethods = new FolderMethods(uow);
             /*
-             * Do not call UpdateSavedDirectoryCache() in RefreshFolderProps() as this only incrementally updates the live UI
+             * Do not call UpdateSavedHistoryDirectoryCache() in RefreshFolderProps() as this only incrementally updates the live UI
              * So calling here will only capture the 1st UI change. 
              */
             _mainWindowViewModel.ShowLoading = true;

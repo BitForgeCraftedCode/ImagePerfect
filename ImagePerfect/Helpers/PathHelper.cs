@@ -169,6 +169,12 @@ namespace ImagePerfect.Helpers
             string[] strArray = path.Split(getPathSlash());
             return strArray[strArray.Length - 1];
         }
+
+        public static string GetFolderNameFromFolderPath(string path)
+        {
+            string[] strArray = path.Split(getPathSlash());
+            return strArray[strArray.Length - 1];
+        }
         public static string RemoveOneFolderFromPath(string path)
         {
             string[] strArray = path.Split(getPathSlash());

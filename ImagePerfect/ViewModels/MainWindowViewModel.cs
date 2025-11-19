@@ -49,6 +49,7 @@ namespace ImagePerfect.ViewModels
 
             _showLoading = false;
 
+            HistoryVm = new HistoryViewModel(_dataSource, _configuration, this);
             DirectoryNavigationVm = new DirectoryNavigationViewModel(this);
             ExplorerVm = new ExplorerViewModel(_dataSource, _configuration, this);
             ModifyFolderDataVm = new ModifyFolderDataViewModel(_dataSource, _configuration, this);
@@ -59,7 +60,6 @@ namespace ImagePerfect.ViewModels
             ScanImagesForMetaDataVm = new ScanImagesForMetaDataViewModel(_dataSource, _configuration, this);
             ImportImagesVm = new ImportImagesViewModel(_dataSource, _configuration, this);
             InitializeVm = new InitializeViewModel(_dataSource, _configuration, this);
-            SavedDirectoryVm = new SavedDirectoryViewModel(_dataSource, _configuration, this);
             FavoriteFoldersVm = new FavoriteFoldersViewModel(_dataSource, _configuration);
             SettingsVm = new SettingsViewModel(_dataSource, _configuration, this);
             MoveImages = new MoveImagesViewModel(_dataSource, _configuration, this);
@@ -353,11 +353,14 @@ namespace ImagePerfect.ViewModels
             PickImagePageSizeCommand = ReactiveCommand.Create(async (string size) => {
                 await SettingsVm.PickImagePageSize(size);
             });
+            SaveDirectoryToHistoryCommand = ReactiveCommand.Create(async (ScrollViewer scrollViewer) => { 
+                await HistoryVm.SaveDirectoryToHistory(scrollViewer, false);
+            });
             SaveDirectoryCommand = ReactiveCommand.Create(async (ScrollViewer scrollViewer) => {
-                await SavedDirectoryVm.SaveDirectory(scrollViewer);
+                await HistoryVm.SaveDirectoryToHistory(scrollViewer, true);
             });
             LoadSavedDirectoryCommand = ReactiveCommand.Create(async (ScrollViewer scrollViewer) => {
-                await SavedDirectoryVm.LoadSavedDirectory(scrollViewer);
+                await HistoryVm.LoadMainSavedDirectory(scrollViewer);
             });
             SaveFolderAsFavoriteCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
                 await FavoriteFoldersVm.SaveFolderAsFavorite(folderVm);
@@ -408,7 +411,8 @@ namespace ImagePerfect.ViewModels
             ExitAppCommand = ReactiveCommand.Create(() => { 
                 ExitApp();
             });
-            InitializeVm.Initialize();
+            //_ = InitializeVm.Initialize() -- kicks off the async work but doesn't block the constructor
+            _ = InitializeVm.Initialize();
         }
         public int TotalImages
         {
@@ -450,6 +454,7 @@ namespace ImagePerfect.ViewModels
             set => this.RaiseAndSetIfChanged(ref _imageDatesVm, value);
         }
 
+        public HistoryViewModel HistoryVm { get; }
         public ExplorerViewModel ExplorerVm { get; }
         public DirectoryNavigationViewModel DirectoryNavigationVm { get; }
         public ModifyFolderDataViewModel ModifyFolderDataVm { get; }
@@ -460,7 +465,6 @@ namespace ImagePerfect.ViewModels
         public ScanImagesForMetaDataViewModel ScanImagesForMetaDataVm { get; }
         public ImportImagesViewModel ImportImagesVm { get; }
         public InitializeViewModel InitializeVm { get; }
-        public SavedDirectoryViewModel SavedDirectoryVm { get; }
         public FavoriteFoldersViewModel FavoriteFoldersVm { get; }
         public SettingsViewModel SettingsVm { get; }
         public MoveImagesViewModel MoveImages { get; }
@@ -611,6 +615,8 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<string, Task> PickFolderPageSizeCommand { get; }
 
         public ReactiveCommand<string, Task> PickImagePageSizeCommand { get; }
+
+        public ReactiveCommand<ScrollViewer, Task> SaveDirectoryToHistoryCommand { get; }
 
         public ReactiveCommand<ScrollViewer, Task> SaveDirectoryCommand { get; }
 

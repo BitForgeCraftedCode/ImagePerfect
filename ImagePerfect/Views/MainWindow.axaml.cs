@@ -4,14 +4,17 @@ using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using ImagePerfect.Models;
 using ImagePerfect.ViewModels;
+using ReactiveUI;
+using ReactiveUI.Avalonia;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reactive;
 
 namespace ImagePerfect.Views
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : ReactiveWindow<MainWindowViewModel>
     {
         private ScrollViewer _scrollViewer;
         private List<Button> _navButtons = new();
@@ -19,7 +22,24 @@ namespace ImagePerfect.Views
         public MainWindow()
         {
             InitializeComponent();
-            _scrollViewer = this.FindControl<ScrollViewer>("FoldersAndImagesScrollViewer");
+            this.WhenActivated(d =>
+            {
+                MainWindowViewModel vm = (MainWindowViewModel)DataContext!;
+                _scrollViewer = this.FindControl<ScrollViewer>("FoldersAndImagesScrollViewer");
+                ComboBox combo = this.FindControl<ComboBox>("SessionHistoryCombo");
+
+                // The View handles the interaction
+                d(vm.HistoryVm.LoadHistoryRequest.RegisterHandler(async interaction =>
+                {
+                    SaveDirectory saveDir = interaction.Input;
+
+                    await vm.HistoryVm.LoadSavedDirectoryHistoryItem(saveDir, _scrollViewer);
+
+                    combo.SelectedItem = null;
+
+                    interaction.SetOutput(Unit.Default);
+                }));
+            });
         }
         /*
          * I set up custom tab nav for Open and Back on Folders and Images
