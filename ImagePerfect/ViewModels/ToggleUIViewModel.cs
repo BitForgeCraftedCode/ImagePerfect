@@ -61,11 +61,6 @@ namespace ImagePerfect.ViewModels
             get => _showImageDateFilters;
             set => this.RaiseAndSetIfChanged(ref _showImageDateFilters, value);
         }
-        public bool ShowSettings
-        {
-            get => _showSettings;
-            set => this.RaiseAndSetIfChanged(ref _showSettings, value);
-        }
         public bool ShowTotalImages
         {
             get => _showTotalImages;
@@ -121,11 +116,6 @@ namespace ImagePerfect.ViewModels
             }
 
         }
-        public void ToggleSettings()
-        {
-            ShowSettings = !ShowSettings;
-        }
-
         public void ToggleGetTotalImages()
         {
             ShowTotalImages = !ShowTotalImages;

@@ -192,9 +192,6 @@ namespace ImagePerfect.ViewModels
             GoToPageCommand = ReactiveCommand.Create(async (decimal pageNumber) => {
                 await ExplorerVm.GoToPage(Decimal.ToInt32(pageNumber));
             });
-            ToggleSettingsCommand = ReactiveCommand.Create(() => {
-                ToggleUI.ToggleSettings();
-            });
             ToggleManageImagesCommand = ReactiveCommand.Create(() => {
                 ToggleUI.ToggleManageImages();
             });
@@ -556,8 +553,6 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<Unit, Task> PreviousPageCommand { get; }
 
         public ReactiveCommand<decimal, Task> GoToPageCommand { get; }
-
-        public ReactiveCommand<Unit, Unit> ToggleSettingsCommand { get; }
 
         public ReactiveCommand<string, Unit> ToggleFiltersCommand { get; }
 
