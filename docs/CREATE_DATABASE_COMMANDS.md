@@ -93,10 +93,11 @@ CREATE TABLE `settings` (
   `ImagePageSize` int unsigned NOT NULL,
   `ExternalImageViewerExePath` varchar(2000) DEFAULT NULL,
   `FileExplorerExePath` varchar(2000) DEFAULT NULL,
+  `HistoryPointsSize` int unsigned NOT NULL,
   PRIMARY KEY (`SettingsId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-INSERT INTO settings (MaxImageWidth, FolderPageSize, ImagePageSize) VALUES (500, 20, 60); 
+INSERT INTO settings (MaxImageWidth, FolderPageSize, ImagePageSize, HistoryPointsSize) VALUES (500, 20, 60, 20);
 
 -- Folder Saved Favorites
 CREATE TABLE `folder_saved_favorites` (

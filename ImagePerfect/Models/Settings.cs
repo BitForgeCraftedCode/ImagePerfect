@@ -24,5 +24,8 @@ namespace ImagePerfect.Models
 
         [Column("FileExplorerExePath")]
         public string? FileExplorerExePath { get; set; }
+
+        [Column("HistoryPointsSize")]
+        public int HistoryPointsSize { get; set; }
     }
 }

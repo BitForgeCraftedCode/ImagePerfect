@@ -118,14 +118,15 @@ CREATE TABLE `settings` (
   `ImagePageSize` int unsigned NOT NULL,
   `ExternalImageViewerExePath` varchar(2000) DEFAULT NULL,
   `FileExplorerExePath` varchar(2000) DEFAULT NULL,
+  `HistoryPointsSize` int unsigned NOT NULL,
   PRIMARY KEY (`SettingsId`)
 );
 
-INSERT INTO settings (MaxImageWidth, FolderPageSize, ImagePageSize) VALUES (500, 20, 60); 
+/*ADD THIS TO HOME DB */
+ALTER TABLE `settings` ADD `HistoryPointsSize` int unsigned NOT NULL;
+UPDATE settings SET HistoryPointsSize = 20 WHERE SettingsId = 1;
 
-/*will need to add to home db -- added to home db and installer db*/
-ALTER TABLE `settings` ADD `ExternalImageViewerExePath` varchar(2000) DEFAULT NULL;
-ALTER TABLE `settings` ADD `FileExplorerExePath` varchar(2000) DEFAULT NULL;
+INSERT INTO settings (MaxImageWidth, FolderPageSize, ImagePageSize, HistoryPointsSize) VALUES (500, 20, 60, 20);
 
 CREATE TABLE `folder_saved_favorites` (
 	`SavedId` bigint unsigned NOT NULL AUTO_INCREMENT,

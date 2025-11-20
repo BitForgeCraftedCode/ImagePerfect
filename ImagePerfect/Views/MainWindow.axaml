@@ -369,7 +369,7 @@
 				</Button>
 			</Grid>
 		</StackPanel>
-		<!--Settings-->
+		<!--Settings REMOVE-->
 		<StackPanel Grid.Row="6" IsVisible="{Binding ToggleUI.ShowSettings}" Classes="menu-bg-color">
 			<Grid RowDefinitions="Auto" ColumnDefinitions="Auto,Auto,Auto" Width="600" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
 				<StackPanel Grid.Row="0" Grid.Column="0" Width="200">

@@ -129,7 +129,7 @@ namespace ImagePerfect.ViewModels
             
             _activeSavedDirectory = saveDirectoryItem;
             //pruning the oldeset (exclude main saved) if more than 20 -- need to manage RAM
-            if (SaveDirectoryItemsList.Count > 20)
+            if (SaveDirectoryItemsList.Count > _mainWindowViewModel.SettingsVm.HistoryPointsSize)
             {
                 await DisposeSessionHistoryItemBitmaps(SaveDirectoryItemsList[1]);
                 SaveDirectoryItemsList.RemoveAt(1);

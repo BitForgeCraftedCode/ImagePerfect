@@ -17,6 +17,7 @@ namespace ImagePerfect.ViewModels
         private int _maxImageWidth = 600;
         private int _folderPageSize = 20;
         private int _imagePageSize = 20;
+        private int _historyPointsSize = 5;
 
         private string? _externalImageViewerExePath;
         private string? _fileExplorerExePath;
@@ -56,6 +57,11 @@ namespace ImagePerfect.ViewModels
             get => _maxImageWidth;
             set => this.RaiseAndSetIfChanged(ref _maxImageWidth, value);
         }
+        public int HistoryPointsSize
+        {
+            get => _historyPointsSize;
+            set => this.RaiseAndSetIfChanged(ref _historyPointsSize, value);
+        }
 
         public async Task UpdateExternalImageViewerExePath(string externalImageViewerExePath)
         {
@@ -75,6 +81,7 @@ namespace ImagePerfect.ViewModels
                 ImagePageSize = ImagePageSize,
                 ExternalImageViewerExePath = ExternalImageViewerExePath,
                 FileExplorerExePath = FileExplorerExePath,
+                HistoryPointsSize = HistoryPointsSize,
             };
             await settingsMethods.UpdateSettings(settings);
         }
@@ -88,8 +95,37 @@ namespace ImagePerfect.ViewModels
             ImagePageSize = settings.ImagePageSize;
             ExternalImageViewerExePath = settings.ExternalImageViewerExePath;
             FileExplorerExePath = settings.FileExplorerExePath;
+            HistoryPointsSize = settings.HistoryPointsSize;
         }
 
+        public async Task PickHistoryPointsSize(string size)
+        {
+            switch (size)
+            {
+                case "5":
+                    HistoryPointsSize = 5;
+                    break;
+                case "10":
+                    HistoryPointsSize = 10;
+                    break;
+                case "20":
+                    HistoryPointsSize = 20;
+                    break;
+                case "30":
+                    HistoryPointsSize = 30;
+                    break;
+                case "40":
+                    HistoryPointsSize = 40;
+                    break;
+                case "50":
+                    HistoryPointsSize = 50;
+                    break;
+                case "60":
+                    HistoryPointsSize = 60;
+                    break;
+            }
+            await UpdateSettings();
+        }
         public async Task PickImagePageSize(string size)
         {
             switch (size)

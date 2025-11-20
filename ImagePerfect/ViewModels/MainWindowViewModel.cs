@@ -353,6 +353,9 @@ namespace ImagePerfect.ViewModels
             PickImagePageSizeCommand = ReactiveCommand.Create(async (string size) => {
                 await SettingsVm.PickImagePageSize(size);
             });
+            PickHistoryPointsSizeCommand = ReactiveCommand.Create(async (string size) => { 
+                await SettingsVm.PickHistoryPointsSize(size);
+            });
             SaveDirectoryToHistoryCommand = ReactiveCommand.Create(async (ScrollViewer scrollViewer) => { 
                 await HistoryVm.SaveDirectoryToHistory(scrollViewer, false);
             });
@@ -615,6 +618,8 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<string, Task> PickFolderPageSizeCommand { get; }
 
         public ReactiveCommand<string, Task> PickImagePageSizeCommand { get; }
+
+        public ReactiveCommand<string, Task> PickHistoryPointsSizeCommand {  get; }
 
         public ReactiveCommand<ScrollViewer, Task> SaveDirectoryToHistoryCommand { get; }
 
