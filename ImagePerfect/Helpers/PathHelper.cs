@@ -13,18 +13,6 @@ namespace ImagePerfect.Helpers
     //this whole class will need platform specific code to handle file paths. Linux vs Windows paths will be different
     public static class PathHelper
     {
-        private static string pathSlash = string.Empty;
-
-        private static string getPathSlash()
-        {
-            #if WINDOWS
-            pathSlash = @"\";
-            #else
-            pathSlash = @"/";
-            #endif
-            return pathSlash;
-        }
-        
         public static string FormatPathForLikeOperator(string path)
         {
             #if WINDOWS
@@ -57,11 +45,7 @@ namespace ImagePerfect.Helpers
         }
         public static string AddNewFolderNameToPathForDirectoryMoveFolder(string newFolderPath, string newFolderName)
         {
-            #if WINDOWS
-            return newFolderPath + @"\" + newFolderName;
-            #else
-            return newFolderPath + @"/" + newFolderName;
-            #endif
+            return Path.Combine(newFolderPath, newFolderName);
         }
         /*
             say for example you want to move C:\Users\arogala\Documents\CSharp\SamplePictures\space 
@@ -80,11 +64,11 @@ namespace ImagePerfect.Helpers
             {
                 string newPath = string.Empty;
                 string newCoverImagePath = string.Empty;
-                newPath = moveToFolderPath + getPathSlash() + ReturnPartialPath(folders[i].FolderPath, currentFolderName);
+                newPath = Path.Combine(moveToFolderPath, ReturnPartialPath(folders[i].FolderPath, currentFolderName));
                 folders[i].FolderPath = newPath;
                 if (folders[i].CoverImagePath != "")
                 {
-                    newCoverImagePath = moveToFolderPath + getPathSlash() + ReturnPartialPath(folders[i].CoverImagePath, currentFolderName);
+                    newCoverImagePath = Path.Combine(moveToFolderPath, ReturnPartialPath(folders[i].CoverImagePath, currentFolderName));
                     folders[i].CoverImagePath = newCoverImagePath;
                 }
                 
@@ -98,8 +82,8 @@ namespace ImagePerfect.Helpers
             {
                 string newPath = string.Empty;
                 string newImageFolderPath = string.Empty;
-                newPath = moveToFolderPath + getPathSlash() + ReturnPartialPath(images[i].ImagePath, currentFolderName);
-                newImageFolderPath = moveToFolderPath + getPathSlash() + ReturnPartialPath(images[i].ImageFolderPath, currentFolderName);
+                newPath = Path.Combine(moveToFolderPath, ReturnPartialPath(images[i].ImagePath, currentFolderName));
+                newImageFolderPath = Path.Combine(moveToFolderPath, ReturnPartialPath(images[i].ImageFolderPath, currentFolderName));
                 images[i].ImagePath = newPath;
                 images[i].ImageFolderPath = newImageFolderPath;
             }
@@ -111,7 +95,6 @@ namespace ImagePerfect.Helpers
             string parent = RemoveOneFolderFromPath(folderVm.FolderPath);
             string fileName = GetFileNameFromImagePath(folderVm.CoverImagePath);
             return Path.Combine(parent, fileName);
-            //return RemoveOneFolderFromPath(folderVm.FolderPath) + getPathSlash() + GetFileNameFromImagePath(folderVm.CoverImagePath);
         }
 
         public static List<ImageViewModel> ModifyImagePathsForMoveImagesToNewFolder(List<ImageViewModel> imagesToMove, Folder imagesNewFolder) 
@@ -161,61 +144,35 @@ namespace ImagePerfect.Helpers
         //path must contain folderName
         private static string ReturnPartialPath(string path, string folderName)
         {
-            int indexOfCurrentFolder = path.IndexOf(folderName);
-            string pathToCurrentFolder = path.Remove(indexOfCurrentFolder);
-            string partialPath = path.Replace(pathToCurrentFolder, "");
-            return partialPath;
+            string[] parent = path.Split(Path.DirectorySeparatorChar)
+                         .TakeWhile(p => !p.Equals(folderName, StringComparison.OrdinalIgnoreCase))
+                         .ToArray();
+
+            string prefix = string.Join(Path.DirectorySeparatorChar, parent);
+            return path.Substring(prefix.Length).TrimStart(Path.DirectorySeparatorChar);
         }
 
         public static string GetFileNameFromImagePath(string path)
         {
             return Path.GetFileName(path);
-            //string[] strArray = path.Split(getPathSlash());
-            //return strArray[strArray.Length - 1];
         }
 
         public static string GetFolderNameFromFolderPath(string path)
         {
-            string[] strArray = path.Split(getPathSlash());
-            return strArray[strArray.Length - 1];
+            return Path.GetFileName(path.TrimEnd(Path.DirectorySeparatorChar));
         }
         public static string RemoveOneFolderFromPath(string path)
         {
             return Path.GetDirectoryName(path) ?? string.Empty;
-            //string[] strArray = path.Split(getPathSlash());
-            //string newPath = string.Empty;
-            //for (int i = 0; i < strArray.Length - 1; i++)
-            //{
-            //    if (i < strArray.Length - 2)
-            //    {
-            //        newPath = newPath + strArray[i] + getPathSlash();
-            //    }
-            //    else
-            //    {
-            //        newPath = newPath + strArray[i];
-            //    }
-            //}
-            //return newPath;
         }
 
         public static string RemoveTwoFoldersFromPath(string path)
         {
-            string[] strArray = path.Split(getPathSlash());
-            string newPath = string.Empty;
-            for (int i = 0; i < strArray.Length - 2; i++)
-            {
-                if (i < strArray.Length - 3)
-                {
-                    newPath = newPath + strArray[i] + getPathSlash();
-                }
-                else
-                {
-                    newPath = newPath + strArray[i];
-                }
-            }
-            return newPath;
+            string parent = Path.GetDirectoryName(path);
+            if(parent == null) return string.Empty;
+            return Path.GetDirectoryName(parent) ?? string.Empty;   
         }
-
+        //#if, #else, #endif are conditional compilation directives
         public static string FormatPathForDbStorage(string path)
         {
             #if WINDOWS
@@ -227,23 +184,28 @@ namespace ImagePerfect.Helpers
 
         public static string FormatPathFromFolderPicker(string path)
         {
-            path = path.Replace(@"file:///", "");
-            path = path.Remove(path.Length - 1);
+            if (path.StartsWith("file:///"))
+                path = path.Substring("file:///".Length);
+            if (path.EndsWith('/'))
+                path = path.TrimEnd('/');
             #if WINDOWS
-            path = path.Replace(@"/", @"\");
+                path = path.Replace('/', '\\');
             #else
-            path = getPathSlash() + path;
+                if (!path.StartsWith("/"))
+                    path = "/" + path;
             #endif
             return path;
         }
 
         public static string FormatPathFromFilePicker(string path)
         {
-            path = path.Replace(@"file:///", "");
+            if (path.StartsWith("file:///"))
+                path = path.Substring("file:///".Length);
             #if WINDOWS
-            path = path.Replace(@"/", @"\");
+                path = path.Replace('/', '\\');
             #else
-            path = getPathSlash() + path;
+                if (!path.StartsWith("/"))
+                    path = "/" + path;
             #endif
             return path;
         }
@@ -267,32 +229,32 @@ namespace ImagePerfect.Helpers
 
         public static string GetTrashFolderPath(string rootFolderPath)
         {
-            return rootFolderPath + getPathSlash() + "ImagePerfectTRASH";
+            return Path.Combine(rootFolderPath, "ImagePerfectTRASH");
         }
         public static string GetImageFileTrashPath(ImageViewModel imageVm, string trashFolderPath)
         {
             //add a guid to guarantee no image in trash has the same name
             Guid g = Guid.NewGuid();
-            return trashFolderPath + getPathSlash() + g + imageVm.FileName;
+            return Path.Combine(trashFolderPath, $"{g}_{imageVm.FileName}");
         }
 
         public static string GetFolderTrashPath(FolderViewModel folderVm, string trashFolderPath)
         {
             //add a guid to guarantee no folder in trash has the same name
             Guid g = Guid.NewGuid();
-            return trashFolderPath + getPathSlash() + g + folderVm.FolderName;
+            return Path.Combine(trashFolderPath, $"{g}_{folderVm.FolderName}");
         }
 
         public static string GetZipFolderTrashPath(string zipFolderName, string trashFolderPath)
         {
             //add a guid to guarantee no zip file in trash has the same name
             Guid g = Guid.NewGuid();
-            return trashFolderPath + getPathSlash() + g + zipFolderName;
+            return Path.Combine(trashFolderPath, $"{g}_{zipFolderName}");
         }
 
         public static string GetNewFolderPath(string currentDirectory, string newFolderName)
         {
-            return currentDirectory + getPathSlash() + newFolderName;
+            return Path.Combine(currentDirectory, newFolderName);
         }
     }
 }
