@@ -654,7 +654,7 @@
 										   Text="{Binding FolderTags}"
 										   IsVisible="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"
 										   MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" />
-								<Grid RowDefinitions="Auto" ColumnDefinitions="Auto,Auto" HorizontalAlignment="Center">
+								<Grid RowDefinitions="Auto" ColumnDefinitions="Auto,Auto" HorizontalAlignment="Center" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
 									<Button
 											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddFolderRatingCommand}"
 											CommandParameter="{Binding}"
