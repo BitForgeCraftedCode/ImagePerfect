@@ -108,7 +108,10 @@ namespace ImagePerfect.Helpers
 
         public static string GetCoverImagePathForCopyCoverImageToContainingFolder(FolderViewModel folderVm)
         {
-            return RemoveOneFolderFromPath(folderVm.FolderPath) + getPathSlash() + GetFileNameFromImagePath(folderVm.CoverImagePath);
+            string parent = RemoveOneFolderFromPath(folderVm.FolderPath);
+            string fileName = GetFileNameFromImagePath(folderVm.CoverImagePath);
+            return Path.Combine(parent, fileName);
+            //return RemoveOneFolderFromPath(folderVm.FolderPath) + getPathSlash() + GetFileNameFromImagePath(folderVm.CoverImagePath);
         }
 
         public static List<ImageViewModel> ModifyImagePathsForMoveImagesToNewFolder(List<ImageViewModel> imagesToMove, Folder imagesNewFolder) 
@@ -166,8 +169,9 @@ namespace ImagePerfect.Helpers
 
         public static string GetFileNameFromImagePath(string path)
         {
-            string[] strArray = path.Split(getPathSlash());
-            return strArray[strArray.Length - 1];
+            return Path.GetFileName(path);
+            //string[] strArray = path.Split(getPathSlash());
+            //return strArray[strArray.Length - 1];
         }
 
         public static string GetFolderNameFromFolderPath(string path)
@@ -177,20 +181,21 @@ namespace ImagePerfect.Helpers
         }
         public static string RemoveOneFolderFromPath(string path)
         {
-            string[] strArray = path.Split(getPathSlash());
-            string newPath = string.Empty;
-            for (int i = 0; i < strArray.Length - 1; i++)
-            {
-                if (i < strArray.Length - 2)
-                {
-                    newPath = newPath + strArray[i] + getPathSlash();
-                }
-                else
-                {
-                    newPath = newPath + strArray[i];
-                }
-            }
-            return newPath;
+            return Path.GetDirectoryName(path) ?? string.Empty;
+            //string[] strArray = path.Split(getPathSlash());
+            //string newPath = string.Empty;
+            //for (int i = 0; i < strArray.Length - 1; i++)
+            //{
+            //    if (i < strArray.Length - 2)
+            //    {
+            //        newPath = newPath + strArray[i] + getPathSlash();
+            //    }
+            //    else
+            //    {
+            //        newPath = newPath + strArray[i];
+            //    }
+            //}
+            //return newPath;
         }
 
         public static string RemoveTwoFoldersFromPath(string path)
