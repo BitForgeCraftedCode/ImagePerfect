@@ -136,7 +136,24 @@ namespace ImagePerfect.ViewModels
             }
             _mainWindowViewModel.ShowLoading = false;
         }
-
+        //not sure about this. Dispose in SetSavedDirectoryCache causes Null Ref error
+        //because it will try to dispose of a bitmap currently in the UI
+        //This idea was to dispose later after UI removes objects
+        private void DisposeLater(IDisposable? bitmap)
+        {
+            if (bitmap == null)
+                return;
+            DispatcherTimer timer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(500)
+            };
+            timer.Tick += (s, e) =>
+            {
+                timer.Stop();
+                bitmap.Dispose();
+            };
+            timer.Start();
+        }
         private async Task SetSavedDirectoryCache(SaveDirectory saveDirectoryItem)
         {
             // --- FOLDERS ---
@@ -155,10 +172,7 @@ namespace ImagePerfect.ViewModels
                 async (i, ct) =>
                 {
                     FolderViewModel deepCopy = await DeepCopy.CopyFolderVm(sourceFolders[i]);
-
-                    // Dispose old bitmap before overwriting to prevent leaks
-                    targetFolders[i].CoverImageBitmap?.Dispose();
-
+                    //DisposeLater(targetFolders[i].CoverImageBitmap);
                     // Overwrite everything relevant
                     targetFolders[i] = deepCopy;
                 });
@@ -178,12 +192,9 @@ namespace ImagePerfect.ViewModels
                 async (i, ct) =>
                 {
                     ImageViewModel deepCopy = await DeepCopy.CopyImageVm(sourceImages[i]);
-
-                    // Dispose old bitmap before overwriting
-                    targetImages[i].ImageBitmap?.Dispose();
-
+                    //DisposeLater(targetImages[i].ImageBitmap);
                     // Overwrite everything relevant
-                    targetImages[i] = deepCopy; 
+                    targetImages[i] = deepCopy;
                 });
         }
 

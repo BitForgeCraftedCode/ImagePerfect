@@ -213,16 +213,31 @@ namespace ImagePerfect.ViewModels
                 _mainWindowViewModel.Images = new ObservableCollection<ImageViewModel>(temp);
             });
         }
-
+        private string NormalizePath(string path)
+        {
+            // Trim whitespace
+            path = path.Trim();
+            // Remove trailing slashes
+            path = path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            return path;
+        }
         public bool IsInSessionHistory(ImageViewModel image)
         {
+            string target = NormalizePath(image.ImagePath);
             return _mainWindowViewModel.HistoryVm.SaveDirectoryItemsList
-                .Any(item => item.SavedDirectoryImages.Any(i => i.ImagePath == image.ImagePath));
+                .Any(item => item.SavedDirectoryImages.Any(i => NormalizePath(i.ImagePath).Equals(target, StringComparison.OrdinalIgnoreCase)));
+
+            //return _mainWindowViewModel.HistoryVm.SaveDirectoryItemsList
+            //    .Any(item => item.SavedDirectoryImages.Any(i => i.ImagePath == image.ImagePath));
         }
         public bool IsInSessionHistory(FolderViewModel folder)
         {
+            string target = NormalizePath(folder.FolderPath);
             return _mainWindowViewModel.HistoryVm.SaveDirectoryItemsList
-                .Any(item => item.SavedDirectoryFolders.Any(f => f.FolderPath == folder.FolderPath));
+                .Any(item => item.SavedDirectoryFolders.Any(f => NormalizePath(f.FolderPath).Equals(target, StringComparison.OrdinalIgnoreCase)));
+
+            //return _mainWindowViewModel.HistoryVm.SaveDirectoryItemsList
+            //    .Any(item => item.SavedDirectoryFolders.Any(f => f.FolderPath == folder.FolderPath));
         }
 
         private async Task SetDisplayImagesForRefreshImages((List<Image> images, List<ImageTag> tags) data)
