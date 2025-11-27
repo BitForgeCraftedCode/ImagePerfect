@@ -116,7 +116,6 @@ namespace ImagePerfect.Views
         //direction is 1 for Tab, -1 for Shift+Tab
         private void MoveSelection(int direction)
         {
-            Debug.WriteLine(_navButtons.Count);
             if (_navButtons.Count == 0)
                 return;
 

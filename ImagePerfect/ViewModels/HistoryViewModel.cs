@@ -8,11 +8,13 @@ using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using ReactiveUI;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ImagePerfect.ViewModels
@@ -27,12 +29,15 @@ namespace ImagePerfect.ViewModels
         private bool _isSavedHistoryDirectoryLoaded = false;
         private bool _loadSavedHistoryDirectoryFromCache = true;
 
+        private readonly ConcurrentQueue<IDisposable> DisposeQueue = new();
         public HistoryViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel)
 		{
             _dataSource = dataSource;
             _configuration = config;
             _mainWindowViewModel = mainWindowViewModel;
-		}
+
+            StartDeferredDisposeTimer();
+        }
         public Interaction<SaveDirectory, Unit> LoadHistoryRequest { get; } = new();
 
         public ObservableCollection<SaveDirectory> SaveDirectoryItemsList { get; set; } = new();
@@ -102,27 +107,47 @@ namespace ImagePerfect.ViewModels
                 SavedFilterInCurrentDirectory = _mainWindowViewModel.ExplorerVm.FilterInCurrentDirectory,
                 SavedLoadFoldersAscending = _mainWindowViewModel.ExplorerVm.LoadFoldersAscending
             };
-            await SetSavedDirectoryCache(saveDirectoryItem);
             // Check for existing entry with same SavedDirectory path
             var existingIndex = SaveDirectoryItemsList
                 .Select((item, idx) => new { item, idx })
                 .FirstOrDefault(x =>
                     string.Equals(x.item.SavedDirectory, saveDirectoryItem.SavedDirectory, StringComparison.OrdinalIgnoreCase)
                 );
-            if( existingIndex != null && isMainSavedDirectory == false)
+            /*
+             * If the same directory is saved multiple times, preserve the existing folders and images 
+             * by adding them to the new SaveDirectoryItem. 
+             * This ensures bitmaps are properly disposed and refreshed in SetSavedDirectoryCache.
+             * 
+             * Note: saveDirectoryItem is newly created above, so its folder/image lists are initially empty.
+             */
+            if ( existingIndex != null && isMainSavedDirectory == false)
             {
+                saveDirectoryItem.SavedDirectoryFolders.AddRange(SaveDirectoryItemsList[existingIndex.idx].SavedDirectoryFolders);
+                saveDirectoryItem.SavedDirectoryImages.AddRange(SaveDirectoryItemsList[existingIndex.idx].SavedDirectoryImages);
+                await SetSavedDirectoryCache(saveDirectoryItem);
                 SaveDirectoryItemsList[existingIndex.idx] = saveDirectoryItem;
             }
             else
             {
-                if (isMainSavedDirectory)
+                if (existingIndex != null && isMainSavedDirectory == true)
                 {
+                    saveDirectoryItem.SavedDirectoryFolders.AddRange(SaveDirectoryItemsList[existingIndex.idx].SavedDirectoryFolders);
+                    saveDirectoryItem.SavedDirectoryImages.AddRange(SaveDirectoryItemsList[existingIndex.idx].SavedDirectoryImages);
+                    await SetSavedDirectoryCache(saveDirectoryItem);
+                    //persist to database
+                    await saveDirectoryMethods.UpdateSaveDirectory(saveDirectoryItem);
+                    SaveDirectoryItemsList[existingIndex.idx] = saveDirectoryItem;
+                }
+                else if (existingIndex == null && isMainSavedDirectory == true)
+                {
+                    await SetSavedDirectoryCache(saveDirectoryItem);
                     //persist to database
                     await saveDirectoryMethods.UpdateSaveDirectory(saveDirectoryItem);
                     SaveDirectoryItemsList[0] = saveDirectoryItem;
                 }
                 else
                 {
+                    await SetSavedDirectoryCache(saveDirectoryItem);
                     SaveDirectoryItemsList.Add(saveDirectoryItem);
                 }
             }
@@ -136,66 +161,105 @@ namespace ImagePerfect.ViewModels
             }
             _mainWindowViewModel.ShowLoading = false;
         }
-        //not sure about this. Dispose in SetSavedDirectoryCache causes Null Ref error
-        //because it will try to dispose of a bitmap currently in the UI
-        //This idea was to dispose later after UI removes objects
-        private void DisposeLater(IDisposable? bitmap)
+        // Disposing bitmaps directly in SetSavedDirectoryCache can cause NullReferenceExceptions,
+        // because some bitmaps may still be bound to the UI. 
+        // Instead, defer disposal until after the UI has removed references.
+        private async Task DisposeDeferredBitmaps()
         {
-            if (bitmap == null)
-                return;
-            DispatcherTimer timer = new DispatcherTimer
+            await Task.Run(() =>
             {
-                Interval = TimeSpan.FromMilliseconds(500)
-            };
-            timer.Tick += (s, e) =>
+                while (DisposeQueue.TryDequeue(out var bmp))
+                {
+                    try
+                    {
+                        bmp?.Dispose();
+                    }
+                    catch
+                    {
+                        // ignore
+                    }
+                }
+            });
+        }
+        // Periodically dispose deferred bitmaps every 3 minutes to prevent the DisposeQueue from growing too large.
+        // This can happen if the user repeatedly saves directories without calling LoadSavedDirectory
+        // example (save directory nav out save another directory nav out etc..)
+        private System.Timers.Timer? _disposeTimer;
+        private void StartDeferredDisposeTimer()
+        {
+            _disposeTimer = new System.Timers.Timer(180000); // interval in milliseconds - 3 min
+            //subscribe to Elapsed event and when it it fires run this async method
+            _disposeTimer.Elapsed += async (s, e) =>
             {
-                timer.Stop();
-                bitmap.Dispose();
+                try
+                {
+                    await DisposeDeferredBitmaps(); // already off UI thread
+                }
+                catch
+                {
+                    // swallow
+                }
             };
-            timer.Start();
+            _disposeTimer.AutoReset = true;  // keep running
+            _disposeTimer.Start();
+        }
+        private void StopDeferredDisposeTimer()
+        {
+            _disposeTimer?.Stop();
+            _disposeTimer?.Dispose();
         }
         private async Task SetSavedDirectoryCache(SaveDirectory saveDirectoryItem)
         {
             // --- FOLDERS ---
             ObservableCollection<FolderViewModel> sourceFolders = _mainWindowViewModel.LibraryFolders;
-            List<FolderViewModel> targetFolders = saveDirectoryItem.SavedDirectoryFolders;
-
-            // grow or shrink list to match source count
-            while (targetFolders.Count < sourceFolders.Count)
-                targetFolders.Add(new FolderViewModel());
-            while (targetFolders.Count > sourceFolders.Count)
-                targetFolders.RemoveAt(targetFolders.Count - 1);
+            FolderViewModel[] newFolders = new FolderViewModel[sourceFolders.Count];
 
             await Parallel.ForEachAsync(
                 Enumerable.Range(0, sourceFolders.Count),
                 new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
                 async (i, ct) =>
                 {
-                    FolderViewModel deepCopy = await DeepCopy.CopyFolderVm(sourceFolders[i]);
-                    //DisposeLater(targetFolders[i].CoverImageBitmap);
-                    // Overwrite everything relevant
-                    targetFolders[i] = deepCopy;
+                    newFolders[i] = await DeepCopy.CopyFolderVm(sourceFolders[i]);
                 });
-
+            //add folder CoverImageBitmap to DisposeQueue
+            //SavedDirectoryFolders and Images will be > 0 when calling this method from UpdateSavedHistoryDirectoryCache or SaveDirectoryToHistory
+            //when saving same dir twice or more
+            if (saveDirectoryItem.SavedDirectoryFolders.Count > 0) 
+            {
+                Parallel.ForEach(
+                    saveDirectoryItem.SavedDirectoryFolders,
+                    new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
+                    (folderVm) => {
+                        if (folderVm.CoverImageBitmap != null)
+                            DisposeQueue.Enqueue(folderVm.CoverImageBitmap);
+                    });
+            }
+            saveDirectoryItem.SavedDirectoryFolders.Clear();
+            saveDirectoryItem.SavedDirectoryFolders.AddRange(newFolders);
             // --- IMAGES ---
             ObservableCollection<ImageViewModel> sourceImages = _mainWindowViewModel.Images;
-            List<ImageViewModel> targetImages = saveDirectoryItem.SavedDirectoryImages;
-
-            while (targetImages.Count < sourceImages.Count)
-                targetImages.Add(new ImageViewModel());
-            while (targetImages.Count > sourceImages.Count)
-                targetImages.RemoveAt(targetImages.Count - 1);
+            ImageViewModel[] newImages = new ImageViewModel[sourceImages.Count];
 
             await Parallel.ForEachAsync(
                 Enumerable.Range(0, sourceImages.Count),
                 new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
                 async (i, ct) =>
                 {
-                    ImageViewModel deepCopy = await DeepCopy.CopyImageVm(sourceImages[i]);
-                    //DisposeLater(targetImages[i].ImageBitmap);
-                    // Overwrite everything relevant
-                    targetImages[i] = deepCopy;
+                    newImages[i] = await DeepCopy.CopyImageVm(sourceImages[i]);
                 });
+            //add image bitmaps to DisposeQueue
+            if (saveDirectoryItem.SavedDirectoryImages.Count > 0) 
+            {
+                Parallel.ForEach(
+                    saveDirectoryItem.SavedDirectoryImages,
+                    new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
+                    (imageVm) => {
+                        if (imageVm.ImageBitmap != null)
+                            DisposeQueue.Enqueue(imageVm.ImageBitmap);
+                    });
+            }
+            saveDirectoryItem.SavedDirectoryImages.Clear();
+            saveDirectoryItem.SavedDirectoryImages.AddRange(newImages);
         }
 
         public async Task UpdateSavedHistoryDirectoryCache()
@@ -294,6 +358,8 @@ namespace ImagePerfect.ViewModels
                 {
                     scrollViewer.Offset = saveDirectoryItem.SavedOffsetVector;
                 }, DispatcherPriority.Background);
+
+                await DisposeDeferredBitmaps();
             }
             else
             {
@@ -304,6 +370,8 @@ namespace ImagePerfect.ViewModels
                 // now mark saved-dir as loaded so refreshes can update cache later
                 IsSavedHistoryDirectoryLoaded = true;
                 scrollViewer.Offset = saveDirectoryItem.SavedOffsetVector;
+
+                await DisposeDeferredBitmaps();
             }
         }
 

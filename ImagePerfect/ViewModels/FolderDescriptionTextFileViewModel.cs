@@ -217,7 +217,7 @@ namespace ImagePerfect.ViewModels
                 {
 
                     string pathToFile = Path.Combine(folder.FolderPath, "folderDescription.txt");
-                    Debug.WriteLine(pathToFile);
+                    
                     try
                     {
                         string contentToWrite = folder.FolderDescription.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", Environment.NewLine);
