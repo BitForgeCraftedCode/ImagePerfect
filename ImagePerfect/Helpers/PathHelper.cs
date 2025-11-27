@@ -166,6 +166,23 @@ namespace ImagePerfect.Helpers
             return Path.GetDirectoryName(path) ?? string.Empty;
         }
 
+        public static string GetHistroyDisplayNameFromPath(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return string.Empty;
+
+            string lastFolder = Path.GetFileName(path) ?? string.Empty;
+
+            string parent = Path.GetDirectoryName(path);      
+            if (string.IsNullOrEmpty(parent)) 
+                return lastFolder; // fallback: only one folder available
+
+            string grandParent = Path.GetFileName(parent) ?? string.Empty;
+            if (string.IsNullOrEmpty(grandParent))
+                return lastFolder; // fallback if parent is root or empty
+
+            return Path.Combine(grandParent, lastFolder);    // grandparent/parent
+        }
         public static string RemoveTwoFoldersFromPath(string path)
         {
             string parent = Path.GetDirectoryName(path);

@@ -81,7 +81,7 @@ namespace ImagePerfect.ViewModels
             double YVector = scrollViewer.Offset.Y;
             SaveDirectory saveDirectoryItem = new SaveDirectory
 			{
-                DisplayName = PathHelper.GetFolderNameFromFolderPath(_mainWindowViewModel.ExplorerVm.CurrentDirectory),
+                DisplayName = PathHelper.GetHistroyDisplayNameFromPath(_mainWindowViewModel.ExplorerVm.CurrentDirectory),
                 //update variables
                 SavedDirectory = _mainWindowViewModel.ExplorerVm.CurrentDirectory,
                 SavedFolderPage = _mainWindowViewModel.ExplorerVm.CurrentFolderPage,

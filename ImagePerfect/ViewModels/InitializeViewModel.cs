@@ -76,7 +76,7 @@ namespace ImagePerfect.ViewModels
                 //update variables
                 SaveDirectory saveDirectoryItem = new SaveDirectory
                 {
-                    DisplayName = PathHelper.GetFolderNameFromFolderPath(saveDirectory.SavedDirectory),
+                    DisplayName = PathHelper.GetHistroyDisplayNameFromPath(saveDirectory.SavedDirectory),
                     SavedDirectory = saveDirectory.SavedDirectory,
                     SavedFolderPage = saveDirectory.SavedFolderPage,
                     SavedTotalFolderPages = saveDirectory.SavedTotalFolderPages,
@@ -92,7 +92,7 @@ namespace ImagePerfect.ViewModels
                 //initially set SavedDirectory to CurrentDirectory so method wont fail if btn clicked before saving a directory
                 SaveDirectory saveDirectoryItem = new SaveDirectory
                 {
-                    DisplayName = PathHelper.GetFolderNameFromFolderPath(_mainWindowViewModel.ExplorerVm.CurrentDirectory),
+                    DisplayName = PathHelper.GetHistroyDisplayNameFromPath(_mainWindowViewModel.ExplorerVm.CurrentDirectory),
                     SavedDirectory = _mainWindowViewModel.ExplorerVm.CurrentDirectory
                 };
                 _mainWindowViewModel.HistoryVm.SaveDirectoryItemsList.Add(saveDirectoryItem);
