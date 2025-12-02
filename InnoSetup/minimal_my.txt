@@ -1,0 +1,22 @@
+# =========================== 
+# ImagePerfect Portable MySQL 
+# ===========================
+[mysqld]
+
+# --- Basic Directories --- 
+basedir=.. 
+datadir=../data
+
+# --- Networking ---
+port=3308 # Custom port to avoid conflicts with system MySQL
+bind-address=127.0.0.1 # explicitly enable TCP/IP
+
+# --- Logging --- 
+log-error=../logs/mysql-error.log
+
+innodb_buffer_pool_size=512M
+max_connections=50
+
+# --- Disable Features You Don't Need --- 
+# You can comment these out if you need binary logging or replication 
+skip-log-bin # Disable binary logging (saves space, faster startup)

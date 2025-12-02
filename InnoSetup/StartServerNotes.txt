@@ -1,0 +1,45 @@
+to initially set up a portable MySql 
+
+1. download teh ZIP Archive version of the server
+2. create a data and logs folder
+3. make a minimal my.ini
+4. run this to initialize the Data directory
+	mysqld --defaults-file=..\my.ini --initialize-insecure
+5. test by start mysqld and connect as root in two separate command prompts
+6. After you got a working Data directory and server can start and be connected to next steps are
+	set up users
+	set up data tables for app
+
+CREATE USER IF NOT EXISTS 'root'@'127.0.0.1' IDENTIFIED BY 'StrongPassword123!';
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'127.0.0.1' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+
+CREATE USER IF NOT EXISTS 'imageperfect'@'127.0.0.1' IDENTIFIED BY 'IP_App_2025!';
+GRANT ALL PRIVILEGES ON imageperfect.* TO 'imageperfect'@'127.0.0.1';
+FLUSH PRIVILEGES;
+
+
+start mysqld run these two
+
+cd C:\Users\arogala\Documents\GitHub\ImagePerfectInstaller\mysql-8.4.6-winx64\bin
+
+mysqld --defaults-file=..\my.ini
+
+then open another command prompt and use this to connect as root.
+
+cd C:\Users\arogala\Documents\GitHub\ImagePerfectInstaller\mysql-8.4.6-winx64\bin
+
+mysql -uroot -p576aLMx62 --port=3308
+
+
+if you just want to start server and test app build
+
+cd C:\Users\arogala\Documents\GitHub\ImagePerfectInstaller\mysql-8.4.6-winx64\bin
+
+mysqld --defaults-file=..\my.ini
+
+
+Then run app exe
+
+
+
