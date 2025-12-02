@@ -20,10 +20,10 @@ Name: "{app}\ImagePerfect\mysql\logs"; Permissions: users-full
 
 [Files]
 ; Copy the app
-Source: "C:\Users\arogala\Documents\GitHub\ImagePerfectInstaller\imageperfect-1.0-win-x64\*"; DestDir: "{app}\ImagePerfect"; Flags: ignoreversion recursesubdirs createallsubdirs 
+Source: "C:\Users\arogala\Documents\GitHub\ImagePerfect\InnoSetup\imageperfect-1.0-win-x64\*"; DestDir: "{app}\ImagePerfect"; Flags: ignoreversion recursesubdirs createallsubdirs 
 
 ; Copy MySQL
-Source: "C:\Users\arogala\Documents\GitHub\ImagePerfectInstaller\mysql-8.4.6-winx64\*"; DestDir: "{app}\ImagePerfect\mysql"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\arogala\Documents\GitHub\ImagePerfect\InnoSetup\mysql-8.4.6-winx64\*"; DestDir: "{app}\ImagePerfect\mysql"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Tasks]
 Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription: "Additional icons:"; Flags: unchecked
