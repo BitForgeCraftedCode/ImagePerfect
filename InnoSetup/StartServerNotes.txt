@@ -21,20 +21,20 @@ FLUSH PRIVILEGES;
 
 start mysqld run these two
 
-cd C:\Users\arogala\Documents\GitHub\ImagePerfectInstaller\mysql-8.4.6-winx64\bin
+cd C:\Users\arogala\Documents\GitHub\ImagePerfect\InnoSetup\mysql-8.4.6-winx64\bin
 
 mysqld --defaults-file=..\my.ini
 
 then open another command prompt and use this to connect as root.
 
-cd C:\Users\arogala\Documents\GitHub\ImagePerfectInstaller\mysql-8.4.6-winx64\bin
+cd C:\Users\arogala\Documents\GitHub\ImagePerfect\InnoSetup\mysql-8.4.6-winx64\bin
 
 mysql -uroot -p576aLMx62 --port=3308
 
 
 if you just want to start server and test app build
 
-cd C:\Users\arogala\Documents\GitHub\ImagePerfectInstaller\mysql-8.4.6-winx64\bin
+cd C:\Users\arogala\Documents\GitHub\ImagePerfect\InnoSetup\mysql-8.4.6-winx64\bin
 
 mysqld --defaults-file=..\my.ini
 
