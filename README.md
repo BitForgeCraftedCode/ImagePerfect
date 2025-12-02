@@ -19,7 +19,7 @@
 - 🖥️ [MySQL Server Setup Ubuntu](docs/MYSQL_SERVER_SETUP_LINUX.md)
 - 📋 [Build And Install Directions](docs/BUILD_INSTALL_DIRECTIONS.md)
 - 📊 [Backing Up And Restoring The MySQL Database](docs/BACKUP_RESTORE_MYSQL_DATABASE.md)
-- 📦 [Migrating To A New Computer](#migrating-to-a-new-computer)
+- 📦 [Migrating To A New Computer](docs/MIGRATING_TO_A_NEW_PC.md)
 - 📚 [Tech Stack And Notable Dependencies](docs/TECH_STACK.md)
 - 🪪 [License](#license)
 - 📢 [Feedback And Contributions](docs/FEEDBACK_CONTRIBUTIONS.md)
