@@ -99,7 +99,7 @@ Image Perfect was designed to mirror the file system so navigation will mostly b
 	
 #### Top Directory Navigation Toolbar
 
-![Image](../Screenshots/TopDirectoryNavToolBar2025-10-03.png)
+![Image](../Screenshots/TopDirectoryNavToolBar2025-12-02.png)
 
 > 📌 **Note**: This is the directory navigation toolbar. It aids in directory navigation.
 
@@ -110,11 +110,13 @@ Image Perfect was designed to mirror the file system so navigation will mostly b
 | Button                                | Description                                    |
 |---------------------------------------|------------------------------------------------|
 | **First Check Box**                   | Toggles load saved directory from cache or hard reload (checked loads from cache) |
-| **Reload Saved(Heart) Directory**     | Reloads the saved directory |
+| **Reload Saved (Heart) Directory**     | Reloads the saved directory |
 | **Back Arrow**                        | Goes back one directory |
 | **Reload Button**                     | Reloads the current directory |
 | **Open Button**                       | Opens the current directory in operating system file explorer |
 | **Save Directory (Red Heart Folder)** | Saves the current directory and page number for quick navigation back to this location |
+| **Save Directory To List**            | Saves the current directory and page number to a list for quick navigation back to this location |
+| **List Drop Down**                    | List of all your saved directorys for quick navigation |
 | **5 Star Images**                     | Gets all 5 star images in the current directory |
 | **All Images In Sub Folders**         | Gets all the images in the current directory |
 | **Last Check Box**                    | Toggles show folders in Ascending or Descending order (checked is Ascending) |
