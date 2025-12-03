@@ -122,10 +122,6 @@ CREATE TABLE `settings` (
   PRIMARY KEY (`SettingsId`)
 );
 
-/*ADD THIS TO HOME DB */
-ALTER TABLE `settings` ADD `HistoryPointsSize` int unsigned NOT NULL;
-UPDATE settings SET HistoryPointsSize = 20 WHERE SettingsId = 1;
-
 INSERT INTO settings (MaxImageWidth, FolderPageSize, ImagePageSize, HistoryPointsSize) VALUES (500, 20, 60, 20);
 
 CREATE TABLE `folder_saved_favorites` (

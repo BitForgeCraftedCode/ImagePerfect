@@ -1,0 +1,11 @@
+This is the config for my Ubuntu ImagePerfect server located in /etc/mysql/my.cnf
+
+
+[mysqld]
+innodb_buffer_pool_size = 4G
+innodb_buffer_pool_instances = 4
+innodb_redo_log_capacity = 1G
+innodb_flush_log_at_trx_commit = 2
+innodb_flush_method = O_DIRECT
+innodb_adaptive_hash_index = ON
+
