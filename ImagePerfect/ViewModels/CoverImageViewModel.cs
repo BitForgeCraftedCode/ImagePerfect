@@ -11,6 +11,7 @@ using MsBox.Avalonia.Enums;
 using MsBox.Avalonia.Models;
 using MySqlConnector;
 using ReactiveUI;
+using Serilog;
 using SixLabors.ImageSharp;
 using System;
 using System.Collections.Generic;
@@ -36,6 +37,7 @@ namespace ImagePerfect.ViewModels
 
         public async Task CopyCoverImageToContainingFolder(FolderViewModel folderVm)
         {
+            Log.Information("Starting CopyCoverImageToContainingFolder for FolderPath: {FolderPath}, CoverImagePath: {CoverImagePath}", folderVm.FolderPath, folderVm.CoverImagePath);
             if (PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath) == _mainWindowViewModel.InitializeVm.RootFolderLocation)
             {
                 await MessageBoxManager.GetMessageBoxCustom(
@@ -54,7 +56,7 @@ namespace ImagePerfect.ViewModels
                 ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
-            if (folderVm.CoverImagePath == "" || folderVm.CoverImagePath == null)
+            if (string.IsNullOrEmpty(folderVm.CoverImagePath))
             {
                 await MessageBoxManager.GetMessageBoxCustom(
                     new MessageBoxCustomParams
@@ -77,8 +79,26 @@ namespace ImagePerfect.ViewModels
 
             string coverImageCurrentPath = folderVm.CoverImagePath;
             string coverImageNewPath = PathHelper.GetCoverImagePathForCopyCoverImageToContainingFolder(folderVm);
-            Folder containingFolder = await folderMethods.GetFolderAtDirectory(PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath));
-            if (containingFolder.CoverImagePath != "")
+            //Folder containingFolder = await folderMethods.GetFolderAtDirectory(PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath));
+            Log.Information("Calculated new cover path: {NewPath}", coverImageNewPath);
+
+            Folder containingFolder = null;
+            try
+            {
+                containingFolder = await folderMethods.GetFolderAtDirectory(PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath));
+                if (containingFolder == null)
+                {
+                    Log.Warning("No containing folder found for path: {FolderPath}", folderVm.FolderPath);
+                    return;
+                }
+                Log.Information("Found containing folder: {ContainingFolderPath} (ID: {FolderId})", containingFolder.FolderPath, containingFolder.FolderId);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error retrieving containing folder for path: {FolderPath}", folderVm.FolderPath);
+                return;
+            }
+            if (!string.IsNullOrEmpty(containingFolder.CoverImagePath))
             {
                 var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
                     new MessageBoxCustomParams
@@ -119,13 +139,25 @@ namespace ImagePerfect.ViewModels
                 ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
-            //add cover image path to containing folder
-            bool success = await folderMethods.UpdateCoverImage(coverImageNewPath, containingFolder.FolderId);
-            //copy file in file system
-            if (success)
+            try
             {
+                //add cover image path to containing folder
+                bool success = await folderMethods.UpdateCoverImage(coverImageNewPath, containingFolder.FolderId);
+                Log.Information("DB update cover image for folder {FolderId}, Success={Success}", containingFolder.FolderId, success);
+                if (!success)
+                {
+                    Log.Warning("Failed to update cover image in DB for folder {FolderId}", containingFolder.FolderId);
+                    return;
+                }
+                //copy file in file system
                 File.Copy(coverImageCurrentPath, coverImageNewPath);
+                Log.Information("Copied cover image from {Source} to {Destination}", coverImageCurrentPath, coverImageNewPath);
             }
+            catch (Exception ex) 
+            {
+                Log.Error(ex, "Failed to copy cover image from {Source} to {Destination}", coverImageCurrentPath, coverImageNewPath);
+            }
+            
         }
 
         public async Task AddCoverImageOnCurrentPage(ItemsControl foldersItemsControl)
