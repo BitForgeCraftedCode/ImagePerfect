@@ -16,15 +16,6 @@ namespace ImagePerfect.Helpers
         public static string FormatPathForLikeOperator(string path)
         {
             #if WINDOWS
-            return path.Replace(@"\", @"\\\\") + @"%";
-            #else
-            return path + @"%";
-            #endif
-        }
-
-        public static string NewFormatPathForLikeOperator(string path)
-        {
-            #if WINDOWS
             return path.Replace(@"\", @"\\") + @"%";
             #else
             return path + @"%";
@@ -45,14 +36,6 @@ namespace ImagePerfect.Helpers
         //gets the folder itself as well as all folders and subfolders within. 
         //the entire directory tree of the path
         public static string GetRegExpStringDirectoryTree(string path)
-        {
-            #if WINDOWS
-            return path.Replace(@"\",@"\\\\");
-            #else
-            return path;
-            #endif
-        }
-        public static string NewGetRegExpStringDirectoryTree(string path)
         {
             #if WINDOWS
             return path.Replace(@"\", @"\\");

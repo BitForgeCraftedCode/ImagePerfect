@@ -96,7 +96,7 @@ namespace ImagePerfect.Repository
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersAtRating(int rating, bool filterInCurrentDirectory, string currentDirectory)
         {
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
-            string path = PathHelper.NewFormatPathForLikeOperator(currentDirectory);
+            string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
             string sql2 = string.Empty;
             if (filterInCurrentDirectory)
@@ -123,7 +123,7 @@ namespace ImagePerfect.Repository
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithRatingAndTag(int rating, string tagOne, string tagTwo, bool filterInCurrentDirectory, string currentDirectory)
         {
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
-            string path = PathHelper.NewFormatPathForLikeOperator(currentDirectory);
+            string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
             string sql2 = string.Empty;
            
@@ -161,7 +161,7 @@ namespace ImagePerfect.Repository
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithNoImportedImages(bool filterInCurrentDirectory, string currentDirectory)
         {
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
-            string path = PathHelper.NewFormatPathForLikeOperator(currentDirectory);
+            string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
             string sql2 = string.Empty;
             if (filterInCurrentDirectory) 
@@ -188,7 +188,7 @@ namespace ImagePerfect.Repository
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithMetadataNotScanned(bool filterInCurrentDirectory, string currentDirectory)
         {
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
-            string path = PathHelper.NewFormatPathForLikeOperator(currentDirectory);
+            string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
             string sql2 = string.Empty;
             if (filterInCurrentDirectory)
@@ -215,7 +215,7 @@ namespace ImagePerfect.Repository
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithoutCovers(bool filterInCurrentDirectory, string currentDirectory)
         {
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
-            string path = PathHelper.NewFormatPathForLikeOperator(currentDirectory);
+            string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
             string sql2 = string.Empty;
             if (filterInCurrentDirectory)
@@ -241,7 +241,7 @@ namespace ImagePerfect.Repository
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithTag(string tag, bool filterInCurrentDirectory, string currentDirectory)
         {
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
-            string path = PathHelper.NewFormatPathForLikeOperator(currentDirectory);
+            string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
             string sql2 = string.Empty;
             if (filterInCurrentDirectory) 
@@ -313,7 +313,7 @@ namespace ImagePerfect.Repository
         //the entire directory tree of the path
         public async Task<List<Folder>> GetDirectoryTree(string directoryPath)
         {
-            string regExpString = PathHelper.NewGetRegExpStringDirectoryTree(directoryPath);
+            string regExpString = PathHelper.GetRegExpStringDirectoryTree(directoryPath);
             string sql = @"SELECT * FROM folders WHERE REGEXP_LIKE(FolderPath, @Pattern) ORDER BY FolderName;";
             List<Folder> folders = (List<Folder>)await _connection.QueryAsync<Folder>(sql, new { Pattern = regExpString });
             return folders;
