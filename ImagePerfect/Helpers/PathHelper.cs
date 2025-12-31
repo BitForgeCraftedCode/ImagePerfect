@@ -22,12 +22,21 @@ namespace ImagePerfect.Helpers
             #endif
         }
 
+        public static string NewFormatPathForLikeOperator(string path)
+        {
+            #if WINDOWS
+            return path.Replace(@"\", @"\\") + @"%";
+            #else
+            return path + @"%";
+            #endif
+        }
+
         //regular expression string used in sql with REGEXP_LIKE to get all folders in directory (NOT Their sub folders)
         //Only gets the folders in the path -- the folder itself or any sub directories within each folder are not returned
         public static string GetRegExpStringAllFoldersInDirectory(string path)
         {
             #if WINDOWS
-            return path.Replace(@"\", @"\\\\") + @"\\\\[^\\\\]+\\\\?$";
+            return path.Replace(@"\", @"\\") + @"\\[^\\]+\\?$";
             #else
             return path + @"/[^/]+/?$";
             #endif
@@ -39,6 +48,14 @@ namespace ImagePerfect.Helpers
         {
             #if WINDOWS
             return path.Replace(@"\",@"\\\\");
+            #else
+            return path;
+            #endif
+        }
+        public static string NewGetRegExpStringDirectoryTree(string path)
+        {
+            #if WINDOWS
+            return path.Replace(@"\", @"\\");
             #else
             return path;
             #endif

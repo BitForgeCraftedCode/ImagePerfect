@@ -60,12 +60,12 @@ namespace ImagePerfect.Repository
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             string regExpString = PathHelper.GetRegExpStringAllFoldersInDirectory(directoryPath);
             string order = ascending ? "ASC" : "DESC";
-            string sql1 = $@"SELECT * FROM folders WHERE REGEXP_LIKE(FolderPath, '{regExpString}') ORDER BY FolderPath {order}, FolderName {order};";
-            List<Folder> folders = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, transaction: txn);
+            string sql1 = $@"SELECT * FROM folders WHERE REGEXP_LIKE(FolderPath, @Pattern) ORDER BY FolderPath {order}, FolderName {order};";
+            List<Folder> folders = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, new { Pattern = regExpString }, transaction: txn);
             string sql2 = $@"SELECT tags.TagId, tags.TagName, folders.FolderId FROM folders 
                             JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId 
-                            JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE REGEXP_LIKE(folders.FolderPath, '{regExpString}') ORDER BY folders.FolderPath {order}, folders.FolderName {order};";
-            List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, transaction: txn);
+                            JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE REGEXP_LIKE(folders.FolderPath, @Pattern) ORDER BY folders.FolderPath {order}, folders.FolderName {order};";
+            List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, new { Pattern = regExpString }, transaction: txn);
             await txn.CommitAsync();
             return (folders,tags);
         }
@@ -75,12 +75,12 @@ namespace ImagePerfect.Repository
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             string regExpString = PathHelper.GetRegExpStringAllFoldersInDirectory(directoryPath);
             string order = ascending ? "ASC" : "DESC";
-            string sql1 = $@"SELECT * FROM folders WHERE REGEXP_LIKE(FolderPath, '{regExpString}') AND FolderName LIKE '{letter}%' ORDER BY FolderPath {order}, FolderName {order};";
-            List<Folder> folders = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, transaction: txn);
+            string sql1 = $@"SELECT * FROM folders WHERE REGEXP_LIKE(FolderPath, @Pattern) AND FolderName LIKE @Letter ORDER BY FolderPath {order}, FolderName {order};";
+            List<Folder> folders = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, new { Pattern = regExpString, Letter = letter + "%" }, transaction: txn);
             string sql2 = $@"SELECT tags.TagId, tags.TagName, folders.FolderId FROM folders 
                             JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId 
-                            JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE REGEXP_LIKE(folders.FolderPath, '{regExpString}') AND FolderName LIKE '{letter}%' ORDER BY folders.FolderPath {order}, folders.FolderName {order};";
-            List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, transaction: txn);
+                            JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE REGEXP_LIKE(folders.FolderPath, @Pattern) AND FolderName LIKE @Letter ORDER BY folders.FolderPath {order}, folders.FolderName {order};";
+            List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, new { Pattern = regExpString, Letter = letter + "%" }, transaction: txn);
             await txn.CommitAsync();
             return (folders, tags);
         }
@@ -88,36 +88,34 @@ namespace ImagePerfect.Repository
         //get the folder at the path -- only one folder returned
         public async Task<Folder> GetFolderAtDirectory(string directoryPath)
         {
-            //fomats the path correctly for this case as well. Maybe new method name.
-            string path = PathHelper.GetRegExpStringDirectoryTree(directoryPath);
-            string sql = @"SELECT * FROM folders WHERE FolderPath LIKE '" + path + "'";
-            Folder folder = (Folder)await _connection.QuerySingleAsync<Folder>(sql);
+            string sql = "SELECT * FROM folders WHERE FolderPath = @Path";
+            Folder folder = (Folder)await _connection.QuerySingleAsync<Folder>(sql, new { Path = directoryPath });
             return folder;
         }
 
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersAtRating(int rating, bool filterInCurrentDirectory, string currentDirectory)
         {
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
-            string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
+            string path = PathHelper.NewFormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
             string sql2 = string.Empty;
             if (filterInCurrentDirectory)
             {
-                sql1 = @"SELECT * FROM folders WHERE FolderRating = @rating AND FolderPath LIKE '" + path + "' ORDER BY FolderPath, FolderName";
+                sql1 = @"SELECT * FROM folders WHERE FolderRating = @Rating AND FolderPath LIKE @Path ORDER BY FolderPath, FolderName";
                 sql2 = @"SELECT tags.TagId, tags.TagName, folders.FolderId FROM folders 
                             JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId 
-                            JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.FolderRating = @rating AND FolderPath LIKE '" + path + "' ORDER BY folders.FolderPath, folders.FolderName;";
+                            JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.FolderRating = @Rating AND FolderPath LIKE @Path ORDER BY folders.FolderPath, folders.FolderName;";
             }
             else
             {
-                sql1 = @"SELECT * FROM folders WHERE FolderRating = @rating ORDER BY FolderPath, FolderName";
+                sql1 = @"SELECT * FROM folders WHERE FolderRating = @Rating ORDER BY FolderPath, FolderName";
                 sql2 = @"SELECT tags.TagId, tags.TagName, folders.FolderId FROM folders 
                             JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId 
-                            JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.FolderRating = @rating ORDER BY folders.FolderPath, folders.FolderName;";
+                            JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.FolderRating = @Rating ORDER BY folders.FolderPath, folders.FolderName;";
             }
             
-            List<Folder> allFoldersAtRating = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, new { rating }, transaction: txn);
-            List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, new { rating }, transaction: txn);
+            List<Folder> allFoldersAtRating = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, new { Path = path, Rating = rating }, transaction: txn);
+            List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, new { Path = path, Rating = rating }, transaction: txn);
             await txn.CommitAsync();
             return (allFoldersAtRating,tags);
         }
@@ -125,7 +123,7 @@ namespace ImagePerfect.Repository
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithRatingAndTag(int rating, string tagOne, string tagTwo, bool filterInCurrentDirectory, string currentDirectory)
         {
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
-            string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
+            string path = PathHelper.NewFormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
             string sql2 = string.Empty;
            
@@ -137,11 +135,11 @@ namespace ImagePerfect.Repository
             {
                 sql1 = $@"SELECT folders.* FROM folders
                     JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId
-                    JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.FolderRating = @rating AND tags.TagName IN @tagNames AND FolderPath LIKE '{path}' 
+                    JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.FolderRating = @rating AND tags.TagName IN @tagNames AND FolderPath LIKE @path 
                     GROUP BY folders.FolderId HAVING COUNT(DISTINCT tags.TagName) = @requiredCount ORDER BY folders.FolderPath, folders.FolderName;";
                 sql2 = $@"SELECT tags.TagId, tags.TagName, folders.FolderId FROM folders 
                         JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId 
-                        JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.FolderRating = @rating AND FolderPath LIKE '{path}' ORDER BY folders.FolderPath, folders.FolderName;";
+                        JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.FolderRating = @rating AND FolderPath LIKE @path ORDER BY folders.FolderPath, folders.FolderName;";
             }
             else
             {
@@ -154,8 +152,8 @@ namespace ImagePerfect.Repository
                         JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.FolderRating = @rating ORDER BY folders.FolderPath, folders.FolderName;";
             }
             //Note: for sql2 i should just fetch tags for the folders found in the first query -- will have to apply that on all methods
-            List<Folder> allFoldersWithRatingAndTag = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, new { rating, tagNames, requiredCount }, transaction: txn);
-            List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, new { rating, tagNames, requiredCount }, transaction: txn);
+            List<Folder> allFoldersWithRatingAndTag = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, new { path, rating, tagNames, requiredCount }, transaction: txn);
+            List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, new { path, rating, tagNames, requiredCount }, transaction: txn);
             await txn.CommitAsync();
             return (allFoldersWithRatingAndTag, tags);
         }
@@ -163,15 +161,15 @@ namespace ImagePerfect.Repository
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithNoImportedImages(bool filterInCurrentDirectory, string currentDirectory)
         {
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
-            string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
+            string path = PathHelper.NewFormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
             string sql2 = string.Empty;
             if (filterInCurrentDirectory) 
             {
-                sql1 = @"SELECT * FROM folders WHERE AreImagesImported = false AND HasFiles = true AND FolderPath LIKE '" + path + "' ORDER BY FolderPath, FolderName";
+                sql1 = @"SELECT * FROM folders WHERE AreImagesImported = false AND HasFiles = true AND FolderPath LIKE @path ORDER BY FolderPath, FolderName";
                 sql2 = @"SELECT tags.TagId, tags.TagName, folders.FolderId FROM folders 
                             JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId 
-                            JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.AreImagesImported = false AND FolderPath LIKE '" + path + "' ORDER BY folders.FolderPath, folders.FolderName;";
+                            JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.AreImagesImported = false AND FolderPath LIKE @path ORDER BY folders.FolderPath, folders.FolderName;";
             }
             else
             {
@@ -181,8 +179,8 @@ namespace ImagePerfect.Repository
                             JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.AreImagesImported = false ORDER BY folders.FolderPath, folders.FolderName;";
             }
 
-            List<Folder> allFoldersWithNoImportedImages = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, transaction: txn);
-            List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, transaction: txn);
+            List<Folder> allFoldersWithNoImportedImages = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, new { path }, transaction: txn);
+            List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, new { path }, transaction: txn);
             await txn.CommitAsync();
             return (allFoldersWithNoImportedImages, tags);
         }
@@ -190,15 +188,15 @@ namespace ImagePerfect.Repository
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithMetadataNotScanned(bool filterInCurrentDirectory, string currentDirectory)
         {
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
-            string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
+            string path = PathHelper.NewFormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
             string sql2 = string.Empty;
             if (filterInCurrentDirectory)
             {
-                sql1 = @"SELECT * FROM folders WHERE FolderContentMetaDataScanned = false AND HasFiles = true AND AreImagesImported = true AND FolderPath LIKE '" + path + "' ORDER BY FolderPath, FolderName";
+                sql1 = @"SELECT * FROM folders WHERE FolderContentMetaDataScanned = false AND HasFiles = true AND AreImagesImported = true AND FolderPath LIKE @path ORDER BY FolderPath, FolderName";
                 sql2 = @"SELECT tags.TagId, tags.TagName, folders.FolderId FROM folders 
                             JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId 
-                            JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.FolderContentMetaDataScanned = false AND FolderPath LIKE '" + path + "' ORDER BY folders.FolderPath, folders.FolderName;";
+                            JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.FolderContentMetaDataScanned = false AND FolderPath LIKE @path ORDER BY folders.FolderPath, folders.FolderName;";
             }
             else
             {
@@ -208,8 +206,8 @@ namespace ImagePerfect.Repository
                             JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.FolderContentMetaDataScanned = false ORDER BY folders.FolderPath, folders.FolderName;";
             }
 
-            List<Folder> allFoldersWithMetadataNotScanned = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, transaction: txn);
-            List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, transaction: txn);
+            List<Folder> allFoldersWithMetadataNotScanned = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, new { path }, transaction: txn);
+            List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, new { path }, transaction: txn);
             await txn.CommitAsync();
             return (allFoldersWithMetadataNotScanned, tags);
         }
@@ -217,15 +215,15 @@ namespace ImagePerfect.Repository
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithoutCovers(bool filterInCurrentDirectory, string currentDirectory)
         {
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
-            string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
+            string path = PathHelper.NewFormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
             string sql2 = string.Empty;
             if (filterInCurrentDirectory)
             {
-                sql1 = @"SELECT * FROM folders WHERE AreImagesImported = true AND HasFiles = true AND CoverImagePath = '' AND FolderPath LIKE '" + path + "' ORDER BY FolderPath, FolderName";
+                sql1 = @"SELECT * FROM folders WHERE AreImagesImported = true AND HasFiles = true AND CoverImagePath = '' AND FolderPath LIKE @path ORDER BY FolderPath, FolderName";
                 sql2 = @"SELECT tags.TagId, tags.TagName, folders.FolderId FROM folders 
                             JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId 
-                            JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.AreImagesImported = true AND folders.CoverImagePath = '' AND FolderPath LIKE '" + path + "' ORDER BY folders.FolderPath, folders.FolderName;";
+                            JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.AreImagesImported = true AND folders.CoverImagePath = '' AND FolderPath LIKE @path ORDER BY folders.FolderPath, folders.FolderName;";
             }
             else
             {
@@ -235,25 +233,25 @@ namespace ImagePerfect.Repository
                             JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.AreImagesImported = true AND folders.CoverImagePath = '' ORDER BY folders.FolderPath, folders.FolderName;";
             }
 
-            List<Folder> allFoldersWithoutCovers = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, transaction: txn);
-            List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, transaction: txn);
+            List<Folder> allFoldersWithoutCovers = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, new { path }, transaction: txn);
+            List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, new { path }, transaction: txn);
             await txn.CommitAsync();
             return (allFoldersWithoutCovers, tags);
         }
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithTag(string tag, bool filterInCurrentDirectory, string currentDirectory)
         {
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
-            string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
+            string path = PathHelper.NewFormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
             string sql2 = string.Empty;
             if (filterInCurrentDirectory) 
             {
                 sql1 = @"SELECT * FROM folders
                             JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId
-                            JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE tags.TagName = @tag AND FolderPath LIKE '" + path + "' ORDER BY folders.FolderPath, folders.FolderName;";
+                            JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE tags.TagName = @tag AND FolderPath LIKE @path ORDER BY folders.FolderPath, folders.FolderName;";
                 sql2 = @"SELECT tags.TagId, tags.TagName, folders.FolderId FROM folders
                             JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId
-                            JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE FolderPath LIKE '" + path + "' ORDER BY folders.FolderPath, folders.FolderName;";
+                            JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE FolderPath LIKE @path ORDER BY folders.FolderPath, folders.FolderName;";
             }
             else
             {
@@ -265,8 +263,8 @@ namespace ImagePerfect.Repository
                             JOIN tags ON folder_tags_join.TagId = tags.TagId ORDER BY folders.FolderPath, folders.FolderName;";
             }
             
-            List<Folder> allFoldersWithTag = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, new { tag }, transaction: txn);
-            List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, new { tag }, transaction: txn);
+            List<Folder> allFoldersWithTag = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, new { path, tag }, transaction: txn);
+            List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, new { path, tag }, transaction: txn);
             await txn.CommitAsync();
             return (allFoldersWithTag, tags);
         }
@@ -279,21 +277,21 @@ namespace ImagePerfect.Repository
             string sql2 = string.Empty;
             if (filterInCurrentDirectory)
             {
-                sql1 = @"SELECT * FROM folders WHERE REGEXP_LIKE(FolderPath, '" + regExpString + "') AND (FolderName LIKE CONCAT('%', @text, '%') OR FolderDescription LIKE CONCAT('%', @text, '%')) ORDER BY FolderPath, FolderName;";
+                sql1 = @"SELECT * FROM folders WHERE REGEXP_LIKE(FolderPath, @Pattern) AND (FolderName LIKE CONCAT('%', @Text, '%') OR FolderDescription LIKE CONCAT('%', @Text, '%')) ORDER BY FolderPath, FolderName;";
                 sql2 = @"SELECT tags.TagId, tags.TagName, folders.FolderId FROM folders 
                 JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId 
-                JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE REGEXP_LIKE(folders.FolderPath, '" + regExpString + "') ORDER BY folders.FolderPath, folders.FolderName;";
+                JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE REGEXP_LIKE(folders.FolderPath, @Pattern) ORDER BY folders.FolderPath, folders.FolderName;";
             }
             else
             {
-                sql1 = @"SELECT * FROM folders WHERE (FolderName LIKE CONCAT('%', @text, '%') OR FolderDescription LIKE CONCAT('%', @text, '%')) ORDER BY FolderPath, FolderName";
+                sql1 = @"SELECT * FROM folders WHERE (FolderName LIKE CONCAT('%', @Text, '%') OR FolderDescription LIKE CONCAT('%', @Text, '%')) ORDER BY FolderPath, FolderName";
                 sql2 = @"SELECT tags.TagId, tags.TagName, folders.FolderId FROM folders
                         JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId
                         JOIN tags ON folder_tags_join.TagId = tags.TagId ORDER BY folders.FolderPath, folders.FolderName;";
             }
 
-            List<Folder> allFoldersWithDescriptionText = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, new { text }, transaction: txn);
-            List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, transaction: txn);
+            List<Folder> allFoldersWithDescriptionText = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, new { Pattern = regExpString, Text = text }, transaction: txn);
+            List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, new { Pattern = regExpString }, transaction: txn);
             await txn.CommitAsync();
             return (allFoldersWithDescriptionText, tags);
         }
@@ -315,9 +313,9 @@ namespace ImagePerfect.Repository
         //the entire directory tree of the path
         public async Task<List<Folder>> GetDirectoryTree(string directoryPath)
         {
-            string regExpString = PathHelper.GetRegExpStringDirectoryTree(directoryPath);
-            string sql = @"SELECT * FROM folders WHERE REGEXP_LIKE(FolderPath, '" + regExpString + "') ORDER BY FolderName;";
-            List<Folder> folders = (List<Folder>)await _connection.QueryAsync<Folder>(sql);
+            string regExpString = PathHelper.NewGetRegExpStringDirectoryTree(directoryPath);
+            string sql = @"SELECT * FROM folders WHERE REGEXP_LIKE(FolderPath, @Pattern) ORDER BY FolderName;";
+            List<Folder> folders = (List<Folder>)await _connection.QueryAsync<Folder>(sql, new { Pattern = regExpString });
             return folders;
         }
 
