@@ -7,6 +7,7 @@ using ImagePerfect.Repository;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using ReactiveUI;
+using Serilog;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -164,22 +165,59 @@ namespace ImagePerfect.ViewModels
         // Disposing bitmaps directly in SetSavedDirectoryCache can cause NullReferenceExceptions,
         // because some bitmaps may still be bound to the UI. 
         // Instead, defer disposal until after the UI has removed references.
+        // logging errors for background clean up methods like this -- dont throw let if fail silently but log the errors
+        private int _disposeRunning = 0;
         private async Task DisposeDeferredBitmaps()
         {
-            await Task.Run(() =>
+            //Prevent overlapping timer runs
+            //If disposal ever takes longer than the interval
+            if (Interlocked.Exchange(ref _disposeRunning, 1) == 1)
+                return;
+            int disposedCount = 0;
+            int errorCount = 0;
+            try
             {
-                while (DisposeQueue.TryDequeue(out var bmp))
+                await Task.Run(() =>
                 {
-                    try
+                    while (DisposeQueue.TryDequeue(out var bmp))
                     {
-                        bmp?.Dispose();
+                        try
+                        {
+                            bmp?.Dispose();
+                            disposedCount++;
+                        }
+                        catch
+                        {
+                            errorCount++;
+                        }
                     }
-                    catch
-                    {
-                        // ignore
-                    }
-                }
-            });
+                });
+            }
+            catch (Exception ex) 
+            {
+                // This should be extremely rare (Task infrastructure failure)
+                Log.Error(ex, "Deferred bitmap disposal task failed catastrophically");
+                return;
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _disposeRunning, 0);
+            }
+            if (errorCount > 0)
+            {
+                Log.Warning(
+                    "Deferred bitmap disposal completed with errors. " +
+                    "Disposed={DisposedCount}, Errors={ErrorCount}, RemainingInQueue={QueueCount}",
+                    disposedCount,
+                    errorCount,
+                    DisposeQueue.Count);
+            }
+            else if (disposedCount > 0)
+            {
+                Log.Debug(
+                    "Deferred bitmap disposal completed. Disposed={DisposedCount}",
+                    disposedCount);
+            }
         }
         // Periodically dispose deferred bitmaps every 3 minutes to prevent the DisposeQueue from growing too large.
         // This can happen if the user repeatedly saves directories without calling LoadSavedDirectory
@@ -191,14 +229,7 @@ namespace ImagePerfect.ViewModels
             //subscribe to Elapsed event and when it it fires run this async method
             _disposeTimer.Elapsed += async (s, e) =>
             {
-                try
-                {
-                    await DisposeDeferredBitmaps(); // already off UI thread
-                }
-                catch
-                {
-                    // swallow
-                }
+                await DisposeDeferredBitmaps(); // already off UI thread
             };
             _disposeTimer.AutoReset = true;  // keep running
             _disposeTimer.Start();
@@ -316,17 +347,28 @@ namespace ImagePerfect.ViewModels
                 //fast path: restore from cache
                 List<FolderViewModel> oldFolders = _mainWindowViewModel.LibraryFolders.ToList();
                 _mainWindowViewModel.LibraryFolders = new ObservableCollection<FolderViewModel>();
-                await Task.Run(() =>
+                try
                 {
-                    //only dispose of bitmaps that are not in SessionHistory
-                    foreach (FolderViewModel folder in oldFolders)
+                    await Task.Run(() =>
                     {
-                        if (!_mainWindowViewModel.ExplorerVm.IsInSessionHistory(folder))
+                        //only dispose of bitmaps that are not in SessionHistory
+                        foreach (FolderViewModel folder in oldFolders)
                         {
-                            folder.CoverImageBitmap?.Dispose();
+                            if (!_mainWindowViewModel.ExplorerVm.IsInSessionHistory(folder))
+                            {
+                                folder.CoverImageBitmap?.Dispose();
+                            }
                         }
-                    }
-                });
+                    });
+                }
+                catch (Exception ex) 
+                {
+                    Log.Error(ex,
+                        "LoadSavedDirectory Failed disposing folder cover image bitmaps. " +
+                        "FolderCount={FolderCount}",
+                        oldFolders.Count);
+                    throw;
+                }
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     _mainWindowViewModel.LibraryFolders = new ObservableCollection<FolderViewModel>(saveDirectoryItem.SavedDirectoryFolders);
@@ -334,17 +376,28 @@ namespace ImagePerfect.ViewModels
 
                 List<ImageViewModel> oldImages = _mainWindowViewModel.Images.ToList();
                 _mainWindowViewModel.Images = new ObservableCollection<ImageViewModel>();
-                await Task.Run(() =>
+                try
                 {
-                    //only dispose of image bitmaps that are not in SessionHistory
-                    foreach (ImageViewModel img in oldImages)
+                    await Task.Run(() =>
                     {
-                        if (!_mainWindowViewModel.ExplorerVm.IsInSessionHistory(img))
+                        //only dispose of image bitmaps that are not in SessionHistory
+                        foreach (ImageViewModel img in oldImages)
                         {
-                            img.ImageBitmap?.Dispose();
+                            if (!_mainWindowViewModel.ExplorerVm.IsInSessionHistory(img))
+                            {
+                                img.ImageBitmap?.Dispose();
+                            }
                         }
-                    }
-                });
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex,
+                       "LoadSavedDirectory Failed disposing image bitmaps. " +
+                       "ImageCount={ImageCount}",
+                       oldImages.Count);
+                    throw;
+                }
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     _mainWindowViewModel.Images = new ObservableCollection<ImageViewModel>(saveDirectoryItem.SavedDirectoryImages);
@@ -377,14 +430,26 @@ namespace ImagePerfect.ViewModels
 
         private async Task DisposeSessionHistoryItemBitmaps(SaveDirectory saveDirectoryItem)
         {
-            await Task.Run(() => 
+            try
             {
-                foreach (FolderViewModel folderVm in saveDirectoryItem.SavedDirectoryFolders)
-                    folderVm.CoverImageBitmap?.Dispose();
+                await Task.Run(() =>
+                {
+                    foreach (FolderViewModel folderVm in saveDirectoryItem.SavedDirectoryFolders)
+                        folderVm.CoverImageBitmap?.Dispose();
 
-                foreach (ImageViewModel imageVm in saveDirectoryItem.SavedDirectoryImages)
-                    imageVm.ImageBitmap?.Dispose();
-            });
+                    foreach (ImageViewModel imageVm in saveDirectoryItem.SavedDirectoryImages)
+                        imageVm.ImageBitmap?.Dispose();
+                });
+            }
+            catch (Exception ex) 
+            {
+                Log.Error(ex,
+                      "DisposeSessionHistoryItemBitmaps Failed disposing image/folder bitmaps. " +
+                      "ImageCount={ImageCount}, FolderCount={FolderCount}",
+                      saveDirectoryItem.SavedDirectoryImages.Count,
+                      saveDirectoryItem.SavedDirectoryFolders.Count);
+                throw;
+            }
         }
 	}
 }

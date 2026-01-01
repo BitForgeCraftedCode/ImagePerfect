@@ -1,6 +1,7 @@
 ﻿using Avalonia.Media.Imaging;
 using ImagePerfect.Models;
 using ImagePerfect.ViewModels;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,8 +10,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using Avalonia.Platform;
-using System.Diagnostics;
 
 namespace ImagePerfect.Helpers
 {
@@ -71,13 +70,24 @@ namespace ImagePerfect.Helpers
             // async copy bitmap
             if (imageVm.ImageBitmap != null)
             {
-                await Task.Run(() =>
+                try
                 {
-                    using var ms = new MemoryStream();
-                    imageVm.ImageBitmap.Save(ms);
-                    ms.Position = 0;
-                    copy.ImageBitmap = new Bitmap(ms);
-                });
+                    await Task.Run(() =>
+                    {
+                        using var ms = new MemoryStream();
+                        imageVm.ImageBitmap.Save(ms);
+                        ms.Position = 0;
+                        copy.ImageBitmap = new Bitmap(ms);
+                    });
+                }
+                catch (Exception ex) 
+                {
+                    Log.Error(ex,
+                        "Failed to deep-copy ImageBitmap for ImageId {ImageId}, Path {Path}",
+                        imageVm.ImageId,
+                        imageVm.ImagePath);
+                    throw;
+                }
             }
             copy.Tags = imageVm.Tags.Select(t => new ImageTag
             {
@@ -114,13 +124,24 @@ namespace ImagePerfect.Helpers
             //async copy bitmap
             if (folderVm.CoverImageBitmap != null)
             {
-                await Task.Run(() => 
+                try
                 {
-                    using var ms = new MemoryStream();
-                    folderVm.CoverImageBitmap.Save(ms);
-                    ms.Position = 0;
-                    copy.CoverImageBitmap = new Bitmap(ms);
-                });
+                    await Task.Run(() =>
+                    {
+                        using var ms = new MemoryStream();
+                        folderVm.CoverImageBitmap.Save(ms);
+                        ms.Position = 0;
+                        copy.CoverImageBitmap = new Bitmap(ms);
+                    });
+                }
+                catch (Exception ex) 
+                {
+                    Log.Error(ex,
+                        "Failed to deep-copy CoverImageBitmap for FolderId {FolderId}, Path {Path}",
+                        folderVm.FolderId,
+                        folderVm.FolderPath);
+                    throw;
+                }
             }
             copy.Tags = folderVm.Tags.Select(t => new FolderTag
             {

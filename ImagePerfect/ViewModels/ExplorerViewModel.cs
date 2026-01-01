@@ -7,6 +7,7 @@ using ImagePerfect.Repository.IRepository;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using ReactiveUI;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -255,17 +256,29 @@ namespace ImagePerfect.ViewModels
             {
                 List<ImageViewModel> oldImages = _mainWindowViewModel.Images.ToList();
                 _mainWindowViewModel.Images = new ObservableCollection<ImageViewModel>();
-                await Task.Run(() =>
+                try
                 {
-                    //only dispose of image bitmaps that are not in SessionHistory
-                    foreach (ImageViewModel img in oldImages)
+                    await Task.Run(() =>
                     {
-                        if (!IsInSessionHistory(img))
+                        //only dispose of image bitmaps that are not in SessionHistory
+                        foreach (ImageViewModel img in oldImages)
                         {
-                            img.ImageBitmap?.Dispose();
+                            if (!IsInSessionHistory(img))
+                            {
+                                img.ImageBitmap?.Dispose();
+                            }
                         }
-                    }
-                });
+                    });
+                }
+                catch (Exception ex) 
+                {
+                    Log.Error(ex,
+                        "RefreshImages Failed disposing image bitmaps during refresh. " +
+                        "Filter={Filter}, ImageCount={ImageCount}",
+                        currentFilter,
+                        oldImages.Count);
+                    throw;
+                }
             }
             else
             {
@@ -273,24 +286,37 @@ namespace ImagePerfect.ViewModels
                 List<ImageViewModel> oldImages = _mainWindowViewModel.Images.ToList();
                 _mainWindowViewModel.Images = new ObservableCollection<ImageViewModel>();
                 _mainWindowViewModel.LibraryFolders = new ObservableCollection<FolderViewModel>();
-                await Task.Run(() => 
+                try
                 {
-                    foreach (ImageViewModel img in oldImages)
+                    await Task.Run(() =>
                     {
-                        if (!IsInSessionHistory(img))
+                        foreach (ImageViewModel img in oldImages)
                         {
-                            img.ImageBitmap?.Dispose();
+                            if (!IsInSessionHistory(img))
+                            {
+                                img.ImageBitmap?.Dispose();
+                            }
                         }
-                    }
 
-                    foreach (FolderViewModel folder in oldFolders)
-                    {
-                        if (!IsInSessionHistory(folder))
+                        foreach (FolderViewModel folder in oldFolders)
                         {
-                            folder.CoverImageBitmap?.Dispose();
+                            if (!IsInSessionHistory(folder))
+                            {
+                                folder.CoverImageBitmap?.Dispose();
+                            }
                         }
-                    }
-                });
+                    });
+                }
+                catch (Exception ex) 
+                {
+                    Log.Error(ex,
+                        "RefreshImages Failed disposing image/folder bitmaps during refresh. " +
+                        "Filter={Filter}, ImageCount={ImageCount}, FolderCount={FolderCount}",
+                        currentFilter,
+                        oldImages.Count,
+                        oldFolders.Count);
+                    throw;
+                }
             }
             displayImages = ImagePagination();
             await MapTagsToImagesAddToObservable();
@@ -426,16 +452,28 @@ namespace ImagePerfect.ViewModels
             {
                 List<FolderViewModel> oldFolders = _mainWindowViewModel.LibraryFolders.ToList();
                 _mainWindowViewModel.LibraryFolders = new ObservableCollection<FolderViewModel>();
-                await Task.Run(() =>
+                try
                 {
-                    foreach (FolderViewModel folder in oldFolders)
+                    await Task.Run(() =>
                     {
-                        if (!IsInSessionHistory(folder))
+                        foreach (FolderViewModel folder in oldFolders)
                         {
-                            folder.CoverImageBitmap?.Dispose();
+                            if (!IsInSessionHistory(folder))
+                            {
+                                folder.CoverImageBitmap?.Dispose();
+                            }
                         }
-                    }
-                });
+                    });
+                }
+                catch (Exception ex) 
+                {
+                    Log.Error(ex,
+                       "RefreshFolders Failed disposing folder cover image bitmaps during refresh. " +
+                       "Filter={Filter}, FolderCount={FolderCount}",
+                       currentFilter,
+                       oldFolders.Count);
+                    throw;
+                }
             }
             else
             {
@@ -443,24 +481,37 @@ namespace ImagePerfect.ViewModels
                 List<ImageViewModel> oldImages = _mainWindowViewModel.Images.ToList();
                 _mainWindowViewModel.Images = new ObservableCollection<ImageViewModel>();
                 _mainWindowViewModel.LibraryFolders = new ObservableCollection<FolderViewModel>();
-                await Task.Run(() =>
+                try
                 {
-                    foreach (ImageViewModel img in oldImages)
+                    await Task.Run(() =>
                     {
-                        if (!IsInSessionHistory(img))
+                        foreach (ImageViewModel img in oldImages)
                         {
-                            img.ImageBitmap?.Dispose();
+                            if (!IsInSessionHistory(img))
+                            {
+                                img.ImageBitmap?.Dispose();
+                            }
                         }
-                    }
 
-                    foreach (FolderViewModel folder in oldFolders)
-                    {
-                        if (!IsInSessionHistory(folder))
+                        foreach (FolderViewModel folder in oldFolders)
                         {
-                            folder.CoverImageBitmap?.Dispose();
+                            if (!IsInSessionHistory(folder))
+                            {
+                                folder.CoverImageBitmap?.Dispose();
+                            }
                         }
-                    }
-                });
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex,
+                        "RefreshFolders Failed disposing image/folder bitmaps during refresh. " +
+                        "Filter={Filter}, ImageCount={ImageCount}, FolderCount={FolderCount}",
+                        currentFilter,
+                        oldImages.Count,
+                        oldFolders.Count);
+                    throw;
+                }
             }
             displayFolders = FolderPagination();
             await MapTagsToFoldersAddToObservable();

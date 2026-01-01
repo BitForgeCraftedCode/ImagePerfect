@@ -10,6 +10,7 @@ using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Models;
 using MySqlConnector;
 using ReactiveUI;
+using Serilog;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -73,6 +74,9 @@ namespace ImagePerfect.ViewModels
             { 
                 return;
             }
+            Log.Information(
+                "Zip extraction started. SelectedFolders={FolderCount}",
+                _ZipFolders.Count);
             _mainWindowViewModel.ShowLoading = true;
             ConcurrentBag<string> extractionErrors = new ConcurrentBag<string>();
             ConcurrentBag<string> successfullyExtracted = new ConcurrentBag<string>();
@@ -109,43 +113,50 @@ namespace ImagePerfect.ViewModels
 
                     return;
                 }
-                
-                // Extract zips in parallel
-                await Parallel.ForEachAsync(allZipFiles, new ParallelOptions { MaxDegreeOfParallelism = 4 },
-                async (zipFile, ct) =>
+                try
                 {
-                    try
+                    // Extract zips in parallel
+                    await Parallel.ForEachAsync(allZipFiles, new ParallelOptions { MaxDegreeOfParallelism = 4 },
+                    (zipFile, ct) =>
                     {
-                        string parentDir = Path.GetDirectoryName(zipFile)!;
-                        string baseName = Path.GetFileNameWithoutExtension(zipFile);
-                        string targetDir = Path.Combine(parentDir, baseName);
-
-                        // Ensure unique folder name if target exists
-                        int counter = 1;
-                        while (Directory.Exists(targetDir))
+                        try
                         {
-                            targetDir = Path.Combine(parentDir, $"{baseName}_{counter}");
-                            counter++;
-                        }
+                            string parentDir = Path.GetDirectoryName(zipFile)!;
+                            string baseName = Path.GetFileNameWithoutExtension(zipFile);
+                            string targetDir = Path.Combine(parentDir, baseName);
 
-                        Directory.CreateDirectory(targetDir);
+                            // Ensure unique folder name if target exists
+                            int counter = 1;
+                            while (Directory.Exists(targetDir))
+                            {
+                                targetDir = Path.Combine(parentDir, $"{baseName}_{counter}");
+                                counter++;
+                            }
 
-                        // Extract
-                        await Task.Run(() =>
-                        {
+                            Directory.CreateDirectory(targetDir);
+
+                            // Extract
                             ZipFile.ExtractToDirectory(zipFile, targetDir);
-                        }, ct);
 
-                        //add to list so we can move those zips to trash later
-                        successfullyExtracted.Add(zipFile);
-                    }
-                    catch(Exception ex) 
-                    {
-                        string failedMsg = $"{zipFile} failed to extract. Reason: {ex.Message}";
-                        extractionErrors.Add(failedMsg);
-                    }
-                });
-
+                            //add to list so we can move those zips to trash later
+                            successfullyExtracted.Add(zipFile);
+                        }
+                        catch (Exception ex)
+                        {
+                            string failedMsg = $"{zipFile} failed to extract. Reason: {ex.Message}";
+                            extractionErrors.Add(failedMsg);
+                        }
+                        return ValueTask.CompletedTask;
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex,
+                        "Parallel zip extraction failed catastrophically. ZipsProcessed={Processed}",
+                        successfullyExtracted.Count);
+                    throw;
+                }
+                
                 //Phase 2: Move to trash only if extraction worked
                 
                 //group strings based on a part of the string -- group based on Parent dir so all zip paths will be grouped together by their folders
@@ -196,6 +207,11 @@ namespace ImagePerfect.ViewModels
             }
             finally
             {
+                Log.Information(
+                    "Zip extraction completed. Extracted={Extracted}, ExtractErrors={ExtractErrors}, MoveErrors={MoveErrors}",
+                    successfullyExtracted.Count,
+                    extractionErrors.Count,
+                    moveErrors.Count);
                 if (extractionErrors.Any() || moveErrors.Any())
                 {
                     string errorMsg = "";
