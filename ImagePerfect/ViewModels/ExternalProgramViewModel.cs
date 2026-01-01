@@ -9,6 +9,7 @@ using ImagePerfect.Helpers;
 using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Models;
 using Avalonia.Controls;
+using System.Threading.Tasks;
 
 namespace ImagePerfect.ViewModels
 {
@@ -19,7 +20,7 @@ namespace ImagePerfect.ViewModels
         {
             _mainWindowViewModel = mainWindowViewModel;
         }
-        public async void OpenImageInExternalViewer(ImageViewModel imageVm)
+        public async Task OpenImageInExternalViewer(ImageViewModel imageVm)
         {
             string? externalImageViewerExePath = _mainWindowViewModel.SettingsVm.ExternalImageViewerExePath;
             string imagePathForProcessStart = PathHelper.FormatFilePathForProcessStart(imageVm.ImagePath);
@@ -96,7 +97,7 @@ namespace ImagePerfect.ViewModels
                 return;
             }
         }
-        public async void OpenCurrentDirectoryWithExplorer()
+        public async Task OpenCurrentDirectoryWithExplorer()
         {
             string externalFileExplorerExePath = PathHelper.GetExternalFileExplorerExePath();
             string folderPathForProcessStart = PathHelper.FormatFilePathForProcessStart(_mainWindowViewModel.ExplorerVm.CurrentDirectory);

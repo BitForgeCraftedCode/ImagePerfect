@@ -132,17 +132,17 @@ namespace ImagePerfect.ViewModels
             ImportImagesCommand = ReactiveCommand.Create(async (FolderViewModel imageFolder) => {
                 await ImportImagesVm.ImportImages(imageFolder, false);
             });
-            AddFolderDescriptionCommand = ReactiveCommand.Create((FolderViewModel folderVm) => {
-                ModifyFolderDataVm.UpdateFolder(folderVm, "Description");
+            AddFolderDescriptionCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
+                await ModifyFolderDataVm.UpdateFolder(folderVm, "Description");
             });
-            AddFolderTagsCommand = ReactiveCommand.Create((FolderViewModel folderVm) => {
-                ModifyFolderDataVm.AddFolderTag(folderVm);
+            AddFolderTagsCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
+                await ModifyFolderDataVm.AddFolderTag(folderVm);
             });
-            EditFolderTagsCommand = ReactiveCommand.Create((FolderViewModel folderVm) => {
-                ModifyFolderDataVm.EditFolderTag(folderVm);
+            EditFolderTagsCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
+                await ModifyFolderDataVm.EditFolderTag(folderVm);
             });
-            AddFolderRatingCommand = ReactiveCommand.Create((FolderViewModel folderVm) => {
-                ModifyFolderDataVm.UpdateFolder(folderVm, "Rating");
+            AddFolderRatingCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
+                await ModifyFolderDataVm.UpdateFolder(folderVm, "Rating");
             });
             AddImageTagsCommand = ReactiveCommand.Create(async (ImageViewModel imageVm) => {
                 await ModifyImageDataVm.AddImageTag(imageVm);
@@ -165,14 +165,14 @@ namespace ImagePerfect.ViewModels
             AddTagToAllFoldersInCurrentDirectoryCommand = ReactiveCommand.Create(async (Tag selectedTag) => { 
                 await ModifyFolderDataVm.AddTagToAllFoldersInCurrentDirectory(selectedTag);
             });
-            DeleteLibraryCommand = ReactiveCommand.Create(() => {
-                DeleteLibrary();
+            DeleteLibraryCommand = ReactiveCommand.Create(async () => {
+                await DeleteLibrary();
             });
-            OpenImageInExternalViewerCommand = ReactiveCommand.Create((ImageViewModel imageVm) => {
-                ExternalProgramVm.OpenImageInExternalViewer(imageVm);
+            OpenImageInExternalViewerCommand = ReactiveCommand.Create(async (ImageViewModel imageVm) => {
+                await ExternalProgramVm.OpenImageInExternalViewer(imageVm);
             });
-            OpenCurrentDirectoryWithExplorerCommand = ReactiveCommand.Create(() => {
-                ExternalProgramVm.OpenCurrentDirectoryWithExplorer();
+            OpenCurrentDirectoryWithExplorerCommand = ReactiveCommand.Create(async () => {
+                await ExternalProgramVm.OpenCurrentDirectoryWithExplorer();
             });
             MoveImageToTrashCommand = ReactiveCommand.Create(async (ImageViewModel imageVm) => {
                 await MoveImages.MoveImageToTrash(imageVm);
@@ -514,13 +514,13 @@ namespace ImagePerfect.ViewModels
 
         public ReactiveCommand<FolderViewModel, Task> ImportImagesCommand { get; }
 
-        public ReactiveCommand<FolderViewModel, Unit> AddFolderDescriptionCommand { get; }
+        public ReactiveCommand<FolderViewModel, Task> AddFolderDescriptionCommand { get; }
 
-        public ReactiveCommand<FolderViewModel, Unit> AddFolderTagsCommand { get; }
+        public ReactiveCommand<FolderViewModel, Task> AddFolderTagsCommand { get; }
 
-        public ReactiveCommand<FolderViewModel, Unit> EditFolderTagsCommand { get; }
+        public ReactiveCommand<FolderViewModel, Task> EditFolderTagsCommand { get; }
 
-        public ReactiveCommand<FolderViewModel, Unit> AddFolderRatingCommand { get; }
+        public ReactiveCommand<FolderViewModel, Task> AddFolderRatingCommand { get; }
 
         public ReactiveCommand<ImageViewModel, Task> AddImageTagsCommand { get; }
 
@@ -536,11 +536,11 @@ namespace ImagePerfect.ViewModels
 
         public ReactiveCommand<Tag, Task> AddTagToAllFoldersInCurrentDirectoryCommand { get; }
 
-        public ReactiveCommand<Unit, Unit> DeleteLibraryCommand { get; }
+        public ReactiveCommand<Unit, Task> DeleteLibraryCommand { get; }
 
-        public ReactiveCommand<ImageViewModel, Unit> OpenImageInExternalViewerCommand { get; }
+        public ReactiveCommand<ImageViewModel, Task> OpenImageInExternalViewerCommand { get; }
 
-        public ReactiveCommand<Unit, Unit> OpenCurrentDirectoryWithExplorerCommand { get; }
+        public ReactiveCommand<Unit, Task> OpenCurrentDirectoryWithExplorerCommand { get; }
 
         public ReactiveCommand<ImageViewModel, Task> MoveImageToTrashCommand { get; }
 
@@ -676,7 +676,7 @@ namespace ImagePerfect.ViewModels
             }
         }
        
-        private async void DeleteLibrary()
+        private async Task DeleteLibrary()
         {
             var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
                 new MessageBoxCustomParams

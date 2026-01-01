@@ -31,7 +31,7 @@ namespace ImagePerfect.ViewModels
             _mainWindowViewModel = mainWindowViewModel;
         }
 
-        public async void UpdateFolder(FolderViewModel folderVm, string fieldUpdated)
+        public async Task UpdateFolder(FolderViewModel folderVm, string fieldUpdated)
         {
             await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
             FolderMethods folderMethods = new FolderMethods(uow);
@@ -58,7 +58,7 @@ namespace ImagePerfect.ViewModels
             }
         }
 
-        public async void EditFolderTag(FolderViewModel folderVm)
+        public async Task EditFolderTag(FolderViewModel folderVm)
         {
             await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
             FolderMethods folderMethods = new FolderMethods(uow);
@@ -89,7 +89,7 @@ namespace ImagePerfect.ViewModels
             }
         }
 
-        public async void AddFolderTag(FolderViewModel folderVm)
+        public async Task AddFolderTag(FolderViewModel folderVm)
         {
             //click submit with empty input just return
             if (folderVm.NewTag == "" || folderVm.NewTag == null)
