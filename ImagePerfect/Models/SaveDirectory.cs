@@ -63,9 +63,7 @@ namespace ImagePerfect.Models
         [NotMapped]
         public int SavedComboFolderFilterRating { get; set; } = 10;
         [NotMapped]
-        public string SavedComboFolderFilterTagOne { get; set; } = string.Empty;
-        [NotMapped]
-        public string SavedComboFolderFilterTagTwo { get; set; } = string.Empty;
+        public List<string> SavedTagsForFilter { get; set; } = new List<string>();
         [NotMapped]
         public bool SavedFilterInCurrentDirectory { get; set; } = true;
         [NotMapped]

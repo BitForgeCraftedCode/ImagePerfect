@@ -282,13 +282,15 @@ namespace ImagePerfect.ViewModels
                 ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderAlphabeticalFilter;
                 await ExplorerVm.RefreshFolders();
             });
-            FilterFolderOnRatingAndTagCommand = ReactiveCommand.Create(async () => {
-                if (!string.IsNullOrEmpty(ExplorerVm.ComboFolderFilterTagOne))
-                {
-                    ExplorerVm.ResetPagination();
-                    ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderTagAndRatingFilter;
-                    await ExplorerVm.RefreshFolders();
-                }
+            FilterFolderOnRatingAndTagCommand = ReactiveCommand.Create(async (IList tags) => {
+                List<Tag> selectedTags = tags.OfType<Tag>().ToList();
+                if (!selectedTags.Any())
+                    return;
+                List<string> tagsForFilter = selectedTags.Select(t => t.TagName).ToList();
+                ExplorerVm.tagsForFilter = tagsForFilter;
+                ExplorerVm.ResetPagination();
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderTagAndRatingFilter;
+                await ExplorerVm.RefreshFolders();
             });
             FilterFoldersOnRatingCommand = ReactiveCommand.Create(async (decimal rating) => {
                 ExplorerVm.ResetPagination();
@@ -586,7 +588,7 @@ namespace ImagePerfect.ViewModels
 
         public ReactiveCommand<string, Task> FilterFoldersInCurrentDirectoryByStartingLetterCommand { get; }
 
-        public ReactiveCommand<Unit, Task> FilterFolderOnRatingAndTagCommand { get; }
+        public ReactiveCommand<IList, Task> FilterFolderOnRatingAndTagCommand { get; }
 
         public ReactiveCommand<decimal, Task> FilterFoldersOnRatingCommand { get; }
 

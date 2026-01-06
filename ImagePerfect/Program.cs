@@ -14,25 +14,9 @@ namespace ImagePerfect
         // yet and stuff might break.
         [STAThread]
         public static int Main(string[] args)
-        {
-            // Create logs folder next to executable
-            string logDir = Path.Combine(AppContext.BaseDirectory, "logs");
-            Directory.CreateDirectory(logDir);
-
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .Enrich.WithExceptionDetails()
-                .Enrich.WithMachineName()
-                .Enrich.WithProcessId()
-                .Enrich.WithThreadId()
-                .Enrich.WithProperty("App", "ImagePerfect")
-                .WriteTo.File(
-                    Path.Combine(logDir, "imageperfect-.log"),
-                    rollingInterval: RollingInterval.Day,
-                    retainedFileCountLimit: 14,
-                    shared: true
-                )
-                .CreateLogger();
+        {     
+            ConfigureSerilog();
+       
             try
             {
                 Log.Information("ImagePerfect starting");
@@ -43,7 +27,7 @@ namespace ImagePerfect
             catch (Exception ex) 
             {
                 Log.Fatal(ex, "Fatal error during application startup");
-                return 1;
+                throw;
             }
             finally
             {
@@ -63,5 +47,27 @@ namespace ImagePerfect
                 .WithInterFont()
                 .LogToTrace()
                 .UseReactiveUI();
+
+        private static void ConfigureSerilog()
+        {
+            // Create logs folder next to executable
+            string logDir = Path.Combine(AppContext.BaseDirectory, "logs");
+            Directory.CreateDirectory(logDir);
+
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .Enrich.WithExceptionDetails()
+                .Enrich.WithMachineName()
+                .Enrich.WithProcessId()
+                .Enrich.WithThreadId()
+                .Enrich.WithProperty("App", "ImagePerfect")
+                .WriteTo.File(
+                    Path.Combine(logDir, "imageperfect-.log"),
+                    rollingInterval: RollingInterval.Day,
+                    retainedFileCountLimit: 14,
+                    shared: true
+                )
+                .CreateLogger();
+        }
     }
 }

@@ -45,25 +45,22 @@
 						Seach Folder Description
 					</Button>
 
-					
-
-					
-
-					<NumericUpDown Grid.Row="2" Grid.Column="0" Minimum="0" Maximum="10" Width="200"
+					<NumericUpDown Grid.Row="2" Grid.Column="0" Minimum="0" Maximum="10" Width="200" Height="32"
 								   Margin="5" ParsingNumberStyle="Integer" FormatString="0"
 								   Value="{Binding ExplorerVm.ComboFolderFilterRating}" />
-					<AutoCompleteBox Grid.Row="2" Grid.Column="1" Margin="5" FilterMode="StartsWith" Width="200"
-									 ItemsSource="{Binding TagsList}"
-									 ValueMemberBinding="{Binding TagName}"
-									 Text="{Binding ExplorerVm.ComboFolderFilterTagOne}" />
-					<AutoCompleteBox Grid.Row="2" Grid.Column="2" Margin="5" FilterMode="StartsWith" Width="200"
-									 ItemsSource="{Binding TagsList}"
-									 ValueMemberBinding="{Binding TagName}"
-									 Text="{Binding ExplorerVm.ComboFolderFilterTagTwo}" />
-					<Button Grid.Row="2" Grid.Column="3" Margin="5" Width="200" HorizontalContentAlignment="Center"
+
+					<ListBox Grid.Row="2" Grid.Column="1" x:Name="SelectedTagsForFolderFilter"  SelectionMode="Multiple" ItemsSource="{Binding TagsList}" Height="100" Width="200">
+						<ListBox.ItemTemplate>
+							<DataTemplate>
+								<TextBlock Text="{Binding TagName}" HorizontalAlignment="Center"/>
+							</DataTemplate>
+						</ListBox.ItemTemplate>
+					</ListBox>
+					<Button Grid.Row="2" Grid.Column="2" Margin="5" Width="200" HorizontalContentAlignment="Center"
 							Command="{Binding FilterFolderOnRatingAndTagCommand}"
+							CommandParameter="{Binding SelectedItems, ElementName=SelectedTagsForFolderFilter}"
 							Classes="menu-btn">
-						Filter On Rating And Tag
+						Filter On Rating And Tags
 					</Button>
 				</Grid>
 				<Grid RowDefinitions="Auto, Auto" ColumnDefinitions="*, *" HorizontalAlignment="Center">

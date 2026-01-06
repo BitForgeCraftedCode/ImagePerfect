@@ -120,17 +120,16 @@ namespace ImagePerfect.Repository
             return (allFoldersAtRating,tags);
         }
 
-        public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithRatingAndTag(int rating, string tagOne, string tagTwo, bool filterInCurrentDirectory, string currentDirectory)
+        public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithRatingAndTag(int rating, List<string> tagNames, bool filterInCurrentDirectory, string currentDirectory)
         {
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
             string sql1 = string.Empty;
             string sql2 = string.Empty;
-           
-            string[] tagNames = string.IsNullOrEmpty(tagTwo) ? new[] { tagOne } : new[] { tagOne, tagTwo };
-            int requiredCount = tagNames.Length;
 
-            
+            int requiredCount = tagNames.Count;
+
+
             if (filterInCurrentDirectory)
             {
                 sql1 = $@"SELECT folders.* FROM folders

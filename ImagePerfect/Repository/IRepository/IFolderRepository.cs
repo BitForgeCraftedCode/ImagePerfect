@@ -13,7 +13,7 @@ namespace ImagePerfect.Repository.IRepository
         Task<(List<Folder> folders, List<FolderTag> tags)> GetFoldersInDirectoryByStartingLetter(string directoryPath, bool ascending, string letter);
         Task<Folder> GetFolderAtDirectory(string directoryPath);
         Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersAtRating(int rating, bool filterInCurrentDirectory, string currentDirectory);
-        Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithRatingAndTag(int rating, string tagOne, string tagTwo, bool filterInCurrentDirectory, string currentDirectory);
+        Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithRatingAndTag(int rating, List<string> tagNames, bool filterInCurrentDirectory, string currentDirectory);
         Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithNoImportedImages(bool filterInCurrentDirectory, string currentDirectory);
         Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithMetadataNotScanned(bool filterInCurrentDirectory, string currentDirectory);
         Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithoutCovers(bool filterInCurrentDirectory, string currentDirectory);
