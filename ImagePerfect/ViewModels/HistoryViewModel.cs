@@ -37,7 +37,8 @@ namespace ImagePerfect.ViewModels
             _configuration = config;
             _mainWindowViewModel = mainWindowViewModel;
 
-            StartDeferredDisposeTimer();
+            //disable timed disposal for now -- this was likely crashing the app System.NullReferenceException DeepCopy.cs:line 132
+            //StartDeferredDisposeTimer();
         }
         public Interaction<SaveDirectory, Unit> LoadHistoryRequest { get; } = new();
 
