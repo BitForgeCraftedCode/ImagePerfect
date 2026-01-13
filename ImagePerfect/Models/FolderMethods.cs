@@ -75,6 +75,11 @@ namespace ImagePerfect.Models
             return await _unitOfWork.Folder.GetAllFoldersWithDescriptionText(text, filterInCurrentDirectory, currentDirectory);
         }
 
+        public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithDescriptionTextAndTags(string text, List<string> tagNames, bool filterInCurrentDirectory, string currentDirectory)
+        {
+            return await _unitOfWork.Folder.GetAllFoldersWithDescriptionTextAndTags(text, tagNames, filterInCurrentDirectory, currentDirectory);
+        }
+
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFavoriteFolders()
         {
             return await _unitOfWork.Folder.GetAllFavoriteFolders();

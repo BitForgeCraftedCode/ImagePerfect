@@ -60,6 +60,7 @@ namespace ImagePerfect.ViewModels
             FolderTagFilter,
             FolderTagAndRatingFilter,
             FolderDescriptionFilter,
+            FolderDescriptionAndTagsFilter,
             FolderAlphabeticalFilter,
             FolderDateModifiedFilter,
             ImageYearFilter,
@@ -80,9 +81,11 @@ namespace ImagePerfect.ViewModels
         public string tagForFilter = string.Empty;
         public string textForFilter = string.Empty;
         public List<string> tagsForFilter = new List<string>();
+        public List<string> tagsForFolderDescriptionAndTagsFilter = new List<string>();
         private int _comboFolderFilterRating = 10;
         private bool _filterInCurrentDirectory = true;
         private bool _loadFoldersAscending = true;
+        private string _textForFolderDescriptionAndTagsFilter = string.Empty;
 
         public ExplorerViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel)
         {
@@ -145,6 +148,12 @@ namespace ImagePerfect.ViewModels
         {
             get => _comboFolderFilterRating;
             set => this.RaiseAndSetIfChanged(ref _comboFolderFilterRating, value);
+        }
+
+        public string TextForFolderDescriptionAndTagsFilter
+        {
+            get => _textForFolderDescriptionAndTagsFilter;
+            set => this.RaiseAndSetIfChanged(ref _textForFolderDescriptionAndTagsFilter, value);
         }
 
         public void ResetPagination()
@@ -571,6 +580,10 @@ namespace ImagePerfect.ViewModels
                     (List<Folder> folders, List<FolderTag> tags) folderDescriptionResult = await folderMethods.GetAllFoldersWithDescriptionText(textForFilter, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolders(folderDescriptionResult);
                     break;
+                case Filters.FolderDescriptionAndTagsFilter:
+                    (List<Folder> folders, List<FolderTag> tags) folderDescriptionAndTagsResult = await folderMethods.GetAllFoldersWithDescriptionTextAndTags(TextForFolderDescriptionAndTagsFilter, tagsForFolderDescriptionAndTagsFilter, FilterInCurrentDirectory, CurrentDirectory);
+                    await SetDisplayFoldersForRefreshFolders(folderDescriptionAndTagsResult);
+                    break;
                 case Filters.AllFavoriteFolders:
                     (List<Folder> folders, List<FolderTag> tags) allFavoriteFoldersResult = await folderMethods.GetAllFavoriteFolders();
                     await SetDisplayFoldersForRefreshFolders(allFavoriteFoldersResult);
@@ -688,6 +701,10 @@ namespace ImagePerfect.ViewModels
                 case Filters.FolderDescriptionFilter:
                     (List<Folder> folders, List<FolderTag> tags) folderDescriptionResult = await folderMethods.GetAllFoldersWithDescriptionText(textForFilter, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolderProps(folderDescriptionResult, folderVm);
+                    break;
+                case Filters.FolderDescriptionAndTagsFilter:
+                    (List<Folder> folders, List<FolderTag> tags) folderDescriptionAndTagsResult = await folderMethods.GetAllFoldersWithDescriptionTextAndTags(TextForFolderDescriptionAndTagsFilter, tagsForFolderDescriptionAndTagsFilter, FilterInCurrentDirectory, CurrentDirectory);
+                    await SetDisplayFoldersForRefreshFolderProps(folderDescriptionAndTagsResult, folderVm);
                     break;
                 case Filters.AllFavoriteFolders:
                     (List<Folder> folders, List<FolderTag> tags) allFavoriteFoldersResult = await folderMethods.GetAllFavoriteFolders();

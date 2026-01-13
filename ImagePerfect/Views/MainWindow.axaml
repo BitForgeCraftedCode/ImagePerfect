@@ -254,7 +254,8 @@
 				<TextBox Grid.Row="2" Grid.Column="0" Margin="5" MaxLength="200" Width="200" x:Name="FilterFolderDescriptionText"/>
 				<Button Grid.Row="2" Grid.Column="1" Margin="5" Width="200" HorizontalContentAlignment="Center"
 						Command="{Binding FilterFoldersOnDescriptionCommand}"
-						CommandParameter="{Binding #FilterFolderDescriptionText.Text}" Classes="menu-btn">
+						CommandParameter="{Binding #FilterFolderDescriptionText.Text}" Classes="menu-btn"
+						ToolTip.Tip="Search for folders on description and folder name">
 					Seach Folder Description
 				</Button>
 

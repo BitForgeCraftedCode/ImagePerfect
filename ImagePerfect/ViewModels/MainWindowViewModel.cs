@@ -316,6 +316,18 @@ namespace ImagePerfect.ViewModels
                 ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderDescriptionFilter;
                 await ExplorerVm.RefreshFolders();
             });
+            FilterFoldersOnDescriptionAndTagsCommand = ReactiveCommand.Create(async (IList tags) =>
+            {
+                List<Tag> selectedTags = tags.OfType<Tag>().ToList();
+                if (!selectedTags.Any() || String.IsNullOrEmpty(ExplorerVm.TextForFolderDescriptionAndTagsFilter))
+                    return;
+                List<string> tagsForFilter = selectedTags.Select(t => t.TagName).ToList();
+                //TextForFolderDescriptionAndTagsFilter is bound to UI tags passed in as IList
+                ExplorerVm.tagsForFolderDescriptionAndTagsFilter = tagsForFilter;
+                ExplorerVm.ResetPagination();
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderDescriptionAndTagsFilter;
+                await ExplorerVm.RefreshFolders();
+            });
             UpdateImageDatesCommand = ReactiveCommand.Create(async () => {
                 await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
                 ImageMethods imageMethods = new ImageMethods(uow);
@@ -597,6 +609,8 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<string, Task> FilterFoldersOnTagCommand  { get; }
 
         public ReactiveCommand<string, Task> FilterFoldersOnDescriptionCommand { get; }
+
+        public ReactiveCommand<IList, Task> FilterFoldersOnDescriptionAndTagsCommand { get; }
 
         public ReactiveCommand<Unit, Task> UpdateImageDatesCommand { get; }
 

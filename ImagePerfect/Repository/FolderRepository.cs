@@ -295,6 +295,62 @@ namespace ImagePerfect.Repository
             return (allFoldersWithDescriptionText, tags);
         }
 
+        public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithDescriptionTextAndTags(string text, List<string> tagNames, bool filterInCurrentDirectory, string currentDirectory)
+        {
+            MySqlTransaction txn = await _connection.BeginTransactionAsync();
+            string regExpString = PathHelper.GetRegExpStringAllFoldersInDirectory(currentDirectory);
+            string sql1 = string.Empty;
+            string sql2 = string.Empty;
+            int requiredCount = tagNames.Count;
+            
+            
+            if (filterInCurrentDirectory)
+            {
+                sql1 = @"SELECT folders.* FROM folders
+                JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId
+                JOIN tags ON folder_tags_join.TagId = tags.TagId
+                WHERE
+                    REGEXP_LIKE(FolderPath, @Pattern)
+                    AND (FolderName LIKE CONCAT('%', @Text, '%') OR FolderDescription LIKE CONCAT('%', @Text, '%'))
+                    AND tags.TagName IN @tagNames
+                GROUP BY folders.FolderId HAVING COUNT(DISTINCT tags.TagName) = @requiredCount ORDER BY folders.FolderPath, folders.FolderName;
+                ";
+                sql2 = @"SELECT tags.TagId, tags.TagName, folders.FolderId
+                FROM folders
+                JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId
+                JOIN tags ON folder_tags_join.TagId = tags.TagId
+                WHERE
+                    REGEXP_LIKE(FolderPath, @Pattern)
+                    AND (FolderName LIKE CONCAT('%', @Text, '%') OR FolderDescription LIKE CONCAT('%', @Text, '%'))
+                ORDER BY folders.FolderPath, folders.FolderName;
+                ";
+            }
+            else
+            {
+                sql1 = @"SELECT folders.* FROM folders
+                JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId
+                JOIN tags ON folder_tags_join.TagId = tags.TagId
+                WHERE
+                    (FolderName LIKE CONCAT('%', @Text, '%') OR FolderDescription LIKE CONCAT('%', @Text, '%'))
+                    AND tags.TagName IN @tagNames 
+                GROUP BY folders.FolderId HAVING COUNT(DISTINCT tags.TagName) = @requiredCount ORDER BY folders.FolderPath, folders.FolderName;
+                ";
+                sql2 = @"SELECT tags.TagId, tags.TagName, folders.FolderId 
+                    FROM folders
+                    JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId
+                    JOIN tags ON folder_tags_join.TagId = tags.TagId 
+                    WHERE
+                        (FolderName LIKE CONCAT('%', @Text, '%') OR FolderDescription LIKE CONCAT('%', @Text, '%'))
+                    ORDER BY folders.FolderPath, folders.FolderName;
+                ";
+            }
+            
+            List<Folder> allFoldersWithDescriptionTextAndTags = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, new { Pattern = regExpString, Text = text, tagNames, requiredCount }, transaction: txn);
+            List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, new { Pattern = regExpString, Text = text }, transaction: txn);
+            await txn.CommitAsync();
+            return (allFoldersWithDescriptionTextAndTags, tags);
+        }
+
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFavoriteFolders()
         {
             MySqlTransaction txn = await _connection.BeginTransactionAsync();

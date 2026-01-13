@@ -104,6 +104,8 @@ namespace ImagePerfect.ViewModels
                 SavedTagForFilter = _mainWindowViewModel.ExplorerVm.tagForFilter,
                 SavedTextForFilter = _mainWindowViewModel.ExplorerVm.textForFilter,
                 SavedComboFolderFilterRating = _mainWindowViewModel.ExplorerVm.ComboFolderFilterRating,
+                SavedTagsForFolderDescriptionAndTagsFilter = _mainWindowViewModel.ExplorerVm.tagsForFolderDescriptionAndTagsFilter,
+                SavedTextForFolderDescriptionAndTagsFilter = _mainWindowViewModel.ExplorerVm.TextForFolderDescriptionAndTagsFilter,
                 SavedTagsForFilter = _mainWindowViewModel.ExplorerVm.tagsForFilter,
                 SavedFilterInCurrentDirectory = _mainWindowViewModel.ExplorerVm.FilterInCurrentDirectory,
                 SavedLoadFoldersAscending = _mainWindowViewModel.ExplorerVm.LoadFoldersAscending
@@ -337,6 +339,8 @@ namespace ImagePerfect.ViewModels
             _mainWindowViewModel.ExplorerVm.tagForFilter = saveDirectoryItem.SavedTagForFilter;
             _mainWindowViewModel.ExplorerVm.textForFilter = saveDirectoryItem.SavedTextForFilter;
             _mainWindowViewModel.ExplorerVm.ComboFolderFilterRating = saveDirectoryItem.SavedComboFolderFilterRating;
+            _mainWindowViewModel.ExplorerVm.tagsForFolderDescriptionAndTagsFilter = saveDirectoryItem.SavedTagsForFolderDescriptionAndTagsFilter;
+            _mainWindowViewModel.ExplorerVm.TextForFolderDescriptionAndTagsFilter = saveDirectoryItem.SavedTextForFolderDescriptionAndTagsFilter;
             _mainWindowViewModel.ExplorerVm.tagsForFilter = saveDirectoryItem.SavedTagsForFilter;
             _mainWindowViewModel.ExplorerVm.FilterInCurrentDirectory = saveDirectoryItem.SavedFilterInCurrentDirectory;
             _mainWindowViewModel.ExplorerVm.LoadFoldersAscending = saveDirectoryItem.SavedLoadFoldersAscending;

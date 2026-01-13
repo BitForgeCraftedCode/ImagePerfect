@@ -19,6 +19,7 @@ namespace ImagePerfect.Repository.IRepository
         Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithoutCovers(bool filterInCurrentDirectory, string currentDirectory);
         Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithTag(string tag, bool filterInCurrentDirectory, string currentDirectory);
         Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithDescriptionText(string text, bool filterInCurrentDirectory, string currentDirectory);
+        Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithDescriptionTextAndTags(string text, List<string> tagNames, bool filterInCurrentDirectory, string currentDirectory);
         Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFavoriteFolders();
         Task<List<Folder>> GetDirectoryTree(string directoryPath);
         Task<bool> AddCoverImage(string coverImagePath, int folderId);
