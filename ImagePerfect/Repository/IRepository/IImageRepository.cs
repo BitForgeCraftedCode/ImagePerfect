@@ -14,6 +14,7 @@ namespace ImagePerfect.Repository.IRepository
         Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesInFolderAndSubFolders(string folderPath);
         Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesAtRating(int rating, bool filterInCurrentDirectory, string currentDirectory);
         Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesWithTag(string tag, bool filterInCurrentDirectory, string currentDirectory);
+        Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesWithTags(List<string> tagNames, bool filterInCurrentDirectory, string currentDirectory);
         Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesAtYear(int year, bool filterInCurrentDirectory, string currentDirectory);
         Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesAtYearMonth(int year, int month, bool filterInCurrentDirectory, string currentDirectory);
         Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesInDateRange(DateTimeOffset startDate, DateTimeOffset endDate, bool filterInCurrentDirectory, string currentDirectory);

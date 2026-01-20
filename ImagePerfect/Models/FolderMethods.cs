@@ -70,6 +70,11 @@ namespace ImagePerfect.Models
             return await _unitOfWork.Folder.GetAllFoldersWithTag(tag, filterInCurrentDirectory, currentDirectory);
         }
 
+        public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithTags(List<string> tagNames, bool filterInCurrentDirectory, string currentDirectory)
+        {
+            return await _unitOfWork.Folder.GetAllFoldersWithTags(tagNames, filterInCurrentDirectory, currentDirectory);
+        }
+
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithDescriptionText(string text, bool filterInCurrentDirectory, string currentDirectory)
         {
             return await _unitOfWork.Folder.GetAllFoldersWithDescriptionText(text, filterInCurrentDirectory, currentDirectory);

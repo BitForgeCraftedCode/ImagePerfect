@@ -268,6 +268,42 @@ namespace ImagePerfect.Repository
             return (allFoldersWithTag, tags);
         }
 
+        public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithTags(List<string> tagNames, bool filterInCurrentDirectory, string currentDirectory)
+        {
+            MySqlTransaction txn = await _connection.BeginTransactionAsync();
+            string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
+            string sql1 = string.Empty;
+            string sql2 = string.Empty;
+
+            int requiredCount = tagNames.Count;
+
+            if (filterInCurrentDirectory)
+            {
+                sql1 = @"SELECT folders.* FROM folders
+                            JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId
+                            JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE tags.TagName IN @tagNames AND FolderPath LIKE @path 
+                            GROUP BY folders.FolderId HAVING COUNT(DISTINCT tags.TagName) = @requiredCount ORDER BY folders.FolderPath, folders.FolderName;";
+                sql2 = @"SELECT tags.TagId, tags.TagName, folders.FolderId FROM folders
+                            JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId
+                            JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE FolderPath LIKE @path ORDER BY folders.FolderPath, folders.FolderName;";
+            }
+            else
+            {
+                sql1 = @"SELECT folders.* FROM folders
+                            JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId
+                            JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE tags.TagName IN @tagNames 
+                            GROUP BY folders.FolderId HAVING COUNT(DISTINCT tags.TagName) = @requiredCount ORDER BY folders.FolderPath, folders.FolderName;";
+                sql2 = @"SELECT tags.TagId, tags.TagName, folders.FolderId FROM folders
+                            JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId
+                            JOIN tags ON folder_tags_join.TagId = tags.TagId ORDER BY folders.FolderPath, folders.FolderName;";
+            }
+
+            List<Folder> allFoldersWithTag = (List<Folder>)await _connection.QueryAsync<Folder>(sql1, new { path, tagNames, requiredCount }, transaction: txn);
+            List<FolderTag> tags = (List<FolderTag>)await _connection.QueryAsync<FolderTag>(sql2, new { path }, transaction: txn);
+            await txn.CommitAsync();
+            return (allFoldersWithTag, tags);
+        }
+
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithDescriptionText(string text, bool filterInCurrentDirectory, string currentDirectory)
         {
             MySqlTransaction txn = await _connection.BeginTransactionAsync();

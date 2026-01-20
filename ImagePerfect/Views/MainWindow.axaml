@@ -214,7 +214,7 @@
 		<!--Folder Filters-->
 		<StackPanel Grid.Row="3" Orientation="Vertical" IsVisible="{Binding ToggleUI.ShowFolderFilters}" Classes="menu-bg-color" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
 			<Grid RowDefinitions="Auto, Auto, Auto" ColumnDefinitions="Auto, Auto, Auto, Auto" HorizontalAlignment="Center">
-				<NumericUpDown Grid.Row="0" Grid.Column="0" Minimum="0" Value="10" Maximum="10" Width="200"
+				<NumericUpDown Grid.Row="0" Grid.Column="0" Minimum="0" Value="10" Maximum="10" Width="200" Height="32"
 							   Margin="5" ParsingNumberStyle="Integer" FormatString="0"
 							   x:Name="FilterFolderRating"/>
 				<Button Grid.Row="0" Grid.Column="1" Margin="5" Width="200" HorizontalContentAlignment="Center"
@@ -222,17 +222,19 @@
 						CommandParameter="{Binding #FilterFolderRating.Value}" Classes="menu-btn">
 					Filter Folders on Rating
 				</Button>
-
-				<AutoCompleteBox Grid.Row="0" Grid.Column="2" Margin="5" FilterMode="StartsWith" Width="200"
-								 ItemsSource="{Binding #Root.((vm:MainWindowViewModel)DataContext).TagsList}"
-								 ValueMemberBinding="{Binding TagName}"
-								 x:Name="FilterFolderTag"/>
+				<ListBox Grid.Row="0" Grid.Column="2" x:Name="SelectedTagsForFolderTagsFilterMW"  SelectionMode="Multiple" ItemsSource="{Binding TagsList}" Height="100" Width="200">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding TagName}" HorizontalAlignment="Center"/>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
 				<Button Grid.Row="0" Grid.Column="3" Margin="5" Width="200" HorizontalContentAlignment="Center"
-						Command="{Binding FilterFoldersOnTagCommand}"
-						CommandParameter="{Binding #FilterFolderTag.Text}" Classes="menu-btn">
-					Filter Folders on Tag
+						Command="{Binding FilterFolderOnTagsCommand}"
+						CommandParameter="{Binding SelectedItems, ElementName=SelectedTagsForFolderTagsFilterMW}"
+						Classes="menu-btn">
+					Filter Folders on Tags
 				</Button>
-
 				<NumericUpDown Grid.Row="1" Grid.Column="0" Minimum="0" Maximum="10" Width="200" Height="32"
 								   Margin="5" ParsingNumberStyle="Integer" FormatString="0"
 								   Value="{Binding ExplorerVm.ComboFolderFilterRating}" />
@@ -292,7 +294,7 @@
 		<!--Image Filters-->
 		<StackPanel Grid.Row="4" Orientation="Vertical" IsVisible="{Binding ToggleUI.ShowImageFilters}" Classes="menu-bg-color" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
 			<Grid RowDefinitions="Auto" ColumnDefinitions="Auto, Auto, Auto, Auto" HorizontalAlignment="Center">
-				<NumericUpDown Grid.Row="0" Grid.Column="0" Minimum="0" Value="5" Maximum="5" Width="200"
+				<NumericUpDown Grid.Row="0" Grid.Column="0" Minimum="0" Value="5" Maximum="5" Width="200" Height="32"
 							   Margin="5" ParsingNumberStyle="Integer" FormatString="0"
 							   x:Name="FilterImageRating"/>
 				<Button Grid.Row="0" Grid.Column="1" Margin="5" Width="200" HorizontalContentAlignment="Center"
@@ -300,15 +302,18 @@
 						CommandParameter="{Binding #FilterImageRating.Value}" Classes="menu-btn">
 					Filter Images on Rating
 				</Button>
-				
-				<AutoCompleteBox Grid.Row="0" Grid.Column="2" Margin="5" FilterMode="StartsWith" Width="200"
-								 ItemsSource="{Binding #Root.((vm:MainWindowViewModel)DataContext).TagsList}"
-								 ValueMemberBinding="{Binding TagName}"
-								 x:Name="FilterImageTag"/>
+				<ListBox Grid.Row="0" Grid.Column="2" x:Name="SelectedTagsForImageTagsFilterMW"  SelectionMode="Multiple" ItemsSource="{Binding TagsList}" Height="100" Width="200">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<TextBlock Text="{Binding TagName}" HorizontalAlignment="Center"/>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
 				<Button Grid.Row="0" Grid.Column="3" Margin="5" Width="200" HorizontalContentAlignment="Center"
-						Command="{Binding FilterImagesOnTagCommand}"
-						CommandParameter="{Binding #FilterImageTag.Text}" Classes="menu-btn">
-					Filter Images on Tag
+						Command="{Binding FilterImagesOnTagsCommand}"
+						CommandParameter="{Binding SelectedItems, ElementName=SelectedTagsForImageTagsFilterMW}"
+						Classes="menu-btn">
+					Filter Images on Tags
 				</Button>
 			</Grid>
 			<Grid RowDefinitions="Auto" ColumnDefinitions="Auto, Auto" HorizontalAlignment="Center">

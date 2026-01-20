@@ -56,8 +56,8 @@ namespace ImagePerfect.ViewModels
             AllImagesInFolderAndSubFolders,
             FiveStarImagesInCurrentDirectory,
             FolderRatingFilter,
-            ImageTagFilter,
-            FolderTagFilter,
+            ImageTagsFilter,
+            FolderTagsFilter,
             FolderTagAndRatingFilter,
             FolderDescriptionFilter,
             FolderDescriptionAndTagsFilter,
@@ -78,9 +78,10 @@ namespace ImagePerfect.ViewModels
         public int selectedMonthForFilter = 0;
         public DateTimeOffset startDateForFilter;
         public DateTimeOffset endDateForFilter;
-        public string tagForFilter = string.Empty;
         public string textForFilter = string.Empty;
         public List<string> tagsForFilter = new List<string>();
+        public List<string> tagsForFolderFilter = new List<string>();
+        public List<string> tagsForImageFilter = new List<string>();
         public List<string> tagsForFolderDescriptionAndTagsFilter = new List<string>();
         private int _comboFolderFilterRating = 10;
         private bool _filterInCurrentDirectory = true;
@@ -367,8 +368,8 @@ namespace ImagePerfect.ViewModels
                     (List<Image> images, List<ImageTag> tags) fiveStarImageRatingResult = await imageMethods.GetAllImagesAtRating(selectedRatingForFilter, true, CurrentDirectory);
                     await SetDisplayImagesForRefreshImages(fiveStarImageRatingResult);
                     break;
-                case Filters.ImageTagFilter:
-                    (List<Image> images, List<ImageTag> tags) imageTagResult = await imageMethods.GetAllImagesWithTag(tagForFilter, FilterInCurrentDirectory, CurrentDirectory);
+                case Filters.ImageTagsFilter:
+                    (List<Image> images, List<ImageTag> tags) imageTagResult = await imageMethods.GetAllImagesWithTags(tagsForImageFilter, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayImagesForRefreshImages(imageTagResult);
                     break;
                 case Filters.ImageYearFilter:
@@ -568,8 +569,8 @@ namespace ImagePerfect.ViewModels
                     (List<Folder> folders, List<FolderTag> tags) folderRatingResult = await folderMethods.GetAllFoldersAtRating(selectedRatingForFilter, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolders(folderRatingResult);
                     break;
-                case Filters.FolderTagFilter:
-                    (List<Folder> folders, List<FolderTag> tags) folderTagResult = await folderMethods.GetAllFoldersWithTag(tagForFilter, FilterInCurrentDirectory, CurrentDirectory);
+                case Filters.FolderTagsFilter:
+                    (List<Folder> folders, List<FolderTag> tags) folderTagResult = await folderMethods.GetAllFoldersWithTags(tagsForFolderFilter, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolders(folderTagResult);
                     break;
                 case Filters.FolderTagAndRatingFilter:
@@ -690,8 +691,8 @@ namespace ImagePerfect.ViewModels
                     (List<Folder> folders, List<FolderTag> tags) folderRatingResult = await folderMethods.GetAllFoldersAtRating(selectedRatingForFilter, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolderProps(folderRatingResult, folderVm);
                     break;
-                case Filters.FolderTagFilter:
-                    (List<Folder> folders, List<FolderTag> tags) folderTagResult = await folderMethods.GetAllFoldersWithTag(tagForFilter, FilterInCurrentDirectory, CurrentDirectory);
+                case Filters.FolderTagsFilter:
+                    (List<Folder> folders, List<FolderTag> tags) folderTagResult = await folderMethods.GetAllFoldersWithTags(tagsForFolderFilter, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolderProps(folderTagResult, folderVm);
                     break;
                 case Filters.FolderTagAndRatingFilter:

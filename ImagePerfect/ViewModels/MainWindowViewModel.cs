@@ -298,16 +298,25 @@ namespace ImagePerfect.ViewModels
                 ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderRatingFilter;
                 await ExplorerVm.RefreshFolders();
             });
-            FilterImagesOnTagCommand = ReactiveCommand.Create(async (string tag) => {
+            FilterImagesOnTagsCommand = ReactiveCommand.Create(async (IList tags) => {
+                List<Tag> selectedTags = tags.OfType<Tag>().ToList();
+                if (!selectedTags.Any())
+                    return;
+                List<string> tagsForFilter = selectedTags.Select(t => t.TagName).ToList();
+                ExplorerVm.tagsForImageFilter = tagsForFilter;
                 ExplorerVm.ResetPagination();
-                ExplorerVm.tagForFilter = tag;
-                ExplorerVm.currentFilter = ExplorerViewModel.Filters.ImageTagFilter;
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.ImageTagsFilter;
                 await ExplorerVm.RefreshImages();
             });
-            FilterFoldersOnTagCommand = ReactiveCommand.Create(async (string tag) => {
+            FilterFolderOnTagsCommand = ReactiveCommand.Create(async (IList tags) => 
+            {
+                List<Tag> selectedTags = tags.OfType<Tag>().ToList();
+                if (!selectedTags.Any())
+                    return;
+                List<string> tagsForFilter = selectedTags.Select(t => t.TagName).ToList();
+                ExplorerVm.tagsForFolderFilter = tagsForFilter;
                 ExplorerVm.ResetPagination();
-                ExplorerVm.tagForFilter = tag;
-                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderTagFilter;
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderTagsFilter;
                 await ExplorerVm.RefreshFolders();
             });
             FilterFoldersOnDescriptionCommand = ReactiveCommand.Create(async (string text) => {
@@ -604,9 +613,9 @@ namespace ImagePerfect.ViewModels
 
         public ReactiveCommand<decimal, Task> FilterFoldersOnRatingCommand { get; }
 
-        public ReactiveCommand<string, Task> FilterImagesOnTagCommand { get; }
+        public ReactiveCommand<IList, Task> FilterImagesOnTagsCommand { get; }
 
-        public ReactiveCommand<string, Task> FilterFoldersOnTagCommand  { get; }
+        public ReactiveCommand<IList, Task> FilterFolderOnTagsCommand { get; }
 
         public ReactiveCommand<string, Task> FilterFoldersOnDescriptionCommand { get; }
 
