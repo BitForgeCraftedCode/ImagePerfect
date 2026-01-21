@@ -148,7 +148,7 @@ namespace ImagePerfect.ViewModels
             try
             {
                 //select all folders from db with tag as List<Folder>
-                (List<Folder> folders, List<FolderTag> tags) folderTagResult = await folderMethods.GetAllFoldersWithTag(selectedTag.TagName, false, _mainWindowViewModel.ExplorerVm.CurrentDirectory);
+                (List<Folder> folders, List<FolderTag> tags) folderTagResult = await folderMethods.GetAllFoldersWithTags(new List<string> { selectedTag.TagName }, false, _mainWindowViewModel.ExplorerVm.CurrentDirectory);
                 List<Folder> taggedFolders = folderTagResult.folders;
                 //no taggedFolders returned just exit
                 if(taggedFolders == null || taggedFolders.Count == 0)

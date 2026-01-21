@@ -17,7 +17,6 @@ namespace ImagePerfect.Repository.IRepository
         Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithNoImportedImages(bool filterInCurrentDirectory, string currentDirectory);
         Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithMetadataNotScanned(bool filterInCurrentDirectory, string currentDirectory);
         Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithoutCovers(bool filterInCurrentDirectory, string currentDirectory);
-        Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithTag(string tag, bool filterInCurrentDirectory, string currentDirectory);
         Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithTags(List<string> tagNames, bool filterInCurrentDirectory, string currentDirectory);
         Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithDescriptionText(string text, bool filterInCurrentDirectory, string currentDirectory);
         Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithDescriptionTextAndTags(string text, List<string> tagNames, bool filterInCurrentDirectory, string currentDirectory);
