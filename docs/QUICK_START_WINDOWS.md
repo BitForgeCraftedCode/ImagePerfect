@@ -3,7 +3,7 @@
 <a id="quick-start-windows"></a>
 ## 🚀 Quick Start Windows
 ### Option 1: Easiest Install (Recommended)
-1. **Download the Installer**: 📥 Get [ImagePerfect v1.0-beta](https://github.com/BitForgeCraftedCode/ImagePerfect/releases/tag/v1.0-beta)
+1. **Download the Installer**: 📥 Get [ImagePerfect v1.02-beta](https://github.com/BitForgeCraftedCode/ImagePerfect/releases/tag/v1.02-beta)
 2. **Run the Installer** and follow the prompts.
 3. When prompted by Windows Firewall with "**Allow mysqld.exe**", click Allow (required for the built-in MySQL server to run).
 4. Launch **ImagePerfect** from the Start Menu or Desktop shortcut.
