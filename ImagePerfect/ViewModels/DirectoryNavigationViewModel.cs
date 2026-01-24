@@ -98,37 +98,13 @@ namespace ImagePerfect.ViewModels
         public async Task NextFolder(FolderViewModel currentFolder)
         {
             _mainWindowViewModel.ExplorerVm.ResetPagination();
-            bool hasChildren = currentFolder.HasChildren;
-            bool hasFiles = currentFolder.HasFiles;
+            
             //set the current directory -- used to add new folder to location
             _mainWindowViewModel.ExplorerVm.CurrentDirectory = currentFolder.FolderPath;
-            //two boolean varibale 4 combos TF TT FT and FF
-            if (hasChildren == false && hasFiles == false)
-            {
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = "Empty Folder",
-                        ContentMessage = $"There are no images in this folder.",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                        MinWidth = 500  // optional, so it doesn’t wrap too soon
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
-                _mainWindowViewModel.ExplorerVm.CurrentDirectory = PathHelper.RemoveOneFolderFromPath(currentFolder.FolderPath);
-                return;
-            }
-            else
-            {
-                //refresh UI
-                _mainWindowViewModel.ExplorerVm.currentFilter = ExplorerViewModel.Filters.None;
-                await _mainWindowViewModel.ExplorerVm.RefreshFolders();
-                await _mainWindowViewModel.ExplorerVm.RefreshImages("", currentFolder.FolderId);
-            }
+            //refresh UI
+            _mainWindowViewModel.ExplorerVm.currentFilter = ExplorerViewModel.Filters.None;
+            await _mainWindowViewModel.ExplorerVm.RefreshFolders();
+            await _mainWindowViewModel.ExplorerVm.RefreshImages("", currentFolder.FolderId);
         }
     }
 }
