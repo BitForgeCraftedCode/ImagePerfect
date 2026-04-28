@@ -171,7 +171,7 @@ namespace ImagePerfect.ViewModels
             {
                 if (folder.HasFiles == true && folder.AreImagesImported == true)
                 {
-                    (List<Image> images, List<ImageTag> tags) imageResult = await imageMethods.GetAllImagesInFolder(folder.FolderId);
+                    (List<Image> images, List<ImageTag> tags) imageResult = await imageMethods.GetAllImagesInFolder(folder.FolderId, _mainWindowViewModel.ExplorerVm.LoadImagesAscending);
                     List<Image> images = imageResult.images;
                     int randomIndex = random.Next(0, images.Count - 1);
                     //set random fall back cover

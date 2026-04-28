@@ -61,7 +61,7 @@ namespace ImagePerfect.ViewModels
                 _mainWindowViewModel.ShowLoading = true;
                 (List<Folder> folders, List<FolderTag> tags) folderResult = await folderMethods.GetFoldersInDirectory(imageVm.ImageFolderPath, _mainWindowViewModel.ExplorerVm.LoadFoldersAscending);
                 _mainWindowViewModel.ExplorerVm.displayFolders = folderResult.folders;
-                (List<Image> images, List<ImageTag> tags) imageResultA = await imageMethods.GetAllImagesInFolder(imageVm.FolderId);
+                (List<Image> images, List<ImageTag> tags) imageResultA = await imageMethods.GetAllImagesInFolder(imageVm.FolderId, _mainWindowViewModel.ExplorerVm.LoadImagesAscending);
                 _mainWindowViewModel.ExplorerVm.displayImages = imageResultA.images;
                 if (_mainWindowViewModel.ExplorerVm.displayImages.Count == 1 && _mainWindowViewModel.ExplorerVm.displayFolders.Count == 0)
                 {
@@ -197,7 +197,7 @@ namespace ImagePerfect.ViewModels
         {
             await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
             ImageMethods imageMethods = new ImageMethods(uow);
-            (List<Image> images, List<ImageTag> tags) imageResult = await imageMethods.GetAllImagesInFolder(folderVm.FolderId);
+            (List<Image> images, List<ImageTag> tags) imageResult = await imageMethods.GetAllImagesInFolder(folderVm.FolderId, _mainWindowViewModel.ExplorerVm.LoadImagesAscending);
             List<Image> allImages = imageResult.images;
             if(allImages is null || allImages.Count == 0)
             {

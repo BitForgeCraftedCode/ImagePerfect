@@ -86,6 +86,7 @@ namespace ImagePerfect.ViewModels
         private int _comboFolderFilterRating = 10;
         private bool _filterInCurrentDirectory = true;
         private bool _loadFoldersAscending = true;
+        private bool _loadImagesAscending = true;
         private string _textForFolderDescriptionAndTagsFilter = string.Empty;
 
         public ExplorerViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel)
@@ -106,6 +107,11 @@ namespace ImagePerfect.ViewModels
             set => this.RaiseAndSetIfChanged(ref _loadFoldersAscending, value);
         }
 
+        public bool LoadImagesAscending
+        {
+            get => _loadImagesAscending;
+            set => this.RaiseAndSetIfChanged(ref _loadImagesAscending, value);
+        }
         public bool FilterInCurrentDirectory
         {
             get => _filterInCurrentDirectory;
@@ -348,11 +354,11 @@ namespace ImagePerfect.ViewModels
                     (List<Image> images, List<ImageTag> tags) imageResult;
                     if (string.IsNullOrEmpty(path))
                     {
-                        imageResult = await imageMethods.GetAllImagesInFolder(folderId);
+                        imageResult = await imageMethods.GetAllImagesInFolder(folderId, LoadImagesAscending);
                     }
                     else
                     {
-                        imageResult = await imageMethods.GetAllImagesInFolder(path);
+                        imageResult = await imageMethods.GetAllImagesInFolder(path, LoadImagesAscending);
                     }
                     await SetDisplayImagesForRefreshImages(imageResult);
                     break;

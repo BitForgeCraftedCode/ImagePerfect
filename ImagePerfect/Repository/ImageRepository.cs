@@ -38,31 +38,33 @@ namespace ImagePerfect.Repository
         //       Do NOT pass the UoW's connection to parallel methods — create a new connection instead.
 
         //Parallel Method
-        public async Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesInFolder(int folderId)
+        public async Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesInFolder(int folderId, bool ascending)
         {
+            string order = ascending ? "ASC" : "DESC";
             await using MySqlConnection conn = new MySqlConnection(_connectionString); //need a new connection pre folder as this is a parallel method
             await conn.OpenAsync();
             await using MySqlTransaction txn = await conn.BeginTransactionAsync();
-            string sql1 = @"SELECT * FROM images WHERE FolderId = @folderId ORDER BY FileName";
+            string sql1 = $@"SELECT * FROM images WHERE FolderId = @folderId ORDER BY FileName {order}";
             List<Image> allImagesInFolder = (List<Image>)await conn.QueryAsync<Image>(sql1, new { folderId }, transaction: txn);
-            string sql2 = @"SELECT tags.TagId, tags.TagName, images.ImageId FROM images
+            string sql2 = $@"SELECT tags.TagId, tags.TagName, images.ImageId FROM images
                             JOIN image_tags_join ON image_tags_join.ImageId = images.ImageId
-                            JOIN tags ON image_tags_join.TagId = tags.TagId WHERE images.FolderId = @folderId ORDER BY images.FileName;";
+                            JOIN tags ON image_tags_join.TagId = tags.TagId WHERE images.FolderId = @folderId ORDER BY images.FileName {order};";
             List<ImageTag> tags = (List<ImageTag>)await conn.QueryAsync<ImageTag>(sql2, new { folderId }, transaction: txn);
             await txn.CommitAsync();
             await conn.CloseAsync();
             return (allImagesInFolder, tags);
         }
 
-        public async Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesInFolder(string folderPath)
+        public async Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesInFolder(string folderPath, bool ascending)
         {
+            string order = ascending ? "ASC" : "DESC";
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
 
-            string sql1 = @"SELECT * FROM images WHERE ImageFolderPath = @folderPath ORDER BY FileName";
+            string sql1 = $@"SELECT * FROM images WHERE ImageFolderPath = @folderPath ORDER BY FileName {order}";
             List<Image> allImagesInFolder = (List<Image>)await _connection.QueryAsync<Image>(sql1, new { folderPath }, transaction: txn);
-            string sql2 = @"SELECT tags.TagId, tags.TagName, images.ImageId FROM images
+            string sql2 = $@"SELECT tags.TagId, tags.TagName, images.ImageId FROM images
                             JOIN image_tags_join ON image_tags_join.ImageId = images.ImageId
-                            JOIN tags ON image_tags_join.TagId = tags.TagId WHERE images.ImageFolderPath = @folderPath ORDER BY images.FileName;";
+                            JOIN tags ON image_tags_join.TagId = tags.TagId WHERE images.ImageFolderPath = @folderPath ORDER BY images.FileName {order};";
             List<ImageTag> tags = (List<ImageTag>)await _connection.QueryAsync<ImageTag>(sql2, new { folderPath }, transaction: txn);
             await txn.CommitAsync();
             return (allImagesInFolder, tags);

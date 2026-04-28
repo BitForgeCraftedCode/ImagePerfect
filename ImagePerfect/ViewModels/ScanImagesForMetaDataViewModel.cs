@@ -63,7 +63,7 @@ namespace ImagePerfect.ViewModels
             if (bulkScan == false)
                 _mainWindowViewModel.ShowLoading = true;
             //get all images at folder id
-            (List<Image> images, List<ImageTag> tags) imageResultA = await imageMethods.GetAllImagesInFolder(folderVm.FolderId);
+            (List<Image> images, List<ImageTag> tags) imageResultA = await imageMethods.GetAllImagesInFolder(folderVm.FolderId, _mainWindowViewModel.ExplorerVm.LoadImagesAscending);
             List<Image> images = imageResultA.images;
             //scan images for metadata
             List<Image> imagesPlusUpdatedMetaData = await ImageMetaDataHelper.ScanImagesForMetaData(images);

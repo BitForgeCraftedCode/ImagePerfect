@@ -440,6 +440,7 @@
 						</StackPanel>
 					</Button>
 					<CheckBox ToolTip.Tip="Show Folders Ascending or Descending? Checked Is Ascending. Flag Does Not Apply To Filterd Results." IsChecked="{Binding ExplorerVm.LoadFoldersAscending}"></CheckBox>
+					<CheckBox ToolTip.Tip="Show Images Ascending or Descending? Checked Is Ascending. Flag Does Not Apply To Filterd Results." IsChecked="{Binding ExplorerVm.LoadImagesAscending}"></CheckBox>
 				</StackPanel>
 			</Grid>
 		</StackPanel>

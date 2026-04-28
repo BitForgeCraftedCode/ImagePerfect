@@ -9,8 +9,8 @@ namespace ImagePerfect.Repository.IRepository
     public interface IImageRepository : IRepository<Image>
     {
         //any Image model sepecific database methods here
-        Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesInFolder(int folderId);
-        Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesInFolder(string folderPath);
+        Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesInFolder(int folderId, bool ascending);
+        Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesInFolder(string folderPath, bool ascending);
         Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesInFolderAndSubFolders(string folderPath);
         Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesAtRating(int rating, bool filterInCurrentDirectory, string currentDirectory);
         Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesWithTags(List<string> tagNames, bool filterInCurrentDirectory, string currentDirectory);
