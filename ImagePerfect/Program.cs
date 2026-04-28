@@ -46,7 +46,7 @@ namespace ImagePerfect
                 })
                 .WithInterFont()
                 .LogToTrace()
-                .UseReactiveUI();
+                .UseReactiveUI(_ => { });
 
         private static void ConfigureSerilog()
         {
