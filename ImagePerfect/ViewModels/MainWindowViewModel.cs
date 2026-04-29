@@ -53,6 +53,21 @@ namespace ImagePerfect.ViewModels
         private ReactiveCommand<Unit, Task> _nextPageCommand;
         private ReactiveCommand<Unit, Task> _previousPageCommand;
         private ReactiveCommand<decimal, Task> _goToPageCommand;
+        //folder backing fields
+        private ReactiveCommand<FolderViewModel, Task> _importImagesCommand;
+        private ReactiveCommand<FolderViewModel, Task> _addFolderDescriptionCommand;
+        private ReactiveCommand<FolderViewModel, Task> _addFolderTagsCommand;
+        private ReactiveCommand<FolderViewModel, Task> _editFolderTagsCommand;
+        private ReactiveCommand<FolderViewModel, Task> _addFolderRatingCommand;
+        private ReactiveCommand<Tag, Task> _removeTagOnAllFoldersCommand;
+        private ReactiveCommand<Tag, Task> _addTagToAllFoldersInCurrentDirectoryCommand;
+        private ReactiveCommand<FolderViewModel, Task> _moveFolderToTrashCommand;
+        private ReactiveCommand<FolderViewModel, Task> _scanFolderImagesForMetaDataCommand;
+        private ReactiveCommand<FolderViewModel, Task> _saveFolderAsFavoriteCommand;
+        private ReactiveCommand<Unit, Task> _removeAllFavoriteFoldersCommand;
+        private ReactiveCommand<FolderViewModel, Task> _copyCoverImageToContainingFolderCommand;
+        private ReactiveCommand<FolderViewModel, Task> _copyFolderDescriptionToContainingFolderCommand;
+        private ReactiveCommand<Unit, Task> _createNewFolderCommand;
         public MainWindowViewModel() { }
         public MainWindowViewModel(MySqlDataSource dataSource, IConfiguration config)
         {
@@ -81,21 +96,7 @@ namespace ImagePerfect.ViewModels
             InitializeWindowCommands();
             InitializeNavigationCommands();
             InitializeFolderCommands();
-            ImportImagesCommand = ReactiveCommand.Create(async (FolderViewModel imageFolder) => {
-                await ImportImagesVm.ImportImages(imageFolder, false);
-            });
-            AddFolderDescriptionCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
-                await ModifyFolderDataVm.UpdateFolder(folderVm, "Description");
-            });
-            AddFolderTagsCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
-                await ModifyFolderDataVm.AddFolderTag(folderVm);
-            });
-            EditFolderTagsCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
-                await ModifyFolderDataVm.EditFolderTag(folderVm);
-            });
-            AddFolderRatingCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
-                await ModifyFolderDataVm.UpdateFolder(folderVm, "Rating");
-            });
+            
             AddImageTagsCommand = ReactiveCommand.Create(async (ImageViewModel imageVm) => {
                 await ModifyImageDataVm.AddImageTag(imageVm);
             });
@@ -111,12 +112,6 @@ namespace ImagePerfect.ViewModels
             RemoveTagOnAllImagesCommand = ReactiveCommand.Create(async (Tag selectedTag) => { 
                 await ModifyImageDataVm.RemoveTagOnAllImages(selectedTag);
             });
-            RemoveTagOnAllFoldersCommand = ReactiveCommand.Create(async (Tag selectedTag) => { 
-                await ModifyFolderDataVm.RemoveTagOnAllFolders(selectedTag);
-            });
-            AddTagToAllFoldersInCurrentDirectoryCommand = ReactiveCommand.Create(async (Tag selectedTag) => { 
-                await ModifyFolderDataVm.AddTagToAllFoldersInCurrentDirectory(selectedTag);
-            });
             DeleteLibraryCommand = ReactiveCommand.Create(async () => {
                 await DeleteLibrary();
             });
@@ -129,13 +124,6 @@ namespace ImagePerfect.ViewModels
             MoveImageToTrashCommand = ReactiveCommand.Create(async (ImageViewModel imageVm) => {
                 await MoveImages.MoveImageToTrash(imageVm);
             });
-            MoveFolderToTrashCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
-                await MoveFolderToTrash.MoveFolderToTrash(folderVm);
-            });
-            ScanFolderImagesForMetaDataCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
-                await ScanImagesForMetaDataVm.ScanFolderImagesForMetaData(folderVm, false);
-            });
-            
             ToggleManageImagesCommand = ReactiveCommand.Create(() => {
                 ToggleUI.ToggleManageImages();
             });
@@ -327,16 +315,10 @@ namespace ImagePerfect.ViewModels
             LoadSavedDirectoryCommand = ReactiveCommand.Create(async (ScrollViewer scrollViewer) => {
                 await HistoryVm.LoadMainSavedDirectory(scrollViewer);
             });
-            SaveFolderAsFavoriteCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
-                await FavoriteFoldersVm.SaveFolderAsFavorite(folderVm);
-            });
             GetAllFavoriteFoldersCommand = ReactiveCommand.Create(async () => {
                 ExplorerVm.ResetPagination();
                 ExplorerVm.currentFilter = ExplorerViewModel.Filters.AllFavoriteFolders;
                 await ExplorerVm.RefreshFolders();
-            });
-            RemoveAllFavoriteFoldersCommand = ReactiveCommand.Create(async () => {
-                await FavoriteFoldersVm.RemoveAllFavoriteFolders();
             });
             MoveSelectedImagesToTrashCommand = ReactiveCommand.Create(async (IList selectedImages) =>
             {
@@ -358,20 +340,11 @@ namespace ImagePerfect.ViewModels
             ScanAllFoldersOnCurrentPageCommand = ReactiveCommand.Create(async (ItemsControl foldersItemsControl) => {
                 await ScanImagesForMetaDataVm.ScanAllFoldersOnCurrentPage(foldersItemsControl);
             });
-            CopyCoverImageToContainingFolderCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => { 
-                await CoverImageVm.CopyCoverImageToContainingFolder(folderVm);
-            });
             GetFolderDescriptionFromTextFileOnCurrentPageCommand = ReactiveCommand.Create(async (ItemsControl folderItemsControl) => { 
                 await FolderDescriptionTextFileVm.GetFolderDescriptionFromTextFileOnCurrentPage(folderItemsControl);
             });
             BackUpFolderDescriptionToTextFileOnCurrentPageCommand = ReactiveCommand.Create(async (ItemsControl folderItemsControl) => {
                 await FolderDescriptionTextFileVm.BackUpFolderDescriptionToTextFileOnCurrentPage(folderItemsControl);
-            });
-            CopyFolderDescriptionToContainingFolderCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
-                await FolderDescriptionTextFileVm.CopyFolderDescriptionToContainingFolder(folderVm);
-            });
-            CreateNewFolderCommand = ReactiveCommand.Create(async () => {
-                await CreateNewFolder.CreateNewFolder();
             });
             ExitAppCommand = ReactiveCommand.Create(() => { 
                 ExitApp();
@@ -465,7 +438,48 @@ namespace ImagePerfect.ViewModels
 
         private void InitializeFolderCommands()
         {
-
+            _importImagesCommand = ReactiveCommand.Create(async (FolderViewModel imageFolder) => {
+                await ImportImagesVm.ImportImages(imageFolder, false);
+            });
+            _addFolderDescriptionCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
+                await ModifyFolderDataVm.UpdateFolder(folderVm, "Description");
+            });
+            _addFolderTagsCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
+                await ModifyFolderDataVm.AddFolderTag(folderVm);
+            });
+            _editFolderTagsCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
+                await ModifyFolderDataVm.EditFolderTag(folderVm);
+            });
+            _addFolderRatingCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
+                await ModifyFolderDataVm.UpdateFolder(folderVm, "Rating");
+            });
+            _removeTagOnAllFoldersCommand = ReactiveCommand.Create(async (Tag selectedTag) => {
+                await ModifyFolderDataVm.RemoveTagOnAllFolders(selectedTag);
+            });
+            _addTagToAllFoldersInCurrentDirectoryCommand = ReactiveCommand.Create(async (Tag selectedTag) => {
+                await ModifyFolderDataVm.AddTagToAllFoldersInCurrentDirectory(selectedTag);
+            });
+            _moveFolderToTrashCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
+                await MoveFolderToTrash.MoveFolderToTrash(folderVm);
+            });
+            _scanFolderImagesForMetaDataCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
+                await ScanImagesForMetaDataVm.ScanFolderImagesForMetaData(folderVm, false);
+            });
+            _saveFolderAsFavoriteCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
+                await FavoriteFoldersVm.SaveFolderAsFavorite(folderVm);
+            });
+            _removeAllFavoriteFoldersCommand = ReactiveCommand.Create(async () => {
+                await FavoriteFoldersVm.RemoveAllFavoriteFolders();
+            });
+            _copyCoverImageToContainingFolderCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
+                await CoverImageVm.CopyCoverImageToContainingFolder(folderVm);
+            });
+            _copyFolderDescriptionToContainingFolderCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
+                await FolderDescriptionTextFileVm.CopyFolderDescriptionToContainingFolder(folderVm);
+            });
+            _createNewFolderCommand = ReactiveCommand.Create(async () => {
+                await CreateNewFolder.CreateNewFolder();
+            });
         }
         public int TotalImages
         {
@@ -575,15 +589,36 @@ namespace ImagePerfect.ViewModels
 
         public ReactiveCommand<decimal, Task> GoToPageCommand { get => _goToPageCommand; }
 
-        public ReactiveCommand<FolderViewModel, Task> ImportImagesCommand { get; }
+        //Folder Commands
+        public ReactiveCommand<FolderViewModel, Task> ImportImagesCommand { get => _importImagesCommand; }
 
-        public ReactiveCommand<FolderViewModel, Task> AddFolderDescriptionCommand { get; }
+        public ReactiveCommand<FolderViewModel, Task> AddFolderDescriptionCommand { get => _addFolderDescriptionCommand; }
 
-        public ReactiveCommand<FolderViewModel, Task> AddFolderTagsCommand { get; }
+        public ReactiveCommand<FolderViewModel, Task> AddFolderTagsCommand { get => _addFolderTagsCommand; }
 
-        public ReactiveCommand<FolderViewModel, Task> EditFolderTagsCommand { get; }
+        public ReactiveCommand<FolderViewModel, Task> EditFolderTagsCommand { get => _editFolderTagsCommand; }
 
-        public ReactiveCommand<FolderViewModel, Task> AddFolderRatingCommand { get; }
+        public ReactiveCommand<FolderViewModel, Task> AddFolderRatingCommand { get => _addFolderRatingCommand; }
+
+        public ReactiveCommand<Tag, Task> RemoveTagOnAllFoldersCommand { get => _removeTagOnAllFoldersCommand; }
+
+        public ReactiveCommand<Tag, Task> AddTagToAllFoldersInCurrentDirectoryCommand { get => _addTagToAllFoldersInCurrentDirectoryCommand; }
+
+        public ReactiveCommand<FolderViewModel, Task> MoveFolderToTrashCommand { get => _moveFolderToTrashCommand; }
+
+        public ReactiveCommand<FolderViewModel, Task> ScanFolderImagesForMetaDataCommand { get => _scanFolderImagesForMetaDataCommand; }
+
+        public ReactiveCommand<FolderViewModel, Task> SaveFolderAsFavoriteCommand { get => _saveFolderAsFavoriteCommand; }
+
+        public ReactiveCommand<Unit, Task> RemoveAllFavoriteFoldersCommand { get => _removeAllFavoriteFoldersCommand; }
+
+        public ReactiveCommand<FolderViewModel, Task> CopyCoverImageToContainingFolderCommand { get => _copyCoverImageToContainingFolderCommand; }
+
+        public ReactiveCommand<FolderViewModel, Task> CopyFolderDescriptionToContainingFolderCommand { get => _copyFolderDescriptionToContainingFolderCommand; }
+
+        public ReactiveCommand<Unit, Task> CreateNewFolderCommand { get => _createNewFolderCommand; }
+
+        //Image Command
 
         public ReactiveCommand<ImageViewModel, Task> AddImageTagsCommand { get; }
 
@@ -595,10 +630,6 @@ namespace ImagePerfect.ViewModels
 
         public ReactiveCommand<Tag, Task> RemoveTagOnAllImagesCommand { get; }
 
-        public ReactiveCommand<Tag, Task> RemoveTagOnAllFoldersCommand { get; }
-
-        public ReactiveCommand<Tag, Task> AddTagToAllFoldersInCurrentDirectoryCommand { get; }
-
         public ReactiveCommand<Unit, Task> DeleteLibraryCommand { get; }
 
         public ReactiveCommand<ImageViewModel, Task> OpenImageInExternalViewerCommand { get; }
@@ -606,10 +637,6 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<Unit, Task> OpenCurrentDirectoryWithExplorerCommand { get; }
 
         public ReactiveCommand<ImageViewModel, Task> MoveImageToTrashCommand { get; }
-
-        public ReactiveCommand<FolderViewModel, Task> MoveFolderToTrashCommand { get; }
-
-        public ReactiveCommand<FolderViewModel, Task> ScanFolderImagesForMetaDataCommand { get; }
 
         public ReactiveCommand<string, Unit> ToggleFiltersCommand { get; }
 
@@ -679,11 +706,7 @@ namespace ImagePerfect.ViewModels
 
         public ReactiveCommand<ScrollViewer, Task> LoadSavedDirectoryCommand { get; }
 
-        public ReactiveCommand<FolderViewModel, Task> SaveFolderAsFavoriteCommand { get; }
-
         public ReactiveCommand<Unit, Task> GetAllFavoriteFoldersCommand {  get; } 
-
-        public ReactiveCommand<Unit, Task> RemoveAllFavoriteFoldersCommand { get; }
 
         public ReactiveCommand<IList, Task> MoveSelectedImagesToTrashCommand { get; }
 
@@ -695,17 +718,11 @@ namespace ImagePerfect.ViewModels
 
         public ReactiveCommand<ItemsControl, Task> AddCoverImageOnCurrentPageCommand { get; }
 
-        public ReactiveCommand<FolderViewModel, Task> CopyCoverImageToContainingFolderCommand { get; }
-
         public ReactiveCommand<ItemsControl, Task> GetFolderDescriptionFromTextFileOnCurrentPageCommand { get; }
 
         public ReactiveCommand<ItemsControl, Task> BackUpFolderDescriptionToTextFileOnCurrentPageCommand { get; }
 
-        public ReactiveCommand<FolderViewModel, Task> CopyFolderDescriptionToContainingFolderCommand { get; }
-
         public ReactiveCommand<ItemsControl, Task> ScanAllFoldersOnCurrentPageCommand { get; }
-
-        public ReactiveCommand<Unit, Task> CreateNewFolderCommand { get; }
 
         public ReactiveCommand<Unit, Unit> ExitAppCommand { get; }
 
