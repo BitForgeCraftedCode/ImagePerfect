@@ -41,6 +41,18 @@ namespace ImagePerfect.ViewModels
         private string _selectedImagesNewDirectory = string.Empty;
         private List<Tag> _tagsList = new List<Tag>();
 
+        //open Window backing fields
+        private ReactiveCommand<Unit, Unit> _openSettingsWindowCommand;
+        private ReactiveCommand<Unit, Unit> _openFiltersWindowCommand;
+        //navigation backing fields
+        private ReactiveCommand<FolderViewModel, Task> _nextFolderCommand;
+        private ReactiveCommand<FolderViewModel, Task> _backFolderCommand;
+        private ReactiveCommand<ImageViewModel, Task> _backFolderFromImageCommand;
+        private ReactiveCommand<Unit, Task> _backFolderFromDirectoryOptionsPanelCommand;
+        private ReactiveCommand<Unit, Task> _loadCurrentDirectoryCommand;
+        private ReactiveCommand<Unit, Task> _nextPageCommand;
+        private ReactiveCommand<Unit, Task> _previousPageCommand;
+        private ReactiveCommand<decimal, Task> _goToPageCommand;
         public MainWindowViewModel() { }
         public MainWindowViewModel(MySqlDataSource dataSource, IConfiguration config)
         {
@@ -66,69 +78,9 @@ namespace ImagePerfect.ViewModels
             MoveFolderToTrash = new MoveFolderToTrashViewModel(_dataSource, _configuration, this);
             CreateNewFolder = new CreateNewFolderViewModel(_dataSource, _configuration, this);
 
-            OpenSettingsWindowCommand = ReactiveCommand.Create(() =>
-            {
-                /*
-                 * No window yet -> create a new one
-                 * OR
-                 * Window existed but is now closed -> create a new one
-                 */
-                if (_settingsWindow == null || !_settingsWindow.IsVisible)
-                {
-                    _settingsWindow = new SettingsWindow(this);
-
-                    // subscribe to close and reset reference when window closes
-                    _settingsWindow.Closed += (_, _) => _settingsWindow = null;
-
-                    _settingsWindow.Show(); // Non-modal, user can continue to use MainWindow
-                }
-                else
-                {
-                    // If already open, un-minimize it and bring it to the front
-                    if (_settingsWindow.WindowState == WindowState.Minimized)
-                    {
-                        _settingsWindow.WindowState = WindowState.Normal;
-                    }
-                    _settingsWindow.Activate();
-                }
-            });
-            OpenFiltersWindowCommand = ReactiveCommand.Create(() => {
-                /*
-                 * No window yet -> create a new one
-                 * OR
-                 * Window existed but is now closed -> create a new one
-                 */
-                if (_filtersWindow == null || !_filtersWindow.IsVisible)
-                {
-                    _filtersWindow = new FiltersWindow(this);
-
-                    // subscribe to close and reset reference when window closes
-                    _filtersWindow.Closed += (_, _) => _filtersWindow = null;
-
-                    _filtersWindow.Show(); // Non-modal, user can continue to use MainWindow
-                }
-                else
-                {
-                    // If already open, un-minimize it and bring it to the front
-                    if (_filtersWindow.WindowState == WindowState.Minimized)
-                    {
-                        _filtersWindow.WindowState = WindowState.Normal;
-                    }
-                    _filtersWindow.Activate();
-                }
-            });
-            NextFolderCommand = ReactiveCommand.Create(async (FolderViewModel currentFolder) => {
-                await DirectoryNavigationVm.NextFolder(currentFolder);
-            });
-            BackFolderCommand = ReactiveCommand.Create(async (FolderViewModel currentFolder) => {
-                await DirectoryNavigationVm.BackFolder(currentFolder);
-            });
-            BackFolderFromImageCommand = ReactiveCommand.Create(async (ImageViewModel imageVm) => {
-                await DirectoryNavigationVm.BackFolderFromImage(imageVm);
-            });
-            BackFolderFromDirectoryOptionsPanelCommand = ReactiveCommand.Create(async () => {
-                await DirectoryNavigationVm.BackFolderFromDirectoryOptionsPanel();
-            });
+            InitializeWindowCommands();
+            InitializeNavigationCommands();
+            InitializeFolderCommands();
             ImportImagesCommand = ReactiveCommand.Create(async (FolderViewModel imageFolder) => {
                 await ImportImagesVm.ImportImages(imageFolder, false);
             });
@@ -183,15 +135,7 @@ namespace ImagePerfect.ViewModels
             ScanFolderImagesForMetaDataCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
                 await ScanImagesForMetaDataVm.ScanFolderImagesForMetaData(folderVm, false);
             });
-            NextPageCommand = ReactiveCommand.Create(async () => {
-                await ExplorerVm.NextPage();
-            });
-            PreviousPageCommand = ReactiveCommand.Create(async () => {
-                await ExplorerVm.PreviousPage();
-            });
-            GoToPageCommand = ReactiveCommand.Create(async (decimal pageNumber) => {
-                await ExplorerVm.GoToPage(Decimal.ToInt32(pageNumber));
-            });
+            
             ToggleManageImagesCommand = ReactiveCommand.Create(() => {
                 ToggleUI.ToggleManageImages();
             });
@@ -358,9 +302,7 @@ namespace ImagePerfect.ViewModels
                 ExplorerVm.currentFilter = ExplorerViewModel.Filters.AllFoldersWithoutCovers;
                 await ExplorerVm.RefreshFolders();
             });
-            LoadCurrentDirectoryCommand = ReactiveCommand.Create(async () => {
-                await DirectoryNavigationVm.LoadCurrentDirectory();
-            });
+            
             PickImageWidthCommand = ReactiveCommand.Create(async (string size) => {
                 await SettingsVm.PickImageWidth(size);
             });
@@ -436,6 +378,94 @@ namespace ImagePerfect.ViewModels
             });
             //_ = InitializeVm.Initialize() -- kicks off the async work but doesn't block the constructor
             _ = InitializeVm.Initialize();
+        }
+
+        private void InitializeWindowCommands()
+        {
+            _openSettingsWindowCommand = ReactiveCommand.Create(() =>
+            {
+                /*
+                 * No window yet -> create a new one
+                 * OR
+                 * Window existed but is now closed -> create a new one
+                 */
+                if (_settingsWindow == null || !_settingsWindow.IsVisible)
+                {
+                    _settingsWindow = new SettingsWindow(this);
+
+                    // subscribe to close and reset reference when window closes
+                    _settingsWindow.Closed += (_, _) => _settingsWindow = null;
+
+                    _settingsWindow.Show(); // Non-modal, user can continue to use MainWindow
+                }
+                else
+                {
+                    // If already open, un-minimize it and bring it to the front
+                    if (_settingsWindow.WindowState == WindowState.Minimized)
+                    {
+                        _settingsWindow.WindowState = WindowState.Normal;
+                    }
+                    _settingsWindow.Activate();
+                }
+            });
+            _openFiltersWindowCommand = ReactiveCommand.Create(() => {
+                /*
+                 * No window yet -> create a new one
+                 * OR
+                 * Window existed but is now closed -> create a new one
+                 */
+                if (_filtersWindow == null || !_filtersWindow.IsVisible)
+                {
+                    _filtersWindow = new FiltersWindow(this);
+
+                    // subscribe to close and reset reference when window closes
+                    _filtersWindow.Closed += (_, _) => _filtersWindow = null;
+
+                    _filtersWindow.Show(); // Non-modal, user can continue to use MainWindow
+                }
+                else
+                {
+                    // If already open, un-minimize it and bring it to the front
+                    if (_filtersWindow.WindowState == WindowState.Minimized)
+                    {
+                        _filtersWindow.WindowState = WindowState.Normal;
+                    }
+                    _filtersWindow.Activate();
+                }
+            });
+        }
+
+        private void InitializeNavigationCommands()
+        {
+            _nextFolderCommand = ReactiveCommand.Create(async (FolderViewModel currentFolder) => {
+                await DirectoryNavigationVm.NextFolder(currentFolder);
+            });
+            _backFolderCommand = ReactiveCommand.Create(async (FolderViewModel currentFolder) => {
+                await DirectoryNavigationVm.BackFolder(currentFolder);
+            });
+            _backFolderFromImageCommand = ReactiveCommand.Create(async (ImageViewModel imageVm) => {
+                await DirectoryNavigationVm.BackFolderFromImage(imageVm);
+            });
+            _backFolderFromDirectoryOptionsPanelCommand = ReactiveCommand.Create(async () => {
+                await DirectoryNavigationVm.BackFolderFromDirectoryOptionsPanel();
+            });
+            _loadCurrentDirectoryCommand = ReactiveCommand.Create(async () => {
+                await DirectoryNavigationVm.LoadCurrentDirectory();
+            });
+            _nextPageCommand = ReactiveCommand.Create(async () => {
+                await ExplorerVm.NextPage();
+            });
+            _previousPageCommand = ReactiveCommand.Create(async () => {
+                await ExplorerVm.PreviousPage();
+            });
+            _goToPageCommand = ReactiveCommand.Create(async (decimal pageNumber) => {
+                await ExplorerVm.GoToPage(Decimal.ToInt32(pageNumber));
+            });
+        }
+
+        private void InitializeFolderCommands()
+        {
+
         }
         public int TotalImages
         {
@@ -524,16 +554,26 @@ namespace ImagePerfect.ViewModels
             set => this.RaiseAndSetIfChanged(ref _images, value);
         }
 
-        public ReactiveCommand<Unit, Unit> OpenSettingsWindowCommand { get; }
-        public ReactiveCommand<Unit, Unit> OpenFiltersWindowCommand { get; }
+        //Open Window Commands
+        public ReactiveCommand<Unit, Unit> OpenSettingsWindowCommand { get => _openSettingsWindowCommand; }
+        public ReactiveCommand<Unit, Unit> OpenFiltersWindowCommand { get => _openFiltersWindowCommand; }
 
-        public ReactiveCommand<FolderViewModel, Task> NextFolderCommand { get; }
+        //Navigation Commands
+        public ReactiveCommand<FolderViewModel, Task> NextFolderCommand { get => _nextFolderCommand; }
 
-        public ReactiveCommand<FolderViewModel, Task> BackFolderCommand { get; }
+        public ReactiveCommand<FolderViewModel, Task> BackFolderCommand { get => _backFolderCommand; }
 
-        public ReactiveCommand<ImageViewModel, Task> BackFolderFromImageCommand { get; }
+        public ReactiveCommand<ImageViewModel, Task> BackFolderFromImageCommand { get => _backFolderFromImageCommand; }
 
-        public ReactiveCommand<Unit, Task> BackFolderFromDirectoryOptionsPanelCommand { get; }
+        public ReactiveCommand<Unit, Task> BackFolderFromDirectoryOptionsPanelCommand { get => _backFolderFromDirectoryOptionsPanelCommand; }
+
+        public ReactiveCommand<Unit, Task> LoadCurrentDirectoryCommand { get => _loadCurrentDirectoryCommand; }
+
+        public ReactiveCommand<Unit, Task> NextPageCommand { get => _nextPageCommand; }
+
+        public ReactiveCommand<Unit, Task> PreviousPageCommand { get => _previousPageCommand; }
+
+        public ReactiveCommand<decimal, Task> GoToPageCommand { get => _goToPageCommand; }
 
         public ReactiveCommand<FolderViewModel, Task> ImportImagesCommand { get; }
 
@@ -570,12 +610,6 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<FolderViewModel, Task> MoveFolderToTrashCommand { get; }
 
         public ReactiveCommand<FolderViewModel, Task> ScanFolderImagesForMetaDataCommand { get; }
-
-        public ReactiveCommand<Unit, Task> NextPageCommand { get; }
-
-        public ReactiveCommand<Unit, Task> PreviousPageCommand { get; }
-
-        public ReactiveCommand<decimal, Task> GoToPageCommand { get; }
 
         public ReactiveCommand<string, Unit> ToggleFiltersCommand { get; }
 
@@ -628,8 +662,6 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<Unit, Task> GetAllFoldersWithMetadataNotScannedCommand { get; }
 
         public ReactiveCommand<Unit, Task> GetAllFoldersWithoutCoversCommand { get; }
-
-        public ReactiveCommand<Unit, Task> LoadCurrentDirectoryCommand { get; }
 
         public ReactiveCommand<string, Task> PickImageWidthCommand { get; }
         
