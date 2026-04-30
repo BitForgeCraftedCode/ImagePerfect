@@ -97,6 +97,7 @@ namespace ImagePerfect.ViewModels
         private ReactiveCommand<string, Task> _filterImagesOnYearMonthCommand;
         private ReactiveCommand<ImageDatesViewModel, Task> _filterImagesOnDateRangeCommand;
         private ReactiveCommand<IList, Task> _filterImagesOnTagsCommand;
+        private ReactiveCommand<Unit, Task> _updateImageDatesCommand;
         //filter folder backing fields
         private ReactiveCommand<Unit, Task> _filterFoldersDateModifiedInCurrentDirectoryCommand;
         private ReactiveCommand<string, Task> _filterFoldersInCurrentDirectoryByStartingLetterCommand;
@@ -125,12 +126,14 @@ namespace ImagePerfect.ViewModels
         private ReactiveCommand<ItemsControl, Task> _scanAllFoldersOnCurrentPageCommand;
         private ReactiveCommand<ItemsControl, Task> _getFolderDescriptionFromTextFileOnCurrentPageCommand;
         private ReactiveCommand<ItemsControl, Task> _backUpFolderDescriptionToTextFileOnCurrentPageCommand;
+        //application commands backing fields
+        private ReactiveCommand<Unit, Task> _deleteLibraryCommand;
+        private ReactiveCommand<Unit, Unit> _exitAppCommand;
         public MainWindowViewModel() { }
         public MainWindowViewModel(MySqlDataSource dataSource, IConfiguration config)
         {
             _dataSource = dataSource;
             _configuration = config;
-
             _showLoading = false;
 
             HistoryVm = new HistoryViewModel(_dataSource, _configuration, this);
@@ -160,36 +163,8 @@ namespace ImagePerfect.ViewModels
             InitializeSettingsCommands();
             InitializeHistoryCommands();
             InitializeBatchOperationsCommands();
+            InitializeApplicationCommands();
 
-
-
-            DeleteLibraryCommand = ReactiveCommand.Create(async () => {
-                await DeleteLibrary();
-            });
-            
-            
-            
-            
-            
-           
-            UpdateImageDatesCommand = ReactiveCommand.Create(async () => {
-                await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
-                ImageMethods imageMethods = new ImageMethods(uow);
-                await imageMethods.UpdateImageDates();
-                ImageDatesVm = await imageMethods.GetImageDates();
-            });
-            
-            
-           
-           
-            
-            
-            
-            
-            
-            ExitAppCommand = ReactiveCommand.Create(() => { 
-                ExitApp();
-            });
             //_ = InitializeVm.Initialize() -- kicks off the async work but doesn't block the constructor
             _ = InitializeVm.Initialize();
         }
@@ -457,6 +432,13 @@ namespace ImagePerfect.ViewModels
                 ExplorerVm.currentFilter = ExplorerViewModel.Filters.ImageTagsFilter;
                 await ExplorerVm.RefreshImages();
             });
+            //update the available dates for image filters (after scann there will be new image dates this method updates them)
+            _updateImageDatesCommand = ReactiveCommand.Create(async () => {
+                await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+                ImageMethods imageMethods = new ImageMethods(uow);
+                await imageMethods.UpdateImageDates();
+                ImageDatesVm = await imageMethods.GetImageDates();
+            });
         }
 
         private void InitializeFilterFolderCommands()
@@ -587,6 +569,16 @@ namespace ImagePerfect.ViewModels
             });
             _backUpFolderDescriptionToTextFileOnCurrentPageCommand = ReactiveCommand.Create(async (ItemsControl folderItemsControl) => {
                 await FolderDescriptionTextFileVm.BackUpFolderDescriptionToTextFileOnCurrentPage(folderItemsControl);
+            });
+        }
+
+        private void InitializeApplicationCommands()
+        {
+            _deleteLibraryCommand = ReactiveCommand.Create(async () => {
+                await DeleteLibrary();
+            });
+            _exitAppCommand = ReactiveCommand.Create(() => {
+                ExitApp();
             });
         }
         public int TotalImages
@@ -782,6 +774,8 @@ namespace ImagePerfect.ViewModels
 
         public ReactiveCommand<IList, Task> FilterImagesOnTagsCommand { get => _filterImagesOnTagsCommand; }
 
+        public ReactiveCommand<Unit, Task> UpdateImageDatesCommand { get => _updateImageDatesCommand; }
+
         //Folder Filter Commands
         public ReactiveCommand<Unit, Task> FilterFoldersDateModifiedInCurrentDirectoryCommand { get => _filterFoldersDateModifiedInCurrentDirectoryCommand; }
 
@@ -824,7 +818,6 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<ScrollViewer, Task> LoadSavedDirectoryCommand { get => _loadSavedDirectoryCommand; }
 
         //Batch Operations Commands
-
         public ReactiveCommand<ItemsControl, Task> ImportAllFoldersOnCurrentPageCommand { get => _importAllFoldersOnCurrentPageCommand; }
 
         public ReactiveCommand<ItemsControl, Task> AddCoverImageOnCurrentPageCommand { get => _addCoverImageOnCurrentPageCommand; }
@@ -835,13 +828,10 @@ namespace ImagePerfect.ViewModels
 
         public ReactiveCommand<ItemsControl, Task> BackUpFolderDescriptionToTextFileOnCurrentPageCommand { get => _backUpFolderDescriptionToTextFileOnCurrentPageCommand; }
 
-        
+        //Application Commands
+        public ReactiveCommand<Unit, Task> DeleteLibraryCommand { get => _deleteLibraryCommand; }
 
-        public ReactiveCommand<Unit, Unit> ExitAppCommand { get; }
-
-        public ReactiveCommand<Unit, Task> DeleteLibraryCommand { get; }
-
-        public ReactiveCommand<Unit, Task> UpdateImageDatesCommand { get; }
+        public ReactiveCommand<Unit, Unit> ExitAppCommand { get => _exitAppCommand; }
 
         //should technically have its own repo but only plan on having only this one method just keeping it in images repo.
         public async Task GetTagsList(UnitOfWork? uow = null)
