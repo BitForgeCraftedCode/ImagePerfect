@@ -109,6 +109,16 @@ namespace ImagePerfect.ViewModels
         private ReactiveCommand<Unit, Task> _getAllFoldersWithMetadataNotScannedCommand;
         private ReactiveCommand<Unit, Task> _getAllFoldersWithoutCoversCommand;
         private ReactiveCommand<Unit, Task> _getAllFavoriteFoldersCommand;
+        //settings backing fields
+        private ReactiveCommand<string, Task> _pickImageWidthCommand;
+        private ReactiveCommand<decimal, Task> _selectImageWidthCommand;
+        private ReactiveCommand<string, Task> _pickFolderPageSizeCommand;
+        private ReactiveCommand<string, Task> _pickImagePageSizeCommand;
+        private ReactiveCommand<string, Task> _pickHistoryPointsSizeCommand;
+        //history backing fields
+        private ReactiveCommand<ScrollViewer, Task> _saveDirectoryToHistoryCommand;
+        private ReactiveCommand<ScrollViewer, Task> _saveDirectoryCommand;
+        private ReactiveCommand<ScrollViewer, Task> _loadSavedDirectoryCommand;
         public MainWindowViewModel() { }
         public MainWindowViewModel(MySqlDataSource dataSource, IConfiguration config)
         {
@@ -141,10 +151,11 @@ namespace ImagePerfect.ViewModels
             InitializeImageCommands();
             InitializeFilterImageCommands();
             InitializeFilterFolderCommands();
-            
-            
-            
-            
+            InitializeSettingsCommands();
+            InitializeHistoryCommands();
+
+
+
             DeleteLibraryCommand = ReactiveCommand.Create(async () => {
                 await DeleteLibrary();
             });
@@ -162,30 +173,8 @@ namespace ImagePerfect.ViewModels
             });
             
             
-            PickImageWidthCommand = ReactiveCommand.Create(async (string size) => {
-                await SettingsVm.PickImageWidth(size);
-            });
-            SelectImageWidthCommand = ReactiveCommand.Create(async (decimal size) => { 
-                await SettingsVm.SelectImageWidth(size);
-            });
-            PickFolderPageSizeCommand = ReactiveCommand.Create(async (string size) => {
-                await SettingsVm.PickFolderPageSize(size);
-            });
-            PickImagePageSizeCommand = ReactiveCommand.Create(async (string size) => {
-                await SettingsVm.PickImagePageSize(size);
-            });
-            PickHistoryPointsSizeCommand = ReactiveCommand.Create(async (string size) => { 
-                await SettingsVm.PickHistoryPointsSize(size);
-            });
-            SaveDirectoryToHistoryCommand = ReactiveCommand.Create(async (ScrollViewer scrollViewer) => { 
-                await HistoryVm.SaveDirectoryToHistory(scrollViewer, false);
-            });
-            SaveDirectoryCommand = ReactiveCommand.Create(async (ScrollViewer scrollViewer) => {
-                await HistoryVm.SaveDirectoryToHistory(scrollViewer, true);
-            });
-            LoadSavedDirectoryCommand = ReactiveCommand.Create(async (ScrollViewer scrollViewer) => {
-                await HistoryVm.LoadMainSavedDirectory(scrollViewer);
-            });
+           
+           
             
             
             
@@ -556,6 +545,38 @@ namespace ImagePerfect.ViewModels
                 await ExplorerVm.RefreshFolders();
             });
         }
+
+        private void InitializeSettingsCommands()
+        {
+            _pickImageWidthCommand = ReactiveCommand.Create(async (string size) => {
+                await SettingsVm.PickImageWidth(size);
+            });
+            _selectImageWidthCommand = ReactiveCommand.Create(async (decimal size) => {
+                await SettingsVm.SelectImageWidth(size);
+            });
+            _pickFolderPageSizeCommand = ReactiveCommand.Create(async (string size) => {
+                await SettingsVm.PickFolderPageSize(size);
+            });
+            _pickImagePageSizeCommand = ReactiveCommand.Create(async (string size) => {
+                await SettingsVm.PickImagePageSize(size);
+            });
+            _pickHistoryPointsSizeCommand = ReactiveCommand.Create(async (string size) => {
+                await SettingsVm.PickHistoryPointsSize(size);
+            });
+        }
+
+        private void InitializeHistoryCommands()
+        {
+            _saveDirectoryToHistoryCommand = ReactiveCommand.Create(async (ScrollViewer scrollViewer) => {
+                await HistoryVm.SaveDirectoryToHistory(scrollViewer, false);
+            });
+            _saveDirectoryCommand = ReactiveCommand.Create(async (ScrollViewer scrollViewer) => {
+                await HistoryVm.SaveDirectoryToHistory(scrollViewer, true);
+            });
+            _loadSavedDirectoryCommand = ReactiveCommand.Create(async (ScrollViewer scrollViewer) => {
+                await HistoryVm.LoadMainSavedDirectory(scrollViewer);
+            });
+        }
         public int TotalImages
         {
             get => _totalImages;
@@ -772,23 +793,23 @@ namespace ImagePerfect.ViewModels
 
         public ReactiveCommand<Unit, Task> GetAllFavoriteFoldersCommand { get => _getAllFavoriteFoldersCommand; }
 
-
-        public ReactiveCommand<Unit, Task> UpdateImageDatesCommand { get; }
-        public ReactiveCommand<string, Task> PickImageWidthCommand { get; }
+        //Settings Commands
+        public ReactiveCommand<string, Task> PickImageWidthCommand { get => _pickImageWidthCommand; }
         
-        public ReactiveCommand<decimal, Task> SelectImageWidthCommand { get; }
+        public ReactiveCommand<decimal, Task> SelectImageWidthCommand { get => _selectImageWidthCommand; }
 
-        public ReactiveCommand<string, Task> PickFolderPageSizeCommand { get; }
+        public ReactiveCommand<string, Task> PickFolderPageSizeCommand { get => _pickFolderPageSizeCommand; }
 
-        public ReactiveCommand<string, Task> PickImagePageSizeCommand { get; }
+        public ReactiveCommand<string, Task> PickImagePageSizeCommand { get => _pickImagePageSizeCommand; }
 
-        public ReactiveCommand<string, Task> PickHistoryPointsSizeCommand {  get; }
+        public ReactiveCommand<string, Task> PickHistoryPointsSizeCommand {  get => _pickHistoryPointsSizeCommand; }
 
-        public ReactiveCommand<ScrollViewer, Task> SaveDirectoryToHistoryCommand { get; }
+        //History Commands
+        public ReactiveCommand<ScrollViewer, Task> SaveDirectoryToHistoryCommand { get => _saveDirectoryToHistoryCommand; }
 
-        public ReactiveCommand<ScrollViewer, Task> SaveDirectoryCommand { get; }
+        public ReactiveCommand<ScrollViewer, Task> SaveDirectoryCommand { get => _saveDirectoryCommand; }
 
-        public ReactiveCommand<ScrollViewer, Task> LoadSavedDirectoryCommand { get; }
+        public ReactiveCommand<ScrollViewer, Task> LoadSavedDirectoryCommand { get => _loadSavedDirectoryCommand; }
 
         
 
@@ -805,6 +826,8 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<Unit, Unit> ExitAppCommand { get; }
 
         public ReactiveCommand<Unit, Task> DeleteLibraryCommand { get; }
+
+        public ReactiveCommand<Unit, Task> UpdateImageDatesCommand { get; }
 
         //should technically have its own repo but only plan on having only this one method just keeping it in images repo.
         public async Task GetTagsList(UnitOfWork? uow = null)
