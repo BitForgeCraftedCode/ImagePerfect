@@ -169,61 +169,57 @@ namespace ImagePerfect.ViewModels
             _ = InitializeVm.Initialize();
         }
 
+        //getter setter factory method
+        private void OpenOrActivateWindow<TWindow>(Func<TWindow?> getWindow, Action<TWindow?> setWindow, Func<TWindow> createWindow) where TWindow : Window
+        {
+            var window = getWindow();
+            /*
+            * No window yet -> create a new one
+            * OR
+            * Window existed but is now closed -> create a new one
+            */
+            if (window == null || !window.IsVisible)
+            {
+                window = createWindow();
+                // subscribe to close and reset reference when window closes
+                window.Closed += (_, _) => setWindow(null); // happens LATER (when window closes)
+
+                setWindow(window);  // happens NOW
+                window.Show(); // Non-modal, user can continue to use MainWindow
+            }
+            else
+            {
+                // If already open, un-minimize it and bring it to the front
+                if (window.WindowState == WindowState.Minimized)
+                {
+                    window.WindowState = WindowState.Normal;
+                }
+
+                window.Activate();
+            }
+        }
+        private SettingsWindow? GetSettingsWindow() => _settingsWindow;
+        private void SetSettingsWindow(SettingsWindow? w) => _settingsWindow = w;
+        private FiltersWindow? GetFiltersWindow() => _filtersWindow;
+        private void SetFiltersWindow(FiltersWindow? w) => _filtersWindow = w;   
         private void InitializeWindowCommands()
         {
             _openSettingsWindowCommand = ReactiveCommand.Create(() =>
             {
-                /*
-                 * No window yet -> create a new one
-                 * OR
-                 * Window existed but is now closed -> create a new one
-                 */
-                if (_settingsWindow == null || !_settingsWindow.IsVisible)
-                {
-                    _settingsWindow = new SettingsWindow(this);
-
-                    // subscribe to close and reset reference when window closes
-                    _settingsWindow.Closed += (_, _) => _settingsWindow = null;
-
-                    _settingsWindow.Show(); // Non-modal, user can continue to use MainWindow
-                }
-                else
-                {
-                    // If already open, un-minimize it and bring it to the front
-                    if (_settingsWindow.WindowState == WindowState.Minimized)
-                    {
-                        _settingsWindow.WindowState = WindowState.Normal;
-                    }
-                    _settingsWindow.Activate();
-                }
+                OpenOrActivateWindow(
+                    GetSettingsWindow,
+                    SetSettingsWindow,
+                    () => new SettingsWindow(this));
             });
-            _openFiltersWindowCommand = ReactiveCommand.Create(() => {
-                /*
-                 * No window yet -> create a new one
-                 * OR
-                 * Window existed but is now closed -> create a new one
-                 */
-                if (_filtersWindow == null || !_filtersWindow.IsVisible)
-                {
-                    _filtersWindow = new FiltersWindow(this);
-
-                    // subscribe to close and reset reference when window closes
-                    _filtersWindow.Closed += (_, _) => _filtersWindow = null;
-
-                    _filtersWindow.Show(); // Non-modal, user can continue to use MainWindow
-                }
-                else
-                {
-                    // If already open, un-minimize it and bring it to the front
-                    if (_filtersWindow.WindowState == WindowState.Minimized)
-                    {
-                        _filtersWindow.WindowState = WindowState.Normal;
-                    }
-                    _filtersWindow.Activate();
-                }
+            _openFiltersWindowCommand = ReactiveCommand.Create(() => 
+            {
+                OpenOrActivateWindow(
+                    GetFiltersWindow,
+                    SetFiltersWindow,
+                    () => new FiltersWindow(this));
             });
         }
-
+        
         private void InitializeToggleUICommands()
         {
             _toggleManageImagesCommand = ReactiveCommand.Create(() => {
