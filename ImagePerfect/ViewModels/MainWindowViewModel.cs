@@ -44,6 +44,15 @@ namespace ImagePerfect.ViewModels
         //open Window backing fields
         private ReactiveCommand<Unit, Unit> _openSettingsWindowCommand;
         private ReactiveCommand<Unit, Unit> _openFiltersWindowCommand;
+        //toggleUI backing fields
+        private ReactiveCommand<Unit, Unit> _toggleManageImagesCommand;
+        private ReactiveCommand<string, Unit> _toggleFiltersCommand;
+        private ReactiveCommand<Unit, Unit> _toggleCreateNewFolderCommand;
+        private ReactiveCommand<Unit, Task> _toggleGetTotalImagesCommand;
+        private ReactiveCommand<Unit, Unit> _toggleImportAndScanCommand;
+        private ReactiveCommand<Unit, Unit> _toggleListAllTagsCommand;
+        private ReactiveCommand<Unit, Unit> _toggleShowExtendedFolderControlsCommand;
+        private ReactiveCommand<Unit, Unit> _toggleShowExtendedImageControlsCommand;
         //navigation backing fields
         private ReactiveCommand<FolderViewModel, Task> _nextFolderCommand;
         private ReactiveCommand<FolderViewModel, Task> _backFolderCommand;
@@ -68,7 +77,7 @@ namespace ImagePerfect.ViewModels
         private ReactiveCommand<FolderViewModel, Task> _copyCoverImageToContainingFolderCommand;
         private ReactiveCommand<FolderViewModel, Task> _copyFolderDescriptionToContainingFolderCommand;
         private ReactiveCommand<Unit, Task> _createNewFolderCommand;
-        ReactiveCommand<Unit, Task> _openCurrentDirectoryWithExplorerCommand;
+        private ReactiveCommand<Unit, Task> _openCurrentDirectoryWithExplorerCommand;
         //image backing fields
         private ReactiveCommand<ImageViewModel, Task> _addImageTagsCommand;
         private ReactiveCommand<ListBox, Task> _addMultipleImageTagsCommand;
@@ -80,6 +89,7 @@ namespace ImagePerfect.ViewModels
         private ReactiveCommand<IList, Task> _moveSelectedImagesToTrashCommand;
         private ReactiveCommand<IList, Task> _moveSelectedImagesUpOneDirectoryCommand;
         private ReactiveCommand<FolderViewModel, Task> _moveAllImagesInFolderUpOneDirectoryCommand;
+        //
         public MainWindowViewModel() { }
         public MainWindowViewModel(MySqlDataSource dataSource, IConfiguration config)
         {
@@ -106,6 +116,7 @@ namespace ImagePerfect.ViewModels
             CreateNewFolder = new CreateNewFolderViewModel(_dataSource, _configuration, this);
 
             InitializeWindowCommands();
+            InitializeToggleUICommands();
             InitializeNavigationCommands();
             InitializeFolderCommands();
             InitializeImageCommands();
@@ -119,37 +130,7 @@ namespace ImagePerfect.ViewModels
             
             
             
-            ToggleManageImagesCommand = ReactiveCommand.Create(() => {
-                ToggleUI.ToggleManageImages();
-            });
-            ToggleFiltersCommand = ReactiveCommand.Create((string showFilter) => {
-                ToggleUI.ToggleFilters(showFilter);
-            });
-            ToggleCreateNewFolderCommand = ReactiveCommand.Create(() => {
-                ToggleUI.ToggleCreateNewFolder();
-            });
-            ToggleGetTotalImagesCommand = ReactiveCommand.Create(async () => {
-                ToggleUI.ToggleGetTotalImages();
-                if (ToggleUI.ShowTotalImages == true)
-                {
-                    await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
-                    ImageMethods imageMethods = new ImageMethods(uow);
-                    TotalImages = await imageMethods.GetTotalImages();
-                }
-            });
-            ToggleImportAndScanCommand = ReactiveCommand.Create(() => {
-                ToggleUI.ToggleImportAndScan();
-            });
-            ToggleListAllTagsCommand = ReactiveCommand.Create(() => {
-                ToggleUI.ToggleListAllTags();
-            });
-            ToggleShowExtendedFolderControlsCommand = ReactiveCommand.Create(() => { 
-                ToggleUI.ToggleShowExtendedFolderControls();
-            });
-            ToggleShowExtendedImageControlsCommand = ReactiveCommand.Create(() =>
-            {
-                ToggleUI.ToggleShowExtendedImageControls();
-            });
+            
             FilterGetAllImagesInFolderAndSubFoldersCommand = ReactiveCommand.Create(async () =>
             {
                 ExplorerVm.ResetPagination();
@@ -395,6 +376,41 @@ namespace ImagePerfect.ViewModels
             });
         }
 
+        private void InitializeToggleUICommands()
+        {
+            _toggleManageImagesCommand = ReactiveCommand.Create(() => {
+                ToggleUI.ToggleManageImages();
+            });
+            _toggleFiltersCommand = ReactiveCommand.Create((string showFilter) => {
+                ToggleUI.ToggleFilters(showFilter);
+            });
+            _toggleCreateNewFolderCommand = ReactiveCommand.Create(() => {
+                ToggleUI.ToggleCreateNewFolder();
+            });
+            _toggleGetTotalImagesCommand = ReactiveCommand.Create(async () => {
+                ToggleUI.ToggleGetTotalImages();
+                if (ToggleUI.ShowTotalImages == true)
+                {
+                    await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+                    ImageMethods imageMethods = new ImageMethods(uow);
+                    TotalImages = await imageMethods.GetTotalImages();
+                }
+            });
+            _toggleImportAndScanCommand = ReactiveCommand.Create(() => {
+                ToggleUI.ToggleImportAndScan();
+            });
+            _toggleListAllTagsCommand = ReactiveCommand.Create(() => {
+                ToggleUI.ToggleListAllTags();
+            });
+            _toggleShowExtendedFolderControlsCommand = ReactiveCommand.Create(() => {
+                ToggleUI.ToggleShowExtendedFolderControls();
+            });
+            _toggleShowExtendedImageControlsCommand = ReactiveCommand.Create(() =>
+            {
+                ToggleUI.ToggleShowExtendedImageControls();
+            });
+        }
+
         private void InitializeNavigationCommands()
         {
             _nextFolderCommand = ReactiveCommand.Create(async (FolderViewModel currentFolder) => {
@@ -596,8 +612,24 @@ namespace ImagePerfect.ViewModels
 
         //Open Window Commands
         public ReactiveCommand<Unit, Unit> OpenSettingsWindowCommand { get => _openSettingsWindowCommand; }
-        public ReactiveCommand<Unit, Unit> OpenFiltersWindowCommand { get => _openFiltersWindowCommand; }
 
+        public ReactiveCommand<Unit, Unit> OpenFiltersWindowCommand { get => _openFiltersWindowCommand; }
+        //ToggleUI Commands
+        public ReactiveCommand<Unit, Unit> ToggleManageImagesCommand { get => _toggleManageImagesCommand; }
+
+        public ReactiveCommand<string, Unit> ToggleFiltersCommand { get => _toggleFiltersCommand; }
+
+        public ReactiveCommand<Unit, Unit> ToggleCreateNewFolderCommand { get => _toggleCreateNewFolderCommand; }
+
+        public ReactiveCommand<Unit, Task> ToggleGetTotalImagesCommand { get => _toggleGetTotalImagesCommand; }
+
+        public ReactiveCommand<Unit, Unit> ToggleImportAndScanCommand { get => _toggleImportAndScanCommand; }
+
+        public ReactiveCommand<Unit, Unit> ToggleListAllTagsCommand { get => _toggleListAllTagsCommand; }
+
+        public ReactiveCommand<Unit, Unit> ToggleShowExtendedFolderControlsCommand { get => _toggleShowExtendedFolderControlsCommand; }
+
+        public ReactiveCommand<Unit, Unit> ToggleShowExtendedImageControlsCommand { get => _toggleShowExtendedImageControlsCommand; }
         //Navigation Commands
         public ReactiveCommand<FolderViewModel, Task> NextFolderCommand { get => _nextFolderCommand; }
 
@@ -670,28 +702,6 @@ namespace ImagePerfect.ViewModels
         //
         public ReactiveCommand<Unit, Task> DeleteLibraryCommand { get; }
 
-        
-
-        
-
-        
-
-        public ReactiveCommand<string, Unit> ToggleFiltersCommand { get; }
-
-        public ReactiveCommand<Unit, Unit> ToggleManageImagesCommand { get; }
-
-        public ReactiveCommand<Unit, Unit> ToggleCreateNewFolderCommand { get; }
-
-        public ReactiveCommand<Unit, Task> ToggleGetTotalImagesCommand { get; }
-
-        public ReactiveCommand<Unit, Unit> ToggleImportAndScanCommand { get; }
-
-        public ReactiveCommand<Unit, Unit> ToggleListAllTagsCommand { get; }
-
-        public ReactiveCommand<Unit, Unit> ToggleShowExtendedFolderControlsCommand { get; }
-
-        public ReactiveCommand<Unit, Unit> ToggleShowExtendedImageControlsCommand { get; }
-
         public ReactiveCommand<Unit, Task> FilterGetAllImagesInFolderAndSubFoldersCommand {  get; }
 
         public ReactiveCommand<decimal, Task> FilterImagesOnRatingCommand { get; }
@@ -745,10 +755,6 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<ScrollViewer, Task> LoadSavedDirectoryCommand { get; }
 
         public ReactiveCommand<Unit, Task> GetAllFavoriteFoldersCommand {  get; } 
-
-        
-
-        
 
         public ReactiveCommand<ItemsControl, Task> ImportAllFoldersOnCurrentPageCommand { get; }
 
