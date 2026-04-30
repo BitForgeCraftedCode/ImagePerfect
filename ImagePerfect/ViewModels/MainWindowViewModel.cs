@@ -89,7 +89,26 @@ namespace ImagePerfect.ViewModels
         private ReactiveCommand<IList, Task> _moveSelectedImagesToTrashCommand;
         private ReactiveCommand<IList, Task> _moveSelectedImagesUpOneDirectoryCommand;
         private ReactiveCommand<FolderViewModel, Task> _moveAllImagesInFolderUpOneDirectoryCommand;
-        //
+        //filter image backing fields
+        private ReactiveCommand<Unit, Task> _filterGetAllImagesInFolderAndSubFoldersCommand;
+        private ReactiveCommand<decimal, Task> _filterImagesOnRatingCommand;
+        private ReactiveCommand<decimal, Task> _filterFiveStarImagesInCurrentDirectoryCommand;
+        private ReactiveCommand<int, Task> _filterImagesOnYearCommand;
+        private ReactiveCommand<string, Task> _filterImagesOnYearMonthCommand;
+        private ReactiveCommand<ImageDatesViewModel, Task> _filterImagesOnDateRangeCommand;
+        private ReactiveCommand<IList, Task> _filterImagesOnTagsCommand;
+        //filter folder backing fields
+        private ReactiveCommand<Unit, Task> _filterFoldersDateModifiedInCurrentDirectoryCommand;
+        private ReactiveCommand<string, Task> _filterFoldersInCurrentDirectoryByStartingLetterCommand;
+        private ReactiveCommand<IList, Task> _filterFolderOnRatingAndTagCommand;
+        private ReactiveCommand<decimal, Task> _filterFoldersOnRatingCommand;
+        private ReactiveCommand<IList, Task> _filterFolderOnTagsCommand;
+        private ReactiveCommand<string, Task> _filterFoldersOnDescriptionCommand;
+        private ReactiveCommand<IList, Task> _filterFoldersOnDescriptionAndTagsCommand;
+        private ReactiveCommand<Unit, Task> _getAllFoldersWithNoImportedImagesCommand;
+        private ReactiveCommand<Unit, Task> _getAllFoldersWithMetadataNotScannedCommand;
+        private ReactiveCommand<Unit, Task> _getAllFoldersWithoutCoversCommand;
+        private ReactiveCommand<Unit, Task> _getAllFavoriteFoldersCommand;
         public MainWindowViewModel() { }
         public MainWindowViewModel(MySqlDataSource dataSource, IConfiguration config)
         {
@@ -120,6 +139,8 @@ namespace ImagePerfect.ViewModels
             InitializeNavigationCommands();
             InitializeFolderCommands();
             InitializeImageCommands();
+            InitializeFilterImageCommands();
+            InitializeFilterFolderCommands();
             
             
             
@@ -131,141 +152,15 @@ namespace ImagePerfect.ViewModels
             
             
             
-            FilterGetAllImagesInFolderAndSubFoldersCommand = ReactiveCommand.Create(async () =>
-            {
-                ExplorerVm.ResetPagination();
-                ExplorerVm.currentFilter = ExplorerViewModel.Filters.AllImagesInFolderAndSubFolders;
-                await ExplorerVm.RefreshImages();
-            });
-            FilterImagesOnRatingCommand = ReactiveCommand.Create(async (decimal rating) => {
-                ExplorerVm.ResetPagination();
-                ExplorerVm.selectedRatingForFilter = Decimal.ToInt32(rating);
-                ExplorerVm.currentFilter = ExplorerViewModel.Filters.ImageRatingFilter;
-                await ExplorerVm.RefreshImages();
-            });
-            FilterFiveStarImagesInCurrentDirectoryCommand = ReactiveCommand.Create(async (decimal rating) => {
-                ExplorerVm.ResetPagination();
-                ExplorerVm.selectedRatingForFilter = Decimal.ToInt32(rating);
-                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FiveStarImagesInCurrentDirectory;
-                await ExplorerVm.RefreshImages();
-            });
-            FilterImagesOnYearCommand = ReactiveCommand.Create(async (int year) => { 
-                if(year == 0)
-                    return;
-                ExplorerVm.ResetPagination();
-                ExplorerVm.selectedYearForFilter = year;
-                ExplorerVm.currentFilter = ExplorerViewModel.Filters.ImageYearFilter;
-                await ExplorerVm.RefreshImages();
-            });
-            FilterImagesOnYearMonthCommand = ReactiveCommand.Create(async (string yearMonth) => {
-                if (yearMonth == null)
-                    return;
-                string[] parts = yearMonth.Split('-');
-                int year = int.Parse(parts[0]);
-                int month = int.Parse(parts[1]);
-                ExplorerVm.ResetPagination();
-                ExplorerVm.selectedYearForFilter = year;
-                ExplorerVm.selectedMonthForFilter = month;
-                ExplorerVm.currentFilter = ExplorerViewModel.Filters.ImageYearMonthFilter;
-                await ExplorerVm.RefreshImages();
-            });
-            FilterImagesOnDateRangeCommand = ReactiveCommand.Create(async (ImageDatesViewModel imageDatesVm) => {
-                if (imageDatesVm.StartDate != null && imageDatesVm.EndDate != null) 
-                {
-                    ExplorerVm.ResetPagination();
-                    ExplorerVm.startDateForFilter = (DateTimeOffset)imageDatesVm.StartDate;
-                    ExplorerVm.endDateForFilter = (DateTimeOffset)imageDatesVm.EndDate;
-                    ExplorerVm.currentFilter = ExplorerViewModel.Filters.ImageDateRangeFilter;
-                    await ExplorerVm.RefreshImages();
-                }
-            });
-            FilterFoldersDateModifiedInCurrentDirectoryCommand = ReactiveCommand.Create(async () => {
-                ExplorerVm.ResetPagination();
-                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderDateModifiedFilter;
-                await ExplorerVm.RefreshFolders();
-            });
-            FilterFoldersInCurrentDirectoryByStartingLetterCommand = ReactiveCommand.Create(async (string letter) => {
-                ExplorerVm.ResetPagination();
-                ExplorerVm.selectedLetterForFilter = letter;
-                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderAlphabeticalFilter;
-                await ExplorerVm.RefreshFolders();
-            });
-            FilterFolderOnRatingAndTagCommand = ReactiveCommand.Create(async (IList tags) => {
-                List<Tag> selectedTags = tags.OfType<Tag>().ToList();
-                if (!selectedTags.Any())
-                    return;
-                List<string> tagsForFilter = selectedTags.Select(t => t.TagName).ToList();
-                ExplorerVm.tagsForFilter = tagsForFilter;
-                ExplorerVm.ResetPagination();
-                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderTagAndRatingFilter;
-                await ExplorerVm.RefreshFolders();
-            });
-            FilterFoldersOnRatingCommand = ReactiveCommand.Create(async (decimal rating) => {
-                ExplorerVm.ResetPagination();
-                ExplorerVm.selectedRatingForFilter = Decimal.ToInt32(rating);
-                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderRatingFilter;
-                await ExplorerVm.RefreshFolders();
-            });
-            FilterImagesOnTagsCommand = ReactiveCommand.Create(async (IList tags) => {
-                List<Tag> selectedTags = tags.OfType<Tag>().ToList();
-                if (!selectedTags.Any())
-                    return;
-                List<string> tagsForFilter = selectedTags.Select(t => t.TagName).ToList();
-                ExplorerVm.tagsForImageFilter = tagsForFilter;
-                ExplorerVm.ResetPagination();
-                ExplorerVm.currentFilter = ExplorerViewModel.Filters.ImageTagsFilter;
-                await ExplorerVm.RefreshImages();
-            });
-            FilterFolderOnTagsCommand = ReactiveCommand.Create(async (IList tags) => 
-            {
-                List<Tag> selectedTags = tags.OfType<Tag>().ToList();
-                if (!selectedTags.Any())
-                    return;
-                List<string> tagsForFilter = selectedTags.Select(t => t.TagName).ToList();
-                ExplorerVm.tagsForFolderFilter = tagsForFilter;
-                ExplorerVm.ResetPagination();
-                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderTagsFilter;
-                await ExplorerVm.RefreshFolders();
-            });
-            FilterFoldersOnDescriptionCommand = ReactiveCommand.Create(async (string text) => {
-                ExplorerVm.ResetPagination();
-                ExplorerVm.textForFilter = text;
-                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderDescriptionFilter;
-                await ExplorerVm.RefreshFolders();
-            });
-            FilterFoldersOnDescriptionAndTagsCommand = ReactiveCommand.Create(async (IList tags) =>
-            {
-                List<Tag> selectedTags = tags.OfType<Tag>().ToList();
-                if (!selectedTags.Any() || String.IsNullOrEmpty(ExplorerVm.TextForFolderDescriptionAndTagsFilter))
-                    return;
-                List<string> tagsForFilter = selectedTags.Select(t => t.TagName).ToList();
-                //TextForFolderDescriptionAndTagsFilter is bound to UI tags passed in as IList
-                ExplorerVm.tagsForFolderDescriptionAndTagsFilter = tagsForFilter;
-                ExplorerVm.ResetPagination();
-                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderDescriptionAndTagsFilter;
-                await ExplorerVm.RefreshFolders();
-            });
+            
+           
             UpdateImageDatesCommand = ReactiveCommand.Create(async () => {
                 await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
                 ImageMethods imageMethods = new ImageMethods(uow);
                 await imageMethods.UpdateImageDates();
                 ImageDatesVm = await imageMethods.GetImageDates();
             });
-            GetAllFoldersWithNoImportedImagesCommand = ReactiveCommand.Create(async () => {
-                ExplorerVm.ResetPagination();
-                ExplorerVm.currentFilter = ExplorerViewModel.Filters.AllFoldersWithNoImportedImages;
-                await ExplorerVm.RefreshFolders();
-            });
-            GetAllFoldersWithMetadataNotScannedCommand = ReactiveCommand.Create(async () => {
-                ExplorerVm.ResetPagination();
-                ExplorerVm.currentFilter = ExplorerViewModel.Filters.AllFoldersWithMetadataNotScanned;
-                await ExplorerVm.RefreshFolders();
-            });
-            GetAllFoldersWithoutCoversCommand = ReactiveCommand.Create(async () => {
-                ExplorerVm.ResetPagination();
-                ExplorerVm.currentFilter = ExplorerViewModel.Filters.AllFoldersWithoutCovers;
-                await ExplorerVm.RefreshFolders();
-            });
+            
             
             PickImageWidthCommand = ReactiveCommand.Create(async (string size) => {
                 await SettingsVm.PickImageWidth(size);
@@ -291,11 +186,7 @@ namespace ImagePerfect.ViewModels
             LoadSavedDirectoryCommand = ReactiveCommand.Create(async (ScrollViewer scrollViewer) => {
                 await HistoryVm.LoadMainSavedDirectory(scrollViewer);
             });
-            GetAllFavoriteFoldersCommand = ReactiveCommand.Create(async () => {
-                ExplorerVm.ResetPagination();
-                ExplorerVm.currentFilter = ExplorerViewModel.Filters.AllFavoriteFolders;
-                await ExplorerVm.RefreshFolders();
-            });
+            
             
             
             
@@ -523,6 +414,148 @@ namespace ImagePerfect.ViewModels
                 await MoveImages.MoveAllImagesInFolderUpOneDirectory(folderVm);
             });
         }
+
+        private void InitializeFilterImageCommands()
+        {
+            _filterGetAllImagesInFolderAndSubFoldersCommand = ReactiveCommand.Create(async () =>
+            {
+                ExplorerVm.ResetPagination();
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.AllImagesInFolderAndSubFolders;
+                await ExplorerVm.RefreshImages();
+            });
+            _filterImagesOnRatingCommand = ReactiveCommand.Create(async (decimal rating) => {
+                ExplorerVm.ResetPagination();
+                ExplorerVm.selectedRatingForFilter = Decimal.ToInt32(rating);
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.ImageRatingFilter;
+                await ExplorerVm.RefreshImages();
+            });
+            _filterFiveStarImagesInCurrentDirectoryCommand = ReactiveCommand.Create(async (decimal rating) => {
+                ExplorerVm.ResetPagination();
+                ExplorerVm.selectedRatingForFilter = Decimal.ToInt32(rating);
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FiveStarImagesInCurrentDirectory;
+                await ExplorerVm.RefreshImages();
+            });
+            _filterImagesOnYearCommand = ReactiveCommand.Create(async (int year) => {
+                if (year == 0)
+                    return;
+                ExplorerVm.ResetPagination();
+                ExplorerVm.selectedYearForFilter = year;
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.ImageYearFilter;
+                await ExplorerVm.RefreshImages();
+            });
+            _filterImagesOnYearMonthCommand = ReactiveCommand.Create(async (string yearMonth) => {
+                if (yearMonth == null)
+                    return;
+                string[] parts = yearMonth.Split('-');
+                int year = int.Parse(parts[0]);
+                int month = int.Parse(parts[1]);
+                ExplorerVm.ResetPagination();
+                ExplorerVm.selectedYearForFilter = year;
+                ExplorerVm.selectedMonthForFilter = month;
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.ImageYearMonthFilter;
+                await ExplorerVm.RefreshImages();
+            });
+            _filterImagesOnDateRangeCommand = ReactiveCommand.Create(async (ImageDatesViewModel imageDatesVm) => {
+                if (imageDatesVm.StartDate != null && imageDatesVm.EndDate != null)
+                {
+                    ExplorerVm.ResetPagination();
+                    ExplorerVm.startDateForFilter = (DateTimeOffset)imageDatesVm.StartDate;
+                    ExplorerVm.endDateForFilter = (DateTimeOffset)imageDatesVm.EndDate;
+                    ExplorerVm.currentFilter = ExplorerViewModel.Filters.ImageDateRangeFilter;
+                    await ExplorerVm.RefreshImages();
+                }
+            });
+            _filterImagesOnTagsCommand = ReactiveCommand.Create(async (IList tags) => {
+                List<Tag> selectedTags = tags.OfType<Tag>().ToList();
+                if (!selectedTags.Any())
+                    return;
+                List<string> tagsForFilter = selectedTags.Select(t => t.TagName).ToList();
+                ExplorerVm.tagsForImageFilter = tagsForFilter;
+                ExplorerVm.ResetPagination();
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.ImageTagsFilter;
+                await ExplorerVm.RefreshImages();
+            });
+        }
+
+        private void InitializeFilterFolderCommands()
+        {
+            _filterFoldersDateModifiedInCurrentDirectoryCommand = ReactiveCommand.Create(async () => {
+                ExplorerVm.ResetPagination();
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderDateModifiedFilter;
+                await ExplorerVm.RefreshFolders();
+            });
+            _filterFoldersInCurrentDirectoryByStartingLetterCommand = ReactiveCommand.Create(async (string letter) => {
+                ExplorerVm.ResetPagination();
+                ExplorerVm.selectedLetterForFilter = letter;
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderAlphabeticalFilter;
+                await ExplorerVm.RefreshFolders();
+            });
+            _filterFolderOnRatingAndTagCommand = ReactiveCommand.Create(async (IList tags) => {
+                List<Tag> selectedTags = tags.OfType<Tag>().ToList();
+                if (!selectedTags.Any())
+                    return;
+                List<string> tagsForFilter = selectedTags.Select(t => t.TagName).ToList();
+                ExplorerVm.tagsForFilter = tagsForFilter;
+                ExplorerVm.ResetPagination();
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderTagAndRatingFilter;
+                await ExplorerVm.RefreshFolders();
+            });
+            _filterFoldersOnRatingCommand = ReactiveCommand.Create(async (decimal rating) => {
+                ExplorerVm.ResetPagination();
+                ExplorerVm.selectedRatingForFilter = Decimal.ToInt32(rating);
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderRatingFilter;
+                await ExplorerVm.RefreshFolders();
+            });
+            _filterFolderOnTagsCommand = ReactiveCommand.Create(async (IList tags) =>
+            {
+                List<Tag> selectedTags = tags.OfType<Tag>().ToList();
+                if (!selectedTags.Any())
+                    return;
+                List<string> tagsForFilter = selectedTags.Select(t => t.TagName).ToList();
+                ExplorerVm.tagsForFolderFilter = tagsForFilter;
+                ExplorerVm.ResetPagination();
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderTagsFilter;
+                await ExplorerVm.RefreshFolders();
+            });
+            _filterFoldersOnDescriptionCommand = ReactiveCommand.Create(async (string text) => {
+                ExplorerVm.ResetPagination();
+                ExplorerVm.textForFilter = text;
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderDescriptionFilter;
+                await ExplorerVm.RefreshFolders();
+            });
+            _filterFoldersOnDescriptionAndTagsCommand = ReactiveCommand.Create(async (IList tags) =>
+            {
+                List<Tag> selectedTags = tags.OfType<Tag>().ToList();
+                if (!selectedTags.Any() || String.IsNullOrEmpty(ExplorerVm.TextForFolderDescriptionAndTagsFilter))
+                    return;
+                List<string> tagsForFilter = selectedTags.Select(t => t.TagName).ToList();
+                //TextForFolderDescriptionAndTagsFilter is bound to UI tags passed in as IList
+                ExplorerVm.tagsForFolderDescriptionAndTagsFilter = tagsForFilter;
+                ExplorerVm.ResetPagination();
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderDescriptionAndTagsFilter;
+                await ExplorerVm.RefreshFolders();
+            });
+            _getAllFoldersWithNoImportedImagesCommand = ReactiveCommand.Create(async () => {
+                ExplorerVm.ResetPagination();
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.AllFoldersWithNoImportedImages;
+                await ExplorerVm.RefreshFolders();
+            });
+            _getAllFoldersWithMetadataNotScannedCommand = ReactiveCommand.Create(async () => {
+                ExplorerVm.ResetPagination();
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.AllFoldersWithMetadataNotScanned;
+                await ExplorerVm.RefreshFolders();
+            });
+            _getAllFoldersWithoutCoversCommand = ReactiveCommand.Create(async () => {
+                ExplorerVm.ResetPagination();
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.AllFoldersWithoutCovers;
+                await ExplorerVm.RefreshFolders();
+            });
+            _getAllFavoriteFoldersCommand = ReactiveCommand.Create(async () => {
+                ExplorerVm.ResetPagination();
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.AllFavoriteFolders;
+                await ExplorerVm.RefreshFolders();
+            });
+        }
         public int TotalImages
         {
             get => _totalImages;
@@ -614,6 +647,7 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<Unit, Unit> OpenSettingsWindowCommand { get => _openSettingsWindowCommand; }
 
         public ReactiveCommand<Unit, Unit> OpenFiltersWindowCommand { get => _openFiltersWindowCommand; }
+
         //ToggleUI Commands
         public ReactiveCommand<Unit, Unit> ToggleManageImagesCommand { get => _toggleManageImagesCommand; }
 
@@ -630,6 +664,7 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<Unit, Unit> ToggleShowExtendedFolderControlsCommand { get => _toggleShowExtendedFolderControlsCommand; }
 
         public ReactiveCommand<Unit, Unit> ToggleShowExtendedImageControlsCommand { get => _toggleShowExtendedImageControlsCommand; }
+
         //Navigation Commands
         public ReactiveCommand<FolderViewModel, Task> NextFolderCommand { get => _nextFolderCommand; }
 
@@ -699,45 +734,46 @@ namespace ImagePerfect.ViewModels
 
         public ReactiveCommand<FolderViewModel, Task> MoveAllImagesInFolderUpOneDirectoryCommand { get => _moveAllImagesInFolderUpOneDirectoryCommand; }
 
-        //
-        public ReactiveCommand<Unit, Task> DeleteLibraryCommand { get; }
+        //Image Filter Commands
+        public ReactiveCommand<Unit, Task> FilterGetAllImagesInFolderAndSubFoldersCommand {  get => _filterGetAllImagesInFolderAndSubFoldersCommand; }
 
-        public ReactiveCommand<Unit, Task> FilterGetAllImagesInFolderAndSubFoldersCommand {  get; }
+        public ReactiveCommand<decimal, Task> FilterImagesOnRatingCommand { get => _filterImagesOnRatingCommand; }
 
-        public ReactiveCommand<decimal, Task> FilterImagesOnRatingCommand { get; }
+        public ReactiveCommand<decimal, Task> FilterFiveStarImagesInCurrentDirectoryCommand { get => _filterFiveStarImagesInCurrentDirectoryCommand; }
 
-        public ReactiveCommand<decimal, Task> FilterFiveStarImagesInCurrentDirectoryCommand { get; }
+        public ReactiveCommand<int, Task> FilterImagesOnYearCommand { get => _filterImagesOnYearCommand; }
 
-        public ReactiveCommand<int, Task> FilterImagesOnYearCommand { get; }
+        public ReactiveCommand<string, Task> FilterImagesOnYearMonthCommand {  get => _filterImagesOnYearMonthCommand; }
 
-        public ReactiveCommand<string, Task> FilterImagesOnYearMonthCommand {  get; }
+        public ReactiveCommand<ImageDatesViewModel, Task> FilterImagesOnDateRangeCommand { get => _filterImagesOnDateRangeCommand; }
 
-        public ReactiveCommand<ImageDatesViewModel, Task> FilterImagesOnDateRangeCommand { get; }
+        public ReactiveCommand<IList, Task> FilterImagesOnTagsCommand { get => _filterImagesOnTagsCommand; }
 
-        public ReactiveCommand<Unit, Task> FilterFoldersDateModifiedInCurrentDirectoryCommand { get; }
+        //Folder Filter Commands
+        public ReactiveCommand<Unit, Task> FilterFoldersDateModifiedInCurrentDirectoryCommand { get => _filterFoldersDateModifiedInCurrentDirectoryCommand; }
 
-        public ReactiveCommand<string, Task> FilterFoldersInCurrentDirectoryByStartingLetterCommand { get; }
+        public ReactiveCommand<string, Task> FilterFoldersInCurrentDirectoryByStartingLetterCommand { get => _filterFoldersInCurrentDirectoryByStartingLetterCommand; }
 
-        public ReactiveCommand<IList, Task> FilterFolderOnRatingAndTagCommand { get; }
+        public ReactiveCommand<IList, Task> FilterFolderOnRatingAndTagCommand { get => _filterFolderOnRatingAndTagCommand; }
 
-        public ReactiveCommand<decimal, Task> FilterFoldersOnRatingCommand { get; }
+        public ReactiveCommand<decimal, Task> FilterFoldersOnRatingCommand { get => _filterFoldersOnRatingCommand; }
 
-        public ReactiveCommand<IList, Task> FilterImagesOnTagsCommand { get; }
+        public ReactiveCommand<IList, Task> FilterFolderOnTagsCommand { get => _filterFolderOnTagsCommand; }
 
-        public ReactiveCommand<IList, Task> FilterFolderOnTagsCommand { get; }
+        public ReactiveCommand<string, Task> FilterFoldersOnDescriptionCommand { get => _filterFoldersOnDescriptionCommand; }
 
-        public ReactiveCommand<string, Task> FilterFoldersOnDescriptionCommand { get; }
+        public ReactiveCommand<IList, Task> FilterFoldersOnDescriptionAndTagsCommand { get => _filterFoldersOnDescriptionAndTagsCommand; }
 
-        public ReactiveCommand<IList, Task> FilterFoldersOnDescriptionAndTagsCommand { get; }
+        public ReactiveCommand<Unit, Task> GetAllFoldersWithNoImportedImagesCommand { get => _getAllFoldersWithNoImportedImagesCommand; }
+
+        public ReactiveCommand<Unit, Task> GetAllFoldersWithMetadataNotScannedCommand { get => _getAllFoldersWithMetadataNotScannedCommand; }
+
+        public ReactiveCommand<Unit, Task> GetAllFoldersWithoutCoversCommand { get => _getAllFoldersWithoutCoversCommand; }
+
+        public ReactiveCommand<Unit, Task> GetAllFavoriteFoldersCommand { get => _getAllFavoriteFoldersCommand; }
+
 
         public ReactiveCommand<Unit, Task> UpdateImageDatesCommand { get; }
-
-        public ReactiveCommand<Unit, Task> GetAllFoldersWithNoImportedImagesCommand { get; }
-
-        public ReactiveCommand<Unit, Task> GetAllFoldersWithMetadataNotScannedCommand { get; }
-
-        public ReactiveCommand<Unit, Task> GetAllFoldersWithoutCoversCommand { get; }
-
         public ReactiveCommand<string, Task> PickImageWidthCommand { get; }
         
         public ReactiveCommand<decimal, Task> SelectImageWidthCommand { get; }
@@ -754,7 +790,7 @@ namespace ImagePerfect.ViewModels
 
         public ReactiveCommand<ScrollViewer, Task> LoadSavedDirectoryCommand { get; }
 
-        public ReactiveCommand<Unit, Task> GetAllFavoriteFoldersCommand {  get; } 
+        
 
         public ReactiveCommand<ItemsControl, Task> ImportAllFoldersOnCurrentPageCommand { get; }
 
@@ -767,6 +803,8 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<ItemsControl, Task> ScanAllFoldersOnCurrentPageCommand { get; }
 
         public ReactiveCommand<Unit, Unit> ExitAppCommand { get; }
+
+        public ReactiveCommand<Unit, Task> DeleteLibraryCommand { get; }
 
         //should technically have its own repo but only plan on having only this one method just keeping it in images repo.
         public async Task GetTagsList(UnitOfWork? uow = null)
