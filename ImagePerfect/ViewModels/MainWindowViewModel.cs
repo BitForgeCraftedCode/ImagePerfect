@@ -119,6 +119,12 @@ namespace ImagePerfect.ViewModels
         private ReactiveCommand<ScrollViewer, Task> _saveDirectoryToHistoryCommand;
         private ReactiveCommand<ScrollViewer, Task> _saveDirectoryCommand;
         private ReactiveCommand<ScrollViewer, Task> _loadSavedDirectoryCommand;
+        //batch operations backing fields
+        private ReactiveCommand<ItemsControl, Task> _importAllFoldersOnCurrentPageCommand;
+        private ReactiveCommand<ItemsControl, Task> _addCoverImageOnCurrentPageCommand;
+        private ReactiveCommand<ItemsControl, Task> _scanAllFoldersOnCurrentPageCommand;
+        private ReactiveCommand<ItemsControl, Task> _getFolderDescriptionFromTextFileOnCurrentPageCommand;
+        private ReactiveCommand<ItemsControl, Task> _backUpFolderDescriptionToTextFileOnCurrentPageCommand;
         public MainWindowViewModel() { }
         public MainWindowViewModel(MySqlDataSource dataSource, IConfiguration config)
         {
@@ -153,6 +159,7 @@ namespace ImagePerfect.ViewModels
             InitializeFilterFolderCommands();
             InitializeSettingsCommands();
             InitializeHistoryCommands();
+            InitializeBatchOperationsCommands();
 
 
 
@@ -179,21 +186,7 @@ namespace ImagePerfect.ViewModels
             
             
             
-            ImportAllFoldersOnCurrentPageCommand = ReactiveCommand.Create(async (ItemsControl foldersItemsControl) => { 
-                await ImportImagesVm.ImportAllFoldersOnCurrentPage(foldersItemsControl);
-            });
-            AddCoverImageOnCurrentPageCommand = ReactiveCommand.Create(async (ItemsControl folderItemsControl) => { 
-                await CoverImageVm.AddCoverImageOnCurrentPage(folderItemsControl);
-            });
-            ScanAllFoldersOnCurrentPageCommand = ReactiveCommand.Create(async (ItemsControl foldersItemsControl) => {
-                await ScanImagesForMetaDataVm.ScanAllFoldersOnCurrentPage(foldersItemsControl);
-            });
-            GetFolderDescriptionFromTextFileOnCurrentPageCommand = ReactiveCommand.Create(async (ItemsControl folderItemsControl) => { 
-                await FolderDescriptionTextFileVm.GetFolderDescriptionFromTextFileOnCurrentPage(folderItemsControl);
-            });
-            BackUpFolderDescriptionToTextFileOnCurrentPageCommand = ReactiveCommand.Create(async (ItemsControl folderItemsControl) => {
-                await FolderDescriptionTextFileVm.BackUpFolderDescriptionToTextFileOnCurrentPage(folderItemsControl);
-            });
+            
             ExitAppCommand = ReactiveCommand.Create(() => { 
                 ExitApp();
             });
@@ -577,6 +570,25 @@ namespace ImagePerfect.ViewModels
                 await HistoryVm.LoadMainSavedDirectory(scrollViewer);
             });
         }
+
+        private void InitializeBatchOperationsCommands()
+        {
+            _importAllFoldersOnCurrentPageCommand = ReactiveCommand.Create(async (ItemsControl foldersItemsControl) => {
+                await ImportImagesVm.ImportAllFoldersOnCurrentPage(foldersItemsControl);
+            });
+            _addCoverImageOnCurrentPageCommand = ReactiveCommand.Create(async (ItemsControl folderItemsControl) => {
+                await CoverImageVm.AddCoverImageOnCurrentPage(folderItemsControl);
+            });
+            _scanAllFoldersOnCurrentPageCommand = ReactiveCommand.Create(async (ItemsControl foldersItemsControl) => {
+                await ScanImagesForMetaDataVm.ScanAllFoldersOnCurrentPage(foldersItemsControl);
+            });
+            _getFolderDescriptionFromTextFileOnCurrentPageCommand = ReactiveCommand.Create(async (ItemsControl folderItemsControl) => {
+                await FolderDescriptionTextFileVm.GetFolderDescriptionFromTextFileOnCurrentPage(folderItemsControl);
+            });
+            _backUpFolderDescriptionToTextFileOnCurrentPageCommand = ReactiveCommand.Create(async (ItemsControl folderItemsControl) => {
+                await FolderDescriptionTextFileVm.BackUpFolderDescriptionToTextFileOnCurrentPage(folderItemsControl);
+            });
+        }
         public int TotalImages
         {
             get => _totalImages;
@@ -811,17 +823,19 @@ namespace ImagePerfect.ViewModels
 
         public ReactiveCommand<ScrollViewer, Task> LoadSavedDirectoryCommand { get => _loadSavedDirectoryCommand; }
 
+        //Batch Operations Commands
+
+        public ReactiveCommand<ItemsControl, Task> ImportAllFoldersOnCurrentPageCommand { get => _importAllFoldersOnCurrentPageCommand; }
+
+        public ReactiveCommand<ItemsControl, Task> AddCoverImageOnCurrentPageCommand { get => _addCoverImageOnCurrentPageCommand; }
+
+        public ReactiveCommand<ItemsControl, Task> ScanAllFoldersOnCurrentPageCommand { get => _scanAllFoldersOnCurrentPageCommand; }
+
+        public ReactiveCommand<ItemsControl, Task> GetFolderDescriptionFromTextFileOnCurrentPageCommand { get => _getFolderDescriptionFromTextFileOnCurrentPageCommand; }
+
+        public ReactiveCommand<ItemsControl, Task> BackUpFolderDescriptionToTextFileOnCurrentPageCommand { get => _backUpFolderDescriptionToTextFileOnCurrentPageCommand; }
+
         
-
-        public ReactiveCommand<ItemsControl, Task> ImportAllFoldersOnCurrentPageCommand { get; }
-
-        public ReactiveCommand<ItemsControl, Task> AddCoverImageOnCurrentPageCommand { get; }
-
-        public ReactiveCommand<ItemsControl, Task> GetFolderDescriptionFromTextFileOnCurrentPageCommand { get; }
-
-        public ReactiveCommand<ItemsControl, Task> BackUpFolderDescriptionToTextFileOnCurrentPageCommand { get; }
-
-        public ReactiveCommand<ItemsControl, Task> ScanAllFoldersOnCurrentPageCommand { get; }
 
         public ReactiveCommand<Unit, Unit> ExitAppCommand { get; }
 
