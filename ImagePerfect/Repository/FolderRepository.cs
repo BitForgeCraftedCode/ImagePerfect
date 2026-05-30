@@ -3,10 +3,7 @@ using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.Repository.IRepository;
 using MySqlConnector;
-using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace ImagePerfect.Repository

@@ -1,6 +1,4 @@
-﻿using ImagePerfect.Repository.IRepository;
-using ImagePerfect.Repository;
-using ImagePerfect.ViewModels;
+﻿using ImagePerfect.ViewModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MySqlConnector;

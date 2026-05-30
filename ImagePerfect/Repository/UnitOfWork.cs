@@ -1,10 +1,7 @@
-﻿using Avalonia.Controls.Shapes;
-using ImagePerfect.Repository.IRepository;
+﻿using ImagePerfect.Repository.IRepository;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using System;
-using System.IO;
-using System.Reactive;
 using System.Threading.Tasks;
 //https://dotnettutorials.net/lesson/unit-of-work-csharp-mvc/
 
