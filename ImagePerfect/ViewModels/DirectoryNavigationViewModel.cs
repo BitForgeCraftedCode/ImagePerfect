@@ -1,12 +1,4 @@
-using Avalonia.Controls;
 using ImagePerfect.Helpers;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Enums;
-using MsBox.Avalonia.Models;
-using ReactiveUI;
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ImagePerfect.ViewModels

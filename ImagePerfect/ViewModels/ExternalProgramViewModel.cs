@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using MsBox.Avalonia.Enums;
 using MsBox.Avalonia;
 using System.Diagnostics;
 using System.IO;
-using ReactiveUI;
 using ImagePerfect.Helpers;
 using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Models;

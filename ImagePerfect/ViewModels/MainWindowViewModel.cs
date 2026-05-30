@@ -1,17 +1,12 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Threading;
-using ImagePerfect.Helpers;
 using ImagePerfect.Models;
-using ImagePerfect.ObjectMappers;
 using ImagePerfect.Repository;
-using ImagePerfect.Repository.IRepository;
 using ImagePerfect.Views;
 using Microsoft.Extensions.Configuration;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Enums;
 using MsBox.Avalonia.Models;
 using MySqlConnector;
 using ReactiveUI;
@@ -19,11 +14,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
-using Image = ImagePerfect.Models.Image;
 
 namespace ImagePerfect.ViewModels
 {

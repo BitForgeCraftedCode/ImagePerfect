@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using ReactiveUI;
 
 //sub-ViewModel has no VIEW it is just to help factor out MainWindowViewModel

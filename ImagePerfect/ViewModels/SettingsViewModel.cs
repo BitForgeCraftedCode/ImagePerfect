@@ -1,11 +1,8 @@
 using ImagePerfect.Models;
 using ImagePerfect.Repository;
-using ImagePerfect.Repository.IRepository;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using ReactiveUI;
-using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ImagePerfect.ViewModels

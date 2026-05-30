@@ -1,16 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using ImagePerfect.Helpers;
 using ImagePerfect.Models;
-using ImagePerfect.Repository.IRepository;
-using MsBox.Avalonia.Enums;
-using MsBox.Avalonia;
-using ReactiveUI;
 using System.Linq;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using ImagePerfect.Repository;

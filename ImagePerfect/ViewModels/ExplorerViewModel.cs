@@ -1,9 +1,7 @@
-using Avalonia;
 using Avalonia.Threading;
 using ImagePerfect.Models;
 using ImagePerfect.ObjectMappers;
 using ImagePerfect.Repository;
-using ImagePerfect.Repository.IRepository;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using ReactiveUI;
@@ -11,11 +9,9 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using static Dapper.SqlMapper;
 
 namespace ImagePerfect.ViewModels
 {

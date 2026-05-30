@@ -1,15 +1,11 @@
 using Avalonia.Controls;
 using ImagePerfect.Models;
 using ImagePerfect.Repository;
-using ImagePerfect.Repository.IRepository;
 using Microsoft.Extensions.Configuration;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Enums;
 using MsBox.Avalonia.Models;
 using MySqlConnector;
-using ReactiveUI;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
