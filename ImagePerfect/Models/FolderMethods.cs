@@ -1,5 +1,4 @@
 ﻿using ImagePerfect.Repository.IRepository;
-using ImagePerfect.ViewModels;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

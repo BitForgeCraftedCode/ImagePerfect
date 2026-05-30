@@ -1,15 +1,11 @@
-﻿using Avalonia.Metadata;
-using Avalonia.Rendering.Composition;
-using CsvHelper;
+﻿using CsvHelper;
 using ImagePerfect.Helpers;
 using ImagePerfect.Repository.IRepository;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ImagePerfect.Models
