@@ -14,7 +14,7 @@ namespace ImagePerfect.ViewModels
 	public class InitializeViewModel : ViewModelBase
 	{
         private string _rootFolderLocation = string.Empty;
-        private bool _hasRootLibrary = true;
+        private bool _hasRootLibrary = false;
         private readonly MySqlDataSource _dataSource;
         private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
@@ -47,6 +47,11 @@ namespace ImagePerfect.ViewModels
                 _mainWindowViewModel.LibraryFolders.Add(rootFolderVm);
                 RootFolderLocation = PathHelper.RemoveOneFolderFromPath(rootFolder.FolderPath);
                 _mainWindowViewModel.ExplorerVm.CurrentDirectory = RootFolderLocation;
+                HasRootLibrary = true;
+            }
+            else
+            {
+                HasRootLibrary = false;
             }
         }
 
