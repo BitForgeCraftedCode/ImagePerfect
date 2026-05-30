@@ -480,7 +480,7 @@
 		<!--Create New Folder-->
 		<StackPanel Grid.Row="8" IsVisible="{Binding ToggleUI.ShowCreateNewFolder}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}" Classes="menu-bg-color">
 			<TextBlock Margin="0 5" MaxWidth="400">Create A New Folder:</TextBlock>
-			<TextBox  Watermark="Enter folder name" MaxWidth="400" Text="{Binding CreateNewFolder.NewFolderName}" />
+			<TextBox  PlaceholderText="Enter folder name" MaxWidth="400" Text="{Binding CreateNewFolder.NewFolderName}" />
 			<Button
 				Margin="0 10 10 10"
 				HorizontalAlignment="Center"
@@ -760,7 +760,7 @@
 									</TextBlock>
 								</Grid>
 								<Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
-									<TextBox Grid.Row="0" Grid.Column="0" Watermark="Add Description" Height="100" AcceptsReturn="True" TextWrapping="Wrap" 
+									<TextBox Grid.Row="0" Grid.Column="0" PlaceholderText="Add Description" Height="100" AcceptsReturn="True" TextWrapping="Wrap" 
 											 Margin="5" 
 											 MaxLength="3000" 
 											 Text="{Binding FolderDescription}"
