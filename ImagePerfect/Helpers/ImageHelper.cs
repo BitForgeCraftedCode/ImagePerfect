@@ -1,19 +1,10 @@
-﻿using Avalonia.Controls;
-using Avalonia.Media.Imaging;
+﻿using Avalonia.Media.Imaging;
 using Avalonia.Platform;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
-using SkiaSharp;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Image = SixLabors.ImageSharp.Image;
 
