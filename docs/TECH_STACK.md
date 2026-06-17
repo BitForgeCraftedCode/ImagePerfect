@@ -8,4 +8,4 @@
 - **ORM**: [Dapper](https://github.com/DapperLib/Dapper)
 - **CSV Parsing**: [CsvHelper](https://github.com/JoshClose/CsvHelper)
 - **Image Processing**: [SixLabors ImageSharp](https://github.com/SixLabors/ImageSharp)
-- **.NET 8.0**
+- **.NET 10.0**

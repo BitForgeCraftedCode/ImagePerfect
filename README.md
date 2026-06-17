@@ -2,7 +2,7 @@
 
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Ubuntu-blue)
 ![License](https://img.shields.io/github/license/BitForgeCraftedCode/ImagePerfect)
-![.NET](https://img.shields.io/badge/.NET-8.0-blueviolet)
+![.NET](https://img.shields.io/badge/.NET-10.0-blueviolet)
 
 ## 📚 Table Of Contents
 - ❓ [Why I Built Image Perfect](#why-i-built-image-perfect)
