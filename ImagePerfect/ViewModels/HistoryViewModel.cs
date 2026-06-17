@@ -35,9 +35,6 @@ namespace ImagePerfect.ViewModels
             _dataSource = dataSource;
             _configuration = config;
             _mainWindowViewModel = mainWindowViewModel;
-
-            //disable timed disposal for now -- this was likely crashing the app System.NullReferenceException DeepCopy.cs:line 132
-            //StartDeferredDisposeTimer();
         }
         public Interaction<SaveDirectory, Unit> LoadHistoryRequest { get; } = new();
 
@@ -221,26 +218,7 @@ namespace ImagePerfect.ViewModels
                     disposedCount);
             }
         }
-        // Periodically dispose deferred bitmaps every 3 minutes to prevent the DisposeQueue from growing too large.
-        // This can happen if the user repeatedly saves directories without calling LoadSavedDirectory
-        // example (save directory nav out save another directory nav out etc..)
-        private System.Timers.Timer? _disposeTimer;
-        private void StartDeferredDisposeTimer()
-        {
-            _disposeTimer = new System.Timers.Timer(180000); // interval in milliseconds - 3 min
-            //subscribe to Elapsed event and when it it fires run this async method
-            _disposeTimer.Elapsed += async (s, e) =>
-            {
-                await DisposeDeferredBitmaps(); // already off UI thread
-            };
-            _disposeTimer.AutoReset = true;  // keep running
-            _disposeTimer.Start();
-        }
-        private void StopDeferredDisposeTimer()
-        {
-            _disposeTimer?.Stop();
-            _disposeTimer?.Dispose();
-        }
+        
         private async Task SetSavedDirectoryCache(SaveDirectory saveDirectoryItem)
         {
             // --- FOLDERS ---
