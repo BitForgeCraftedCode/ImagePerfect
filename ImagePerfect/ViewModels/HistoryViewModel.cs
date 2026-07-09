@@ -68,6 +68,42 @@ namespace ImagePerfect.ViewModels
             set => _isSavedHistoryDirectoryLoaded = value;
         }
 
+        private SaveDirectory CreateSaveDirectory(ScrollViewer scrollViewer)
+        {
+            ExplorerViewModel explorer = _mainWindowViewModel.ExplorerVm;
+            double XVector = scrollViewer.Offset.X;
+            double YVector = scrollViewer.Offset.Y;
+            return new SaveDirectory 
+            {
+                DisplayName = PathHelper.GetHistroyDisplayNameFromPath(explorer.CurrentDirectory),
+                //update variables
+                SavedDirectory = explorer.CurrentDirectory,
+                SavedFolderPage = explorer.CurrentFolderPage,
+                SavedTotalFolderPages = explorer.TotalFolderPages,
+                SavedImagePage = explorer.CurrentImagePage,
+                SavedTotalImagePages = explorer.TotalImagePages,
+                XVector = XVector,
+                YVector = YVector,
+                SavedOffsetVector = new Vector(XVector, YVector),
+                //update filter variables
+                SavedCurrentFilter = explorer.currentFilter,
+                SavedSelectedLetterForFilter = explorer.selectedLetterForFilter,
+                SavedSelectedRatingForFilter = explorer.selectedRatingForFilter,
+                SavedSelectedYearForFilter = explorer.selectedYearForFilter,
+                SavedSelectedMonthForFilter = explorer.selectedMonthForFilter,
+                SavedStartDateForFilter = explorer.startDateForFilter,
+                SavedEndDateForFilter = explorer.endDateForFilter,
+                SavedTextForFilter = explorer.textForFilter,
+                SavedComboFolderFilterRating = explorer.ComboFolderFilterRating,
+                SavedTagsForFolderDescriptionAndTagsFilter = explorer.tagsForFolderDescriptionAndTagsFilter,
+                SavedTextForFolderDescriptionAndTagsFilter = explorer.TextForFolderDescriptionAndTagsFilter,
+                SavedTagsForFilter = explorer.tagsForFilter,
+                SavedTagsForFolderFilter = explorer.tagsForFolderFilter,
+                SavedTagsForImageFilter = explorer.tagsForImageFilter,
+                SavedFilterInCurrentDirectory = explorer.FilterInCurrentDirectory,
+                SavedLoadFoldersAscending = explorer.LoadFoldersAscending
+            };
+        }
         public async Task SaveDirectoryToHistory(ScrollViewer scrollViewer, bool isMainSavedDirectory)
 		{
             _mainWindowViewModel.ShowLoading = true;
@@ -75,38 +111,7 @@ namespace ImagePerfect.ViewModels
             SaveDirectoryMethods saveDirectoryMethods = new SaveDirectoryMethods(uow);
 
             IsSavedHistoryDirectoryLoaded = true;
-            double XVector = scrollViewer.Offset.X;
-            double YVector = scrollViewer.Offset.Y;
-            SaveDirectory saveDirectoryItem = new SaveDirectory
-			{
-                DisplayName = PathHelper.GetHistroyDisplayNameFromPath(_mainWindowViewModel.ExplorerVm.CurrentDirectory),
-                //update variables
-                SavedDirectory = _mainWindowViewModel.ExplorerVm.CurrentDirectory,
-                SavedFolderPage = _mainWindowViewModel.ExplorerVm.CurrentFolderPage,
-                SavedTotalFolderPages = _mainWindowViewModel.ExplorerVm.TotalFolderPages,
-                SavedImagePage = _mainWindowViewModel.ExplorerVm.CurrentImagePage,
-                SavedTotalImagePages = _mainWindowViewModel.ExplorerVm.TotalImagePages,
-                XVector = XVector,
-                YVector = YVector,
-                SavedOffsetVector = new Vector(XVector, YVector),
-                //update filter variables
-                SavedCurrentFilter = _mainWindowViewModel.ExplorerVm.currentFilter,
-                SavedSelectedLetterForFilter = _mainWindowViewModel.ExplorerVm.selectedLetterForFilter,
-                SavedSelectedRatingForFilter = _mainWindowViewModel.ExplorerVm.selectedRatingForFilter,
-                SavedSelectedYearForFilter = _mainWindowViewModel.ExplorerVm.selectedYearForFilter,
-                SavedSelectedMonthForFilter = _mainWindowViewModel.ExplorerVm.selectedMonthForFilter,
-                SavedStartDateForFilter = _mainWindowViewModel.ExplorerVm.startDateForFilter,
-                SavedEndDateForFilter = _mainWindowViewModel.ExplorerVm.endDateForFilter,
-                SavedTextForFilter = _mainWindowViewModel.ExplorerVm.textForFilter,
-                SavedComboFolderFilterRating = _mainWindowViewModel.ExplorerVm.ComboFolderFilterRating,
-                SavedTagsForFolderDescriptionAndTagsFilter = _mainWindowViewModel.ExplorerVm.tagsForFolderDescriptionAndTagsFilter,
-                SavedTextForFolderDescriptionAndTagsFilter = _mainWindowViewModel.ExplorerVm.TextForFolderDescriptionAndTagsFilter,
-                SavedTagsForFilter = _mainWindowViewModel.ExplorerVm.tagsForFilter,
-                SavedTagsForFolderFilter = _mainWindowViewModel.ExplorerVm.tagsForFolderFilter,
-                SavedTagsForImageFilter = _mainWindowViewModel.ExplorerVm.tagsForImageFilter,
-                SavedFilterInCurrentDirectory = _mainWindowViewModel.ExplorerVm.FilterInCurrentDirectory,
-                SavedLoadFoldersAscending = _mainWindowViewModel.ExplorerVm.LoadFoldersAscending
-            };
+            SaveDirectory saveDirectoryItem = CreateSaveDirectory(scrollViewer);
             // Check for existing entry with same SavedDirectory path
             var existingIndex = SaveDirectoryItemsList
                 .Select((item, idx) => new { item, idx })
@@ -291,39 +296,44 @@ namespace ImagePerfect.ViewModels
             await LoadSavedDirectory(saveDirectoryItem, scrollViewer);
         }
 
+        private void RestoreExplorerState(SaveDirectory saveDirectoryItem)
+        {
+            ExplorerViewModel explorer = _mainWindowViewModel.ExplorerVm;
+            //update all variables
+            explorer.CurrentDirectory = saveDirectoryItem.SavedDirectory;
+            explorer.CurrentFolderPage = saveDirectoryItem.SavedFolderPage;
+            explorer.TotalFolderPages = saveDirectoryItem.SavedTotalFolderPages;
+            explorer.CurrentImagePage = saveDirectoryItem.SavedImagePage;
+            explorer.TotalImagePages = saveDirectoryItem.SavedTotalImagePages;
+            explorer.MaxPage = Math.Max(explorer.TotalImagePages, explorer.TotalFolderPages);
+            explorer.MaxCurrentPage = Math.Max(explorer.CurrentImagePage, explorer.CurrentFolderPage);
+
+            //filter variables
+            explorer.currentFilter = saveDirectoryItem.SavedCurrentFilter;
+            explorer.selectedLetterForFilter = saveDirectoryItem.SavedSelectedLetterForFilter;
+            explorer.selectedRatingForFilter = saveDirectoryItem.SavedSelectedRatingForFilter;
+            explorer.selectedYearForFilter = saveDirectoryItem.SavedSelectedYearForFilter;
+            explorer.selectedMonthForFilter = saveDirectoryItem.SavedSelectedMonthForFilter;
+            explorer.startDateForFilter = saveDirectoryItem.SavedStartDateForFilter;
+            explorer.endDateForFilter = saveDirectoryItem.SavedEndDateForFilter;
+            explorer.textForFilter = saveDirectoryItem.SavedTextForFilter;
+            explorer.ComboFolderFilterRating = saveDirectoryItem.SavedComboFolderFilterRating;
+            explorer.tagsForFolderDescriptionAndTagsFilter = saveDirectoryItem.SavedTagsForFolderDescriptionAndTagsFilter;
+            explorer.TextForFolderDescriptionAndTagsFilter = saveDirectoryItem.SavedTextForFolderDescriptionAndTagsFilter;
+            explorer.tagsForFilter = saveDirectoryItem.SavedTagsForFilter;
+            explorer.tagsForFolderFilter = saveDirectoryItem.SavedTagsForFolderFilter;
+            explorer.tagsForImageFilter = saveDirectoryItem.SavedTagsForImageFilter;
+            explorer.FilterInCurrentDirectory = saveDirectoryItem.SavedFilterInCurrentDirectory;
+            explorer.LoadFoldersAscending = saveDirectoryItem.SavedLoadFoldersAscending;
+        }
         private async Task LoadSavedDirectory(SaveDirectory saveDirectoryItem, ScrollViewer scrollViewer)
         {
             _activeSavedDirectory = saveDirectoryItem;
             // ensure we don't tell other code the saved-dir is "loaded" until we've restored it
             // otherwise RefreshFolders and or RefreshImages will call UpdateSavedHistoryDirectoryCache and write the wrong directory to Cache
             IsSavedHistoryDirectoryLoaded = false;
-            //update all variables
-            _mainWindowViewModel.ExplorerVm.CurrentDirectory = saveDirectoryItem.SavedDirectory;
-            _mainWindowViewModel.ExplorerVm.CurrentFolderPage = saveDirectoryItem.SavedFolderPage;
-            _mainWindowViewModel.ExplorerVm.TotalFolderPages = saveDirectoryItem.SavedTotalFolderPages;
-            _mainWindowViewModel.ExplorerVm.CurrentImagePage = saveDirectoryItem.SavedImagePage;
-            _mainWindowViewModel.ExplorerVm.TotalImagePages = saveDirectoryItem.SavedTotalImagePages;
-            _mainWindowViewModel.ExplorerVm.MaxPage = Math.Max(_mainWindowViewModel.ExplorerVm.TotalImagePages, _mainWindowViewModel.ExplorerVm.TotalFolderPages);
-            _mainWindowViewModel.ExplorerVm.MaxCurrentPage = Math.Max(_mainWindowViewModel.ExplorerVm.CurrentImagePage, _mainWindowViewModel.ExplorerVm.CurrentFolderPage);
-
-            //filter variables
-            _mainWindowViewModel.ExplorerVm.currentFilter = saveDirectoryItem.SavedCurrentFilter;
-            _mainWindowViewModel.ExplorerVm.selectedLetterForFilter = saveDirectoryItem.SavedSelectedLetterForFilter;
-            _mainWindowViewModel.ExplorerVm.selectedRatingForFilter = saveDirectoryItem.SavedSelectedRatingForFilter;
-            _mainWindowViewModel.ExplorerVm.selectedYearForFilter = saveDirectoryItem.SavedSelectedYearForFilter;
-            _mainWindowViewModel.ExplorerVm.selectedMonthForFilter = saveDirectoryItem.SavedSelectedMonthForFilter;
-            _mainWindowViewModel.ExplorerVm.startDateForFilter = saveDirectoryItem.SavedStartDateForFilter;
-            _mainWindowViewModel.ExplorerVm.endDateForFilter = saveDirectoryItem.SavedEndDateForFilter;
-            _mainWindowViewModel.ExplorerVm.textForFilter = saveDirectoryItem.SavedTextForFilter;
-            _mainWindowViewModel.ExplorerVm.ComboFolderFilterRating = saveDirectoryItem.SavedComboFolderFilterRating;
-            _mainWindowViewModel.ExplorerVm.tagsForFolderDescriptionAndTagsFilter = saveDirectoryItem.SavedTagsForFolderDescriptionAndTagsFilter;
-            _mainWindowViewModel.ExplorerVm.TextForFolderDescriptionAndTagsFilter = saveDirectoryItem.SavedTextForFolderDescriptionAndTagsFilter;
-            _mainWindowViewModel.ExplorerVm.tagsForFilter = saveDirectoryItem.SavedTagsForFilter;
-            _mainWindowViewModel.ExplorerVm.tagsForFolderFilter = saveDirectoryItem.SavedTagsForFolderFilter;
-            _mainWindowViewModel.ExplorerVm.tagsForImageFilter = saveDirectoryItem.SavedTagsForImageFilter;
-            _mainWindowViewModel.ExplorerVm.FilterInCurrentDirectory = saveDirectoryItem.SavedFilterInCurrentDirectory;
-            _mainWindowViewModel.ExplorerVm.LoadFoldersAscending = saveDirectoryItem.SavedLoadFoldersAscending;
-
+            RestoreExplorerState(saveDirectoryItem);
+         
             if ((saveDirectoryItem.SavedDirectoryFolders.Count > 0 || saveDirectoryItem.SavedDirectoryImages.Count > 0) && LoadSavedHistoryDirectoryFromCache == true)
             {
                 //fast path: restore from cache
