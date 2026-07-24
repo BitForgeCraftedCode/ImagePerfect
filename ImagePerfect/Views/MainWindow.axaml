@@ -759,7 +759,7 @@
 										Image Metadata Scanned
 									</TextBlock>
 								</Grid>
-								<Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
+								<Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="*,Auto" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
 									<TextBox Grid.Row="0" Grid.Column="0" PlaceholderText="Add Description" Height="100" AcceptsReturn="True" TextWrapping="Wrap" 
 											 Margin="5" 
 											 MaxLength="3000" 
@@ -791,6 +791,16 @@
 											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddFolderTagsCommand}"
 											CommandParameter="{Binding}" Classes="main-btn">
 										Submit
+									</Button>
+									<TextBox Grid.Row="3" Grid.Column="0" Margin="5" MaxLength="2000"
+											 Text="{Binding FolderName}"
+											 IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"/>
+									<Button Grid.Row="3" Grid.Column="1" Width="100" HorizontalContentAlignment="Center"
+											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).RenameFolderCommand}"
+											CommandParameter="{Binding}"
+											IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"
+											Classes="btn-danger">
+										Rename
 									</Button>
 								</Grid>					
 							</StackPanel>

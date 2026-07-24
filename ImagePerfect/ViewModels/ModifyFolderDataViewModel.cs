@@ -9,6 +9,7 @@ using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Models;
 using MySqlConnector;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -213,6 +214,57 @@ namespace ImagePerfect.ViewModels
                 _mainWindowViewModel.ShowLoading = false;
             }
 
+        }
+
+        public async Task RenameFolder(FolderViewModel folderVm)
+        {
+            //Debug.WriteLine(folderVm.FolderName);
+            //Dont allow rename of Root Folder
+            if (folderVm.IsRoot)
+            {
+                return;
+            }
+
+            /*
+              
+            1. Validate
+                - Not Root folder
+                - New name isn't blank
+                - New name doesn't contain invalid filename characters
+                - New name != current folder name -- get current folder name from db
+                - Trim whitespace
+
+            2. Build paths
+                oldPath = folderVm.FolderPath
+                newPath = Path.Combine(
+                                Directory.GetParent(oldPath).FullName,
+                                folderVm.FolderName)
+
+            3. Verify destination
+                if Directory.Exists(newPath)
+                    show "Folder already exists"
+                    return
+
+            4. Rename physical folder
+                Directory.Move(oldPath, newPath)
+
+            5. Begin database transaction
+
+            6. Update folders table
+                FolderName
+                FolderPath
+                CoverImagePath (if not null)
+
+            7. Update images table
+                ImageFolderPath
+                ImagePath
+
+            8. Commit transaction
+
+            9. if transaction fails rename directory back to original name
+
+            10. Refresh UI
+             */
         }
     }
 }

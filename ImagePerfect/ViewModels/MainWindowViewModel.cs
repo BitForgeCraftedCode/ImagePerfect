@@ -71,6 +71,7 @@ namespace ImagePerfect.ViewModels
         private ReactiveCommand<FolderViewModel, Task> _copyFolderDescriptionToContainingFolderCommand;
         private ReactiveCommand<Unit, Task> _createNewFolderCommand;
         private ReactiveCommand<Unit, Task> _openCurrentDirectoryWithExplorerCommand;
+        private ReactiveCommand<FolderViewModel, Task> _renameFolderCommand;
         //image backing fields
         private ReactiveCommand<ImageViewModel, Task> _addImageTagsCommand;
         private ReactiveCommand<ListBox, Task> _addMultipleImageTagsCommand;
@@ -322,6 +323,9 @@ namespace ImagePerfect.ViewModels
             });
             _openCurrentDirectoryWithExplorerCommand = ReactiveCommand.Create(async () => {
                 await ExternalProgramVm.OpenCurrentDirectoryWithExplorer();
+            });
+            _renameFolderCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
+                await ModifyFolderDataVm.RenameFolder(folderVm);
             });
         }
 
@@ -726,6 +730,8 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<Unit, Task> CreateNewFolderCommand { get => _createNewFolderCommand; }
 
         public ReactiveCommand<Unit, Task> OpenCurrentDirectoryWithExplorerCommand { get => _openCurrentDirectoryWithExplorerCommand; }
+
+        public ReactiveCommand<FolderViewModel, Task> RenameFolderCommand { get => _renameFolderCommand; }
 
         //Image Commands
         public ReactiveCommand<ImageViewModel, Task> AddImageTagsCommand { get => _addImageTagsCommand; }
