@@ -11,6 +11,14 @@ namespace ImagePerfect.ViewModels
             _mainWindowViewModel = mainWindowViewModel;
         }
 
+        private async Task UpdateSavedDirectoryCacheBeforeNavigation()
+        {
+            if (_mainWindowViewModel.HistoryVm.IsSavedHistoryDirectoryLoaded && _mainWindowViewModel.HistoryVm.LoadSavedHistoryDirectoryFromCache)
+            {
+                await _mainWindowViewModel.HistoryVm.UpdateSavedHistoryDirectoryCache();
+            }
+        }
+
         public async Task ReLoadSavedDirectory(string savedDirectory)
         {
             await _mainWindowViewModel.ExplorerVm.RefreshFolders(savedDirectory);
@@ -37,6 +45,7 @@ namespace ImagePerfect.ViewModels
             {
                 return;
             }
+            await UpdateSavedDirectoryCacheBeforeNavigation();
             //not ideal but keeps pagination to the folder your in. When you go back or next start from page 1
             _mainWindowViewModel.ExplorerVm.ResetPagination();
 
@@ -52,6 +61,7 @@ namespace ImagePerfect.ViewModels
         //opens the previous directory location -- from image button
         public async Task BackFolderFromImage(ImageViewModel imageVm)
         {
+            await UpdateSavedDirectoryCacheBeforeNavigation();
             //not ideal but keeps pagination to the folder your in. When you go back or next start from page 1
             _mainWindowViewModel.ExplorerVm.ResetPagination();
             /*
@@ -70,6 +80,7 @@ namespace ImagePerfect.ViewModels
         //opens the previous directory location -- from folder button
         public async Task BackFolder(FolderViewModel currentFolder)
         {
+            await UpdateSavedDirectoryCacheBeforeNavigation();
             _mainWindowViewModel.ExplorerVm.ResetPagination();
             /*
                 tough to see but basically you need to remove two folders to build the regexp string
@@ -89,6 +100,7 @@ namespace ImagePerfect.ViewModels
         //opens the next directory location
         public async Task NextFolder(FolderViewModel currentFolder)
         {
+            await UpdateSavedDirectoryCacheBeforeNavigation();
             _mainWindowViewModel.ExplorerVm.ResetPagination();
             
             //set the current directory -- used to add new folder to location

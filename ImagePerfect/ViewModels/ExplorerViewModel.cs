@@ -339,10 +339,10 @@ namespace ImagePerfect.ViewModels
         {
             ImageMethods imageMethods = new ImageMethods(uow);
             // Before clearing/reloading, capture the current UI state into cache
-            if (_mainWindowViewModel.HistoryVm.IsSavedHistoryDirectoryLoaded && _mainWindowViewModel.HistoryVm.LoadSavedHistoryDirectoryFromCache)
-            {
-                await _mainWindowViewModel.HistoryVm.UpdateSavedHistoryDirectoryCache();
-            }
+            //if (_mainWindowViewModel.HistoryVm.IsSavedHistoryDirectoryLoaded && _mainWindowViewModel.HistoryVm.LoadSavedHistoryDirectoryFromCache)
+            //{
+            //    await _mainWindowViewModel.HistoryVm.UpdateSavedHistoryDirectoryCache();
+            //}
             _mainWindowViewModel.ShowLoading = true;
             switch (currentFilter)
             {
@@ -537,10 +537,10 @@ namespace ImagePerfect.ViewModels
              * So calling there will only capture the 1st UI change. 
              */
             // Before clearing/reloading, capture the current UI state into cache
-            if (_mainWindowViewModel.HistoryVm.IsSavedHistoryDirectoryLoaded && _mainWindowViewModel.HistoryVm.LoadSavedHistoryDirectoryFromCache)
-            {
-                await _mainWindowViewModel.HistoryVm.UpdateSavedHistoryDirectoryCache();
-            }
+            //if (_mainWindowViewModel.HistoryVm.IsSavedHistoryDirectoryLoaded && _mainWindowViewModel.HistoryVm.LoadSavedHistoryDirectoryFromCache)
+            //{
+            //    await _mainWindowViewModel.HistoryVm.UpdateSavedHistoryDirectoryCache();
+            //}
 
             _mainWindowViewModel.ShowLoading = true;
             switch (currentFilter)

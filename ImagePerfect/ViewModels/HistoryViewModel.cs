@@ -278,8 +278,21 @@ namespace ImagePerfect.ViewModels
             saveDirectoryItem.SavedDirectoryImages.AddRange(newImages);
         }
 
+        //saved-directory cache update is handled at navigation
+        //used to call in Refresh images/folders -- remove commented out code there after testing. 
         public async Task UpdateSavedHistoryDirectoryCache()
         {
+            if (_activeSavedDirectory == null)
+            {
+                return;
+            }
+            //prevent accidentally overwriting of cache with wrong directory
+            string currentDirectory = _mainWindowViewModel.ExplorerVm.CurrentDirectory;
+            if (!string.Equals(_activeSavedDirectory.SavedDirectory, currentDirectory, StringComparison.OrdinalIgnoreCase))
+            {
+                IsSavedHistoryDirectoryLoaded = false;
+                return;
+            }
             _mainWindowViewModel.ShowLoading = true;
             await SetSavedDirectoryCache(_activeSavedDirectory);
             IsSavedHistoryDirectoryLoaded = false;
@@ -330,7 +343,6 @@ namespace ImagePerfect.ViewModels
         {
             _activeSavedDirectory = saveDirectoryItem;
             // ensure we don't tell other code the saved-dir is "loaded" until we've restored it
-            // otherwise RefreshFolders and or RefreshImages will call UpdateSavedHistoryDirectoryCache and write the wrong directory to Cache
             IsSavedHistoryDirectoryLoaded = false;
             RestoreExplorerState(saveDirectoryItem);
          
