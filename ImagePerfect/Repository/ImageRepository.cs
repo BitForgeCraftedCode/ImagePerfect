@@ -466,5 +466,10 @@ namespace ImagePerfect.Repository
 
             return viewModel;
         }
+
+        public async Task<bool> RenameImage(int imageId, string oldPath, string newPath, string newImageName)
+        {
+            return true;
+        }
     }
 }

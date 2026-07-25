@@ -83,6 +83,7 @@ namespace ImagePerfect.ViewModels
         private ReactiveCommand<IList, Task> _moveSelectedImagesToTrashCommand;
         private ReactiveCommand<IList, Task> _moveSelectedImagesUpOneDirectoryCommand;
         private ReactiveCommand<FolderViewModel, Task> _moveAllImagesInFolderUpOneDirectoryCommand;
+        private ReactiveCommand<ImageViewModel, Task> _renameImageCommand;
         //filter image backing fields
         private ReactiveCommand<Unit, Task> _filterGetAllImagesInFolderAndSubFoldersCommand;
         private ReactiveCommand<decimal, Task> _filterImagesOnRatingCommand;
@@ -362,6 +363,9 @@ namespace ImagePerfect.ViewModels
             _moveAllImagesInFolderUpOneDirectoryCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) =>
             {
                 await MoveImages.MoveAllImagesInFolderUpOneDirectory(folderVm);
+            });
+            _renameImageCommand = ReactiveCommand.Create(async (ImageViewModel imageVm) => { 
+                await ModifyImageDataVm.RenameImage(imageVm);
             });
         }
 
@@ -753,6 +757,8 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<IList, Task> MoveSelectedImagesUpOneDirectoryCommand { get => _moveSelectedImagesUpOneDirectoryCommand; }
 
         public ReactiveCommand<FolderViewModel, Task> MoveAllImagesInFolderUpOneDirectoryCommand { get => _moveAllImagesInFolderUpOneDirectoryCommand; }
+
+        public ReactiveCommand<ImageViewModel, Task> RenameImageCommand { get => _renameImageCommand; }
 
         //Image Filter Commands
         public ReactiveCommand<Unit, Task> FilterGetAllImagesInFolderAndSubFoldersCommand {  get => _filterGetAllImagesInFolderAndSubFoldersCommand; }

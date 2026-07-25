@@ -9,6 +9,7 @@ using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Models;
 using MySqlConnector;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Image = ImagePerfect.Models.Image;
@@ -272,5 +273,11 @@ namespace ImagePerfect.ViewModels
                 }
             }
         }
+
+        public async Task RenameImage(ImageViewModel imageVm)
+        {
+            
+        }
+
     }
 }

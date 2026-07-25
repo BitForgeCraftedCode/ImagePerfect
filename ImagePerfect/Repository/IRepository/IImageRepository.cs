@@ -30,5 +30,6 @@ namespace ImagePerfect.Repository.IRepository
         Task<int> GetTotalImages();
         Task UpdateImageDates();
         Task<ImageDatesViewModel> GetImageDates();
+        Task<bool> RenameImage(int imageId, string oldPath, string newPath, string newImageName);
     }
 }

@@ -124,5 +124,10 @@ namespace ImagePerfect.Models
         {
             return await _unitOfWork.Image.GetImageDates();
         }
+
+        public async Task<bool> RenameImage(int imageId, string oldPath, string newPath, string newImageName)
+        {
+            return await _unitOfWork.Image.RenameImage(imageId, oldPath, newPath, newImageName);
+        }
     }
 }

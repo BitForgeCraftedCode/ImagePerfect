@@ -938,23 +938,33 @@
 											Trash
 										</Button>
 									</Grid>
-									<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
-										<TextBox Grid.Row="0" Grid.Column="0" Margin="5" MaxLength="2000" 
+									<Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
+										<TextBox Grid.Row="0" Grid.Column="0" Margin="5" MaxLength="2000"
+											 Text="{Binding FileName}"
+											 IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedImageControls}"/>
+										<Button Grid.Row="0" Grid.Column="1" Width="100" HorizontalContentAlignment="Center"
+												Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).RenameImageCommand}"
+												CommandParameter="{Binding}"
+												IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedImageControls}"
+												Classes="btn-danger">
+											Rename
+										</Button>
+										<TextBox Grid.Row="1" Grid.Column="0" Margin="5" MaxLength="2000" 
 												 Text="{Binding ImageTags}" 
 												 IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedImageControls}"/>
-										<Button Grid.Row="0" Grid.Column="1" Width="100" HorizontalContentAlignment="Center"
+										<Button Grid.Row="1" Grid.Column="1" Width="100" HorizontalContentAlignment="Center"
 												Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).EditImageTagsCommand}"
 												CommandParameter="{Binding}"
 												IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedImageControls}"
 												Classes="btn-danger">
 											Remove Tag
 										</Button>
-										<AutoCompleteBox Grid.Row="1" Grid.Column="0" MaxLength="100" Margin="5" Watermark="Add A Tag"
+										<AutoCompleteBox Grid.Row="2" Grid.Column="0" MaxLength="100" Margin="5" Watermark="Add A Tag"
 														 Text="{Binding NewTag}"
 														 FilterMode="StartsWith"
 														 ItemsSource="{Binding #Root.((vm:MainWindowViewModel)DataContext).TagsList}"
 														 ValueMemberBinding="{Binding TagName}" />
-										<Button Grid.Row="1" Grid.Column="1" Width="100" HorizontalContentAlignment="Center"
+										<Button Grid.Row="2" Grid.Column="1" Width="100" HorizontalContentAlignment="Center"
 												Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddImageTagsCommand}"
 												CommandParameter="{Binding}" Classes="main-btn">
 											Submit
