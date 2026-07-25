@@ -469,7 +469,32 @@ namespace ImagePerfect.Repository
 
         public async Task<bool> RenameImage(int imageId, string oldPath, string newPath, string newImageName)
         {
-            return true;
+            MySqlTransaction txn = await _connection.BeginTransactionAsync();
+            try
+            {
+                string updateImageSql = @"
+                    UPDATE images
+                    SET
+                        FileName = @newImageName,
+                        ImagePath = @newPath
+                    WHERE ImageId = @imageId AND ImagePath = @oldPath";
+
+                string updateCoverImageSql = @"
+                    UPDATE folders
+                    SET CoverImagePath = @newPath
+                    WHERE CoverImagePath = @oldPath";
+
+                int imageRowsEffected = await _connection.ExecuteAsync(updateImageSql, new { imageId, oldPath, newPath, newImageName }, transaction: txn);
+                await _connection.ExecuteAsync(updateCoverImageSql, new { oldPath, newPath }, transaction: txn);
+
+                await txn.CommitAsync();
+                return imageRowsEffected > 0;
+            }
+            catch
+            {
+                await txn.RollbackAsync();
+                throw;
+            }
         }
     }
 }

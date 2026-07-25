@@ -8,8 +8,9 @@ using MsBox.Avalonia;
 using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Models;
 using MySqlConnector;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Image = ImagePerfect.Models.Image;
@@ -274,9 +275,121 @@ namespace ImagePerfect.ViewModels
             }
         }
 
+        private static async Task ShowRenameImageMessage(string message)
+        {
+            await MessageBoxManager.GetMessageBoxCustom(
+                new MessageBoxCustomParams
+                {
+                    ButtonDefinitions = new List<ButtonDefinition>
+                    {
+                        new ButtonDefinition { Name = "Ok", },
+                    },
+                    ContentTitle = "Rename Image",
+                    ContentMessage = message,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    SizeToContent = SizeToContent.WidthAndHeight,
+                    MinWidth = 500
+                }
+            ).ShowWindowDialogAsync(Globals.MainWindow);
+        }
+
         public async Task RenameImage(ImageViewModel imageVm)
         {
-            
+            if (imageVm == null)
+            {
+                return;
+            }
+
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            ImageMethods imageMethods = new ImageMethods(uow);
+            Image currentImage = await imageMethods.GetImageById(imageVm.ImageId);
+
+            string oldPath = currentImage.ImagePath;
+            string imageFolderPath = currentImage.ImageFolderPath;
+            string oldFileName = currentImage.FileName;
+            string oldExtension = Path.GetExtension(oldFileName);
+            string newImageName = imageVm.FileName?.Trim() ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(newImageName))
+            {
+                imageVm.FileName = oldFileName;
+                await ShowRenameImageMessage("Image name cannot be blank.");
+                return;
+            }
+
+            if (newImageName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            {
+                imageVm.FileName = oldFileName;
+                await ShowRenameImageMessage("Image name contains invalid file name characters.");
+                return;
+            }
+
+            string newExtension = Path.GetExtension(newImageName);
+            if (!string.Equals(oldExtension, newExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                imageVm.FileName = oldFileName;
+                await ShowRenameImageMessage($"Image extension cannot be changed. Keep the original '{oldExtension}' extension.");
+                return;
+            }
+
+            if (!File.Exists(oldPath))
+            {
+                imageVm.FileName = oldFileName;
+                await ShowRenameImageMessage("The image could not be found on disk.");
+                return;
+            }
+            //new name must be different
+            if (string.Equals(oldFileName, newImageName, StringComparison.Ordinal))
+            {
+                imageVm.FileName = oldFileName;
+                return;
+            }
+            //Build new path and verify it does not already exist
+            string newPath = Path.Combine(imageFolderPath, newImageName);
+            if (File.Exists(newPath))
+            {
+                imageVm.FileName = oldFileName;
+                await ShowRenameImageMessage("An image with that name already exists in this location.");
+                return;
+            }
+            //Try to rename/move physical image
+            _mainWindowViewModel.ShowLoading = true;
+            bool physicalImageMoved = false;
+            try
+            {
+                File.Move(oldPath, newPath);
+                physicalImageMoved = true;
+                //once physical image is renamed. rename the data base paths
+                bool success = await imageMethods.RenameImage(imageVm.ImageId, oldPath, newPath, newImageName);
+                if (!success)
+                {
+                    //if data base rename fails move back physical image
+                    if (File.Exists(newPath) && !File.Exists(oldPath))
+                    {
+                        File.Move(newPath, oldPath);
+                    }
+
+                    imageVm.FileName = oldFileName;
+                    await ShowRenameImageMessage("Image rename database update failed. The image was restored to its original name.");
+                    return;
+                }
+                await _mainWindowViewModel.ExplorerVm.RefreshImages(imageFolderPath, 0, uow);
+            }
+            catch (Exception e)
+            {
+                //fallback
+                if (physicalImageMoved && File.Exists(newPath) && !File.Exists(oldPath))
+                {
+                    File.Move(newPath, oldPath);
+                }
+
+                imageVm.FileName = oldFileName;
+                await ShowRenameImageMessage($"Sorry something went wrong.\n{e.Message}");
+            }
+            finally
+            {
+                _mainWindowViewModel.ShowLoading = false;
+            }
         }
 
     }

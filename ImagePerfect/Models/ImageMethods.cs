@@ -60,6 +60,11 @@ namespace ImagePerfect.Models
             return await _unitOfWork.Image.GetAllImagesInDirectoryTree(directoryPath);
         }
 
+        public async Task<Image> GetImageById(int imageId)
+        {
+            return await _unitOfWork.Image.GetById(imageId);
+        }
+
         public async Task<bool> UpdateImage(Image image)
         {
             return await _unitOfWork.Image.Update(image);

@@ -400,7 +400,7 @@ namespace ImagePerfect.Repository
         public async Task<bool> RenameFolder(int folderId, string oldPath, string newPath, string newFolderName)
         {
             string oldPathLike = PathHelper.FormatPathForLikeOperator(oldPath);
-            await using MySqlTransaction txn = await _connection.BeginTransactionAsync();
+            MySqlTransaction txn = await _connection.BeginTransactionAsync();
             try
             {
                 /*
