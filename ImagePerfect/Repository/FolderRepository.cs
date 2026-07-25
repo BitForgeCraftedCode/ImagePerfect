@@ -4,6 +4,7 @@ using ImagePerfect.Models;
 using ImagePerfect.Repository.IRepository;
 using MySqlConnector;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace ImagePerfect.Repository
@@ -394,6 +395,75 @@ namespace ImagePerfect.Repository
             rowsEffectedB = await _connection.ExecuteAsync(imageMoveSql, transaction: txn);
             await txn.CommitAsync();
             return rowsEffectedA > 0 && rowsEffectedB >= 0 ? true : false;
+        }
+
+        public async Task<bool> RenameFolder(int folderId, string oldPath, string newPath, string newFolderName)
+        {
+            string oldPathLike = PathHelper.FormatPathForLikeOperator(oldPath);
+            await using MySqlTransaction txn = await _connection.BeginTransactionAsync();
+            try
+            {
+                /*
+                 * Updates all folder/image paths by replacing the old folder path prefix
+                 * with the new folder path while preserving the remaining child path.
+                 *
+                 * Example:
+                 * oldPath = C:\Photos\Vacation
+                 * newPath = C:\Photos\Trips
+                 *
+                 * Existing path:
+                 * C:\Photos\Vacation\Beach
+                 *
+                 * SUBSTRING removes the oldPath prefix, leaving:
+                 * \Beach
+                 *
+                 * CONCAT adds the newPath prefix:
+                 * C:\Photos\Trips\Beach
+                 *
+                 * CHAR_LENGTH(@oldPath) + 1 starts the substring immediately after the
+                 * old path. MySQL SUBSTRING uses 1-based indexing.
+                 *
+                 * The WHERE clause updates the renamed folder and all descendant folders
+                 * by matching the exact old path or paths beneath it.
+                 *
+                 */
+                string updateFoldersSql = @"
+                    UPDATE folders
+                    SET 
+                        FolderName = 
+                            CASE 
+                                WHEN FolderId = @folderId 
+                                THEN @newFolderName ELSE FolderName 
+                            END,
+
+                        FolderPath = CONCAT(@newPath, SUBSTRING(FolderPath, CHAR_LENGTH(@oldPath) + 1)),
+
+                        CoverImagePath = 
+                            CASE
+                                WHEN CoverImagePath IS NULL OR CoverImagePath = '' 
+                                THEN CoverImagePath
+                                ELSE CONCAT(@newPath, SUBSTRING(CoverImagePath, CHAR_LENGTH(@oldPath) + 1))
+                            END
+                    WHERE FolderPath = @oldPath OR FolderPath LIKE @oldPathLike";
+
+                string updateImagesSql = @"
+                    UPDATE images
+                    SET 
+                        ImageFolderPath = CONCAT(@newPath, SUBSTRING(ImageFolderPath, CHAR_LENGTH(@oldPath) + 1)),
+                        ImagePath = CONCAT(@newPath, SUBSTRING(ImagePath, CHAR_LENGTH(@oldPath) + 1))
+                    WHERE ImageFolderPath = @oldPath OR ImageFolderPath LIKE @oldPathLike";
+
+                int folderRowsEffected = await _connection.ExecuteAsync(updateFoldersSql, new { folderId, newFolderName, oldPath, newPath, oldPathLike }, transaction: txn);
+                int imageRowsEffected = await _connection.ExecuteAsync(updateImagesSql, new { oldPath, newPath, oldPathLike }, transaction: txn);
+
+                await txn.CommitAsync();
+                return folderRowsEffected > 0 && imageRowsEffected >= 0;
+            }
+            catch
+            {
+                await txn.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task<bool> UpdateFolderTags(Folder folder, string newTag)

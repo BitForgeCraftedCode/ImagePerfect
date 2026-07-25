@@ -8,8 +8,10 @@ using MsBox.Avalonia;
 using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Models;
 using MySqlConnector;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -215,56 +217,119 @@ namespace ImagePerfect.ViewModels
             }
 
         }
-
+        private static async Task ShowRenameFolderMessage(string message)
+        {
+            await MessageBoxManager.GetMessageBoxCustom(
+                new MessageBoxCustomParams
+                {
+                    ButtonDefinitions = new List<ButtonDefinition>
+                    {
+                        new ButtonDefinition { Name = "Ok", },
+                    },
+                    ContentTitle = "Rename Folder",
+                    ContentMessage = message,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    SizeToContent = SizeToContent.WidthAndHeight,
+                    MinWidth = 500
+                }
+            ).ShowWindowDialogAsync(Globals.MainWindow);
+        }
         public async Task RenameFolder(FolderViewModel folderVm)
         {
-            //Debug.WriteLine(folderVm.FolderName);
+            //Validate
             //Dont allow rename of Root Folder
-            if (folderVm.IsRoot)
+            if (folderVm == null || folderVm.IsRoot)
             {
                 return;
             }
 
-            /*
-              
-            1. Validate
-                - Not Root folder
-                - New name isn't blank
-                - New name doesn't contain invalid filename characters
-                - New name != current folder name -- get current folder name from db
-                - Trim whitespace
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            FolderMethods folderMethods = new FolderMethods(uow);
+            string oldPath = folderVm.FolderPath;
+            string? parentPath = Directory.GetParent(oldPath)?.FullName;
+            string newFolderName = folderVm.FolderName?.Trim() ?? string.Empty;
 
-            2. Build paths
-                oldPath = folderVm.FolderPath
-                newPath = Path.Combine(
-                                Directory.GetParent(oldPath).FullName,
-                                folderVm.FolderName)
+            if (string.IsNullOrWhiteSpace(newFolderName))
+            {
+                await ShowRenameFolderMessage("Folder name cannot be blank.");
+                return;
+            }
 
-            3. Verify destination
-                if Directory.Exists(newPath)
-                    show "Folder already exists"
-                    return
+            if (newFolderName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            {
+                await ShowRenameFolderMessage("Folder name contains invalid file name characters.");
+                return;
+            }
 
-            4. Rename physical folder
-                Directory.Move(oldPath, newPath)
+            if (string.IsNullOrWhiteSpace(parentPath))
+            {
+                await ShowRenameFolderMessage("Unable to determine the folder's parent directory.");
+                return;
+            }
 
-            5. Begin database transaction
+            Folder currentFolder = await folderMethods.GetFolderAtDirectory(oldPath);
+            if (currentFolder == null)
+            {
+                await ShowRenameFolderMessage("Folder could not be found in the database.");
+                return;
+            }
+            if (!Directory.Exists(oldPath))
+            {
+                await ShowRenameFolderMessage("The folder could not be found on disk.");
+                folderVm.FolderName = currentFolder.FolderName;
+                return;
+            }
+            //new name must be different
+            if (string.Equals(currentFolder.FolderName, newFolderName, StringComparison.Ordinal))
+            {
+                folderVm.FolderName = currentFolder.FolderName;
+                return;
+            }
+            //Build new path and verify it does not already exist
+            string newPath = Path.Combine(parentPath, newFolderName);
+            if (Directory.Exists(newPath))
+            {
+                await ShowRenameFolderMessage("A folder with that name already exists in this location.");
+                folderVm.FolderName = currentFolder.FolderName;
+                return;
+            }
+            //Try to Rename/Move physical folder
+            _mainWindowViewModel.ShowLoading = true;
+            bool physicalFolderMoved = false;
+            try
+            {
+                Directory.Move(oldPath, newPath);
+                physicalFolderMoved = true;
+                //once physical folder is renamed. reneame data base paths 
+                bool success = await folderMethods.RenameFolder(folderVm.FolderId, oldPath, newPath, newFolderName);
+                if (!success)
+                {
+                    //if data base rename fails move back physical folder
+                    if (Directory.Exists(newPath) && !Directory.Exists(oldPath))
+                    {
+                        Directory.Move(newPath, oldPath);
+                    }
 
-            6. Update folders table
-                FolderName
-                FolderPath
-                CoverImagePath (if not null)
-
-            7. Update images table
-                ImageFolderPath
-                ImagePath
-
-            8. Commit transaction
-
-            9. if transaction fails rename directory back to original name
-
-            10. Refresh UI
-             */
+                    folderVm.FolderName = currentFolder.FolderName;
+                    await ShowRenameFolderMessage("Folder rename database update failed. The folder was restored to its original name.");
+                    return;
+                }
+                await _mainWindowViewModel.ExplorerVm.RefreshFolders(parentPath, uow);
+            }
+            catch (Exception e)
+            {
+                //fallback
+                if (physicalFolderMoved && Directory.Exists(newPath) && !Directory.Exists(oldPath))
+                {
+                    Directory.Move(newPath, oldPath);
+                }
+                folderVm.FolderName = currentFolder.FolderName;
+                await ShowRenameFolderMessage($"Sorry something went wrong.\n{e.Message}");
+            }
+            finally
+            {
+                _mainWindowViewModel.ShowLoading = false;
+            }
         }
     }
 }

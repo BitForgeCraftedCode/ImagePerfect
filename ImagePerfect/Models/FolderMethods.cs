@@ -109,6 +109,11 @@ namespace ImagePerfect.Models
             return await _unitOfWork.Folder.MoveFolder(folderMoveSql, imageMoveSql);
         }
 
+        public async Task<bool> RenameFolder(int folderId, string oldPath, string newPath, string newFolderName)
+        {
+            return await _unitOfWork.Folder.RenameFolder(folderId, oldPath, newPath, newFolderName);
+        }
+
         public async Task<bool> DeleteFolder(int id)
         {
             return await _unitOfWork.Folder.Delete(id);
