@@ -39,7 +39,7 @@
     <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
     <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="4.0.0" />
     <PackageReference Include="System.Linq.Async" Version="7.0.1" />
     <PackageReference Include="System.Reactive" Version="7.0.0" />
   </ItemGroup>

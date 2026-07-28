@@ -10,6 +10,12 @@
 git clone https://github.com/BitForgeCraftedCode/ImagePerfect.git
 ```
 
+### Image Perfect Requires a Six Labors Community License Key
+- https://licensing.sixlabors.com/
+- apply for your key
+- place the sixlabors.lic file in the root folder 
+- do not commit the lic file
+
 ### Windows
 - Open solution file in Visual Studio
 - Right click on project file and click publish
