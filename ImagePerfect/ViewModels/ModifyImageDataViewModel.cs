@@ -373,7 +373,9 @@ namespace ImagePerfect.ViewModels
                     await ShowRenameImageMessage("Image rename database update failed. The image was restored to its original name.");
                     return;
                 }
-                await _mainWindowViewModel.ExplorerVm.RefreshImages(imageFolderPath, 0, uow);
+                //I think no refresh is better even though you will not be able to open the image with external viewer until refresh. 
+                //if you want to rename a bunch of images refresh after each one is not good UI. Its a trade off and this is a choice. 
+                //await _mainWindowViewModel.ExplorerVm.RefreshImages(imageFolderPath, 0, uow);
             }
             catch (Exception e)
             {
