@@ -1,7 +1,7 @@
 using ImagePerfect.Helpers;
 using ReactiveUI;
+using ReactiveUI.Primitives;
 using System.Collections.Generic;
-using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 
@@ -23,7 +23,7 @@ namespace ImagePerfect.ViewModels
 
         public Interaction<string, List<string>?> SelectExternalImageViewerExeInteraction { get { return _SelectExternalImageViewerExeInteraction; } }
 
-        public ReactiveCommand<Unit, Unit> SelectExternalImageViewerExeCommand { get; }
+        public ReactiveCommand<RxVoid, RxVoid> SelectExternalImageViewerExeCommand { get; }
 
         private async Task SelectExternalImageViewerExe()
         {

@@ -9,8 +9,8 @@ using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Models;
 using MySqlConnector;
 using ReactiveUI;
+using ReactiveUI.Primitives;
 using System.Collections.Generic;
-using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 
@@ -37,7 +37,7 @@ namespace ImagePerfect.ViewModels
 
         public Interaction<string, List<string>?> SelectFolderInteraction { get { return _SelectFolderInteraction; } }
 
-        public ReactiveCommand<Unit, Unit> SelectLibraryFolderCommand { get; }
+        public ReactiveCommand<RxVoid, RxVoid> SelectLibraryFolderCommand { get; }
 
         private async Task SelectLibraryFolder()
         {

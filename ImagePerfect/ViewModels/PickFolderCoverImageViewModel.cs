@@ -8,9 +8,9 @@ using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Models;
 using MySqlConnector;
 using ReactiveUI;
+using ReactiveUI.Primitives;
 using System;
 using System.Collections.Generic;
-using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 
@@ -36,7 +36,7 @@ namespace ImagePerfect.ViewModels
 
         public Interaction<string, List<string>?> SelectCoverImageInteraction { get { return _SelectCoverImageInteraction; } }
 
-        public ReactiveCommand<FolderViewModel, Unit> SelectCoverImageCommand { get; }
+        public ReactiveCommand<FolderViewModel, RxVoid> SelectCoverImageCommand { get; }
 
         private async Task SelectCoverImage(FolderViewModel folderVm)
         {

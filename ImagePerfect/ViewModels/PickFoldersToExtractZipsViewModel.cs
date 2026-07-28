@@ -8,6 +8,7 @@ using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Models;
 using MySqlConnector;
 using ReactiveUI;
+using ReactiveUI.Primitives;
 using Serilog;
 using System;
 using System.Collections.Concurrent;
@@ -15,7 +16,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 
@@ -40,7 +40,7 @@ namespace ImagePerfect.ViewModels
 
         public Interaction<string, List<string>?> SelectZipFoldersInteraction { get { return _SelectZipFoldersInteraction; } }
 
-        public ReactiveCommand<Unit, Unit> SelectZipFoldersCommand { get; }
+        public ReactiveCommand<RxVoid, RxVoid> SelectZipFoldersCommand { get; }
 
         private async Task SelectZipFolders()
         {

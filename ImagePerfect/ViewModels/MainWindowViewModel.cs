@@ -10,12 +10,12 @@ using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Models;
 using MySqlConnector;
 using ReactiveUI;
+using ReactiveUI.Primitives;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Reactive;
 using System.Threading.Tasks;
 
 namespace ImagePerfect.ViewModels
@@ -35,25 +35,25 @@ namespace ImagePerfect.ViewModels
         private List<Tag> _tagsList = new List<Tag>();
 
         //open Window backing fields
-        private ReactiveCommand<Unit, Unit> _openSettingsWindowCommand;
-        private ReactiveCommand<Unit, Unit> _openFiltersWindowCommand;
+        private ReactiveCommand<RxVoid, RxVoid> _openSettingsWindowCommand;
+        private ReactiveCommand<RxVoid, RxVoid> _openFiltersWindowCommand;
         //toggleUI backing fields
-        private ReactiveCommand<Unit, Unit> _toggleManageImagesCommand;
-        private ReactiveCommand<string, Unit> _toggleFiltersCommand;
-        private ReactiveCommand<Unit, Unit> _toggleCreateNewFolderCommand;
-        private ReactiveCommand<Unit, Task> _toggleGetTotalImagesCommand;
-        private ReactiveCommand<Unit, Unit> _toggleImportAndScanCommand;
-        private ReactiveCommand<Unit, Unit> _toggleListAllTagsCommand;
-        private ReactiveCommand<Unit, Unit> _toggleShowExtendedFolderControlsCommand;
-        private ReactiveCommand<Unit, Unit> _toggleShowExtendedImageControlsCommand;
+        private ReactiveCommand<RxVoid, RxVoid> _toggleManageImagesCommand;
+        private ReactiveCommand<string, RxVoid> _toggleFiltersCommand;
+        private ReactiveCommand<RxVoid, RxVoid> _toggleCreateNewFolderCommand;
+        private ReactiveCommand<RxVoid, Task> _toggleGetTotalImagesCommand;
+        private ReactiveCommand<RxVoid, RxVoid> _toggleImportAndScanCommand;
+        private ReactiveCommand<RxVoid, RxVoid> _toggleListAllTagsCommand;
+        private ReactiveCommand<RxVoid, RxVoid> _toggleShowExtendedFolderControlsCommand;
+        private ReactiveCommand<RxVoid, RxVoid> _toggleShowExtendedImageControlsCommand;
         //navigation backing fields
         private ReactiveCommand<FolderViewModel, Task> _nextFolderCommand;
         private ReactiveCommand<FolderViewModel, Task> _backFolderCommand;
         private ReactiveCommand<ImageViewModel, Task> _backFolderFromImageCommand;
-        private ReactiveCommand<Unit, Task> _backFolderFromDirectoryOptionsPanelCommand;
-        private ReactiveCommand<Unit, Task> _loadCurrentDirectoryCommand;
-        private ReactiveCommand<Unit, Task> _nextPageCommand;
-        private ReactiveCommand<Unit, Task> _previousPageCommand;
+        private ReactiveCommand<RxVoid, Task> _backFolderFromDirectoryOptionsPanelCommand;
+        private ReactiveCommand<RxVoid, Task> _loadCurrentDirectoryCommand;
+        private ReactiveCommand<RxVoid, Task> _nextPageCommand;
+        private ReactiveCommand<RxVoid, Task> _previousPageCommand;
         private ReactiveCommand<decimal, Task> _goToPageCommand;
         //folder backing fields
         private ReactiveCommand<FolderViewModel, Task> _importImagesCommand;
@@ -66,11 +66,11 @@ namespace ImagePerfect.ViewModels
         private ReactiveCommand<FolderViewModel, Task> _moveFolderToTrashCommand;
         private ReactiveCommand<FolderViewModel, Task> _scanFolderImagesForMetaDataCommand;
         private ReactiveCommand<FolderViewModel, Task> _saveFolderAsFavoriteCommand;
-        private ReactiveCommand<Unit, Task> _removeAllFavoriteFoldersCommand;
+        private ReactiveCommand<RxVoid, Task> _removeAllFavoriteFoldersCommand;
         private ReactiveCommand<FolderViewModel, Task> _copyCoverImageToContainingFolderCommand;
         private ReactiveCommand<FolderViewModel, Task> _copyFolderDescriptionToContainingFolderCommand;
-        private ReactiveCommand<Unit, Task> _createNewFolderCommand;
-        private ReactiveCommand<Unit, Task> _openCurrentDirectoryWithExplorerCommand;
+        private ReactiveCommand<RxVoid, Task> _createNewFolderCommand;
+        private ReactiveCommand<RxVoid, Task> _openCurrentDirectoryWithExplorerCommand;
         private ReactiveCommand<FolderViewModel, Task> _renameFolderCommand;
         //image backing fields
         private ReactiveCommand<ImageViewModel, Task> _addImageTagsCommand;
@@ -85,26 +85,26 @@ namespace ImagePerfect.ViewModels
         private ReactiveCommand<FolderViewModel, Task> _moveAllImagesInFolderUpOneDirectoryCommand;
         private ReactiveCommand<ImageViewModel, Task> _renameImageCommand;
         //filter image backing fields
-        private ReactiveCommand<Unit, Task> _filterGetAllImagesInFolderAndSubFoldersCommand;
+        private ReactiveCommand<RxVoid, Task> _filterGetAllImagesInFolderAndSubFoldersCommand;
         private ReactiveCommand<decimal, Task> _filterImagesOnRatingCommand;
         private ReactiveCommand<decimal, Task> _filterFiveStarImagesInCurrentDirectoryCommand;
         private ReactiveCommand<int, Task> _filterImagesOnYearCommand;
         private ReactiveCommand<string, Task> _filterImagesOnYearMonthCommand;
         private ReactiveCommand<ImageDatesViewModel, Task> _filterImagesOnDateRangeCommand;
         private ReactiveCommand<IList, Task> _filterImagesOnTagsCommand;
-        private ReactiveCommand<Unit, Task> _updateImageDatesCommand;
+        private ReactiveCommand<RxVoid, Task> _updateImageDatesCommand;
         //filter folder backing fields
-        private ReactiveCommand<Unit, Task> _filterFoldersDateModifiedInCurrentDirectoryCommand;
+        private ReactiveCommand<RxVoid, Task> _filterFoldersDateModifiedInCurrentDirectoryCommand;
         private ReactiveCommand<string, Task> _filterFoldersInCurrentDirectoryByStartingLetterCommand;
         private ReactiveCommand<IList, Task> _filterFolderOnRatingAndTagCommand;
         private ReactiveCommand<decimal, Task> _filterFoldersOnRatingCommand;
         private ReactiveCommand<IList, Task> _filterFolderOnTagsCommand;
         private ReactiveCommand<string, Task> _filterFoldersOnDescriptionCommand;
         private ReactiveCommand<IList, Task> _filterFoldersOnDescriptionAndTagsCommand;
-        private ReactiveCommand<Unit, Task> _getAllFoldersWithNoImportedImagesCommand;
-        private ReactiveCommand<Unit, Task> _getAllFoldersWithMetadataNotScannedCommand;
-        private ReactiveCommand<Unit, Task> _getAllFoldersWithoutCoversCommand;
-        private ReactiveCommand<Unit, Task> _getAllFavoriteFoldersCommand;
+        private ReactiveCommand<RxVoid, Task> _getAllFoldersWithNoImportedImagesCommand;
+        private ReactiveCommand<RxVoid, Task> _getAllFoldersWithMetadataNotScannedCommand;
+        private ReactiveCommand<RxVoid, Task> _getAllFoldersWithoutCoversCommand;
+        private ReactiveCommand<RxVoid, Task> _getAllFavoriteFoldersCommand;
         //settings backing fields
         private ReactiveCommand<string, Task> _pickImageWidthCommand;
         private ReactiveCommand<decimal, Task> _selectImageWidthCommand;
@@ -122,8 +122,8 @@ namespace ImagePerfect.ViewModels
         private ReactiveCommand<ItemsControl, Task> _getFolderDescriptionFromTextFileOnCurrentPageCommand;
         private ReactiveCommand<ItemsControl, Task> _backUpFolderDescriptionToTextFileOnCurrentPageCommand;
         //application commands backing fields
-        private ReactiveCommand<Unit, Task> _deleteLibraryCommand;
-        private ReactiveCommand<Unit, Unit> _exitAppCommand;
+        private ReactiveCommand<RxVoid, Task> _deleteLibraryCommand;
+        private ReactiveCommand<RxVoid, RxVoid> _exitAppCommand;
         public MainWindowViewModel() { }
         public MainWindowViewModel(MySqlDataSource dataSource, IConfiguration config)
         {
@@ -666,26 +666,26 @@ namespace ImagePerfect.ViewModels
         }
 
         //Open Window Commands
-        public ReactiveCommand<Unit, Unit> OpenSettingsWindowCommand { get => _openSettingsWindowCommand; }
+        public ReactiveCommand<RxVoid, RxVoid> OpenSettingsWindowCommand { get => _openSettingsWindowCommand; }
 
-        public ReactiveCommand<Unit, Unit> OpenFiltersWindowCommand { get => _openFiltersWindowCommand; }
+        public ReactiveCommand<RxVoid, RxVoid> OpenFiltersWindowCommand { get => _openFiltersWindowCommand; }
 
         //ToggleUI Commands
-        public ReactiveCommand<Unit, Unit> ToggleManageImagesCommand { get => _toggleManageImagesCommand; }
+        public ReactiveCommand<RxVoid, RxVoid> ToggleManageImagesCommand { get => _toggleManageImagesCommand; }
 
-        public ReactiveCommand<string, Unit> ToggleFiltersCommand { get => _toggleFiltersCommand; }
+        public ReactiveCommand<string, RxVoid> ToggleFiltersCommand { get => _toggleFiltersCommand; }
 
-        public ReactiveCommand<Unit, Unit> ToggleCreateNewFolderCommand { get => _toggleCreateNewFolderCommand; }
+        public ReactiveCommand<RxVoid, RxVoid> ToggleCreateNewFolderCommand { get => _toggleCreateNewFolderCommand; }
 
-        public ReactiveCommand<Unit, Task> ToggleGetTotalImagesCommand { get => _toggleGetTotalImagesCommand; }
+        public ReactiveCommand<RxVoid, Task> ToggleGetTotalImagesCommand { get => _toggleGetTotalImagesCommand; }
 
-        public ReactiveCommand<Unit, Unit> ToggleImportAndScanCommand { get => _toggleImportAndScanCommand; }
+        public ReactiveCommand<RxVoid, RxVoid> ToggleImportAndScanCommand { get => _toggleImportAndScanCommand; }
 
-        public ReactiveCommand<Unit, Unit> ToggleListAllTagsCommand { get => _toggleListAllTagsCommand; }
+        public ReactiveCommand<RxVoid, RxVoid> ToggleListAllTagsCommand { get => _toggleListAllTagsCommand; }
 
-        public ReactiveCommand<Unit, Unit> ToggleShowExtendedFolderControlsCommand { get => _toggleShowExtendedFolderControlsCommand; }
+        public ReactiveCommand<RxVoid, RxVoid> ToggleShowExtendedFolderControlsCommand { get => _toggleShowExtendedFolderControlsCommand; }
 
-        public ReactiveCommand<Unit, Unit> ToggleShowExtendedImageControlsCommand { get => _toggleShowExtendedImageControlsCommand; }
+        public ReactiveCommand<RxVoid, RxVoid> ToggleShowExtendedImageControlsCommand { get => _toggleShowExtendedImageControlsCommand; }
 
         //Navigation Commands
         public ReactiveCommand<FolderViewModel, Task> NextFolderCommand { get => _nextFolderCommand; }
@@ -694,13 +694,13 @@ namespace ImagePerfect.ViewModels
 
         public ReactiveCommand<ImageViewModel, Task> BackFolderFromImageCommand { get => _backFolderFromImageCommand; }
 
-        public ReactiveCommand<Unit, Task> BackFolderFromDirectoryOptionsPanelCommand { get => _backFolderFromDirectoryOptionsPanelCommand; }
+        public ReactiveCommand<RxVoid, Task> BackFolderFromDirectoryOptionsPanelCommand { get => _backFolderFromDirectoryOptionsPanelCommand; }
 
-        public ReactiveCommand<Unit, Task> LoadCurrentDirectoryCommand { get => _loadCurrentDirectoryCommand; }
+        public ReactiveCommand<RxVoid, Task> LoadCurrentDirectoryCommand { get => _loadCurrentDirectoryCommand; }
 
-        public ReactiveCommand<Unit, Task> NextPageCommand { get => _nextPageCommand; }
+        public ReactiveCommand<RxVoid, Task> NextPageCommand { get => _nextPageCommand; }
 
-        public ReactiveCommand<Unit, Task> PreviousPageCommand { get => _previousPageCommand; }
+        public ReactiveCommand<RxVoid, Task> PreviousPageCommand { get => _previousPageCommand; }
 
         public ReactiveCommand<decimal, Task> GoToPageCommand { get => _goToPageCommand; }
 
@@ -725,15 +725,15 @@ namespace ImagePerfect.ViewModels
 
         public ReactiveCommand<FolderViewModel, Task> SaveFolderAsFavoriteCommand { get => _saveFolderAsFavoriteCommand; }
 
-        public ReactiveCommand<Unit, Task> RemoveAllFavoriteFoldersCommand { get => _removeAllFavoriteFoldersCommand; }
+        public ReactiveCommand<RxVoid, Task> RemoveAllFavoriteFoldersCommand { get => _removeAllFavoriteFoldersCommand; }
 
         public ReactiveCommand<FolderViewModel, Task> CopyCoverImageToContainingFolderCommand { get => _copyCoverImageToContainingFolderCommand; }
 
         public ReactiveCommand<FolderViewModel, Task> CopyFolderDescriptionToContainingFolderCommand { get => _copyFolderDescriptionToContainingFolderCommand; }
 
-        public ReactiveCommand<Unit, Task> CreateNewFolderCommand { get => _createNewFolderCommand; }
+        public ReactiveCommand<RxVoid, Task> CreateNewFolderCommand { get => _createNewFolderCommand; }
 
-        public ReactiveCommand<Unit, Task> OpenCurrentDirectoryWithExplorerCommand { get => _openCurrentDirectoryWithExplorerCommand; }
+        public ReactiveCommand<RxVoid, Task> OpenCurrentDirectoryWithExplorerCommand { get => _openCurrentDirectoryWithExplorerCommand; }
 
         public ReactiveCommand<FolderViewModel, Task> RenameFolderCommand { get => _renameFolderCommand; }
 
@@ -761,7 +761,7 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<ImageViewModel, Task> RenameImageCommand { get => _renameImageCommand; }
 
         //Image Filter Commands
-        public ReactiveCommand<Unit, Task> FilterGetAllImagesInFolderAndSubFoldersCommand {  get => _filterGetAllImagesInFolderAndSubFoldersCommand; }
+        public ReactiveCommand<RxVoid, Task> FilterGetAllImagesInFolderAndSubFoldersCommand {  get => _filterGetAllImagesInFolderAndSubFoldersCommand; }
 
         public ReactiveCommand<decimal, Task> FilterImagesOnRatingCommand { get => _filterImagesOnRatingCommand; }
 
@@ -775,10 +775,10 @@ namespace ImagePerfect.ViewModels
 
         public ReactiveCommand<IList, Task> FilterImagesOnTagsCommand { get => _filterImagesOnTagsCommand; }
 
-        public ReactiveCommand<Unit, Task> UpdateImageDatesCommand { get => _updateImageDatesCommand; }
+        public ReactiveCommand<RxVoid, Task> UpdateImageDatesCommand { get => _updateImageDatesCommand; }
 
         //Folder Filter Commands
-        public ReactiveCommand<Unit, Task> FilterFoldersDateModifiedInCurrentDirectoryCommand { get => _filterFoldersDateModifiedInCurrentDirectoryCommand; }
+        public ReactiveCommand<RxVoid, Task> FilterFoldersDateModifiedInCurrentDirectoryCommand { get => _filterFoldersDateModifiedInCurrentDirectoryCommand; }
 
         public ReactiveCommand<string, Task> FilterFoldersInCurrentDirectoryByStartingLetterCommand { get => _filterFoldersInCurrentDirectoryByStartingLetterCommand; }
 
@@ -792,13 +792,13 @@ namespace ImagePerfect.ViewModels
 
         public ReactiveCommand<IList, Task> FilterFoldersOnDescriptionAndTagsCommand { get => _filterFoldersOnDescriptionAndTagsCommand; }
 
-        public ReactiveCommand<Unit, Task> GetAllFoldersWithNoImportedImagesCommand { get => _getAllFoldersWithNoImportedImagesCommand; }
+        public ReactiveCommand<RxVoid, Task> GetAllFoldersWithNoImportedImagesCommand { get => _getAllFoldersWithNoImportedImagesCommand; }
 
-        public ReactiveCommand<Unit, Task> GetAllFoldersWithMetadataNotScannedCommand { get => _getAllFoldersWithMetadataNotScannedCommand; }
+        public ReactiveCommand<RxVoid, Task> GetAllFoldersWithMetadataNotScannedCommand { get => _getAllFoldersWithMetadataNotScannedCommand; }
 
-        public ReactiveCommand<Unit, Task> GetAllFoldersWithoutCoversCommand { get => _getAllFoldersWithoutCoversCommand; }
+        public ReactiveCommand<RxVoid, Task> GetAllFoldersWithoutCoversCommand { get => _getAllFoldersWithoutCoversCommand; }
 
-        public ReactiveCommand<Unit, Task> GetAllFavoriteFoldersCommand { get => _getAllFavoriteFoldersCommand; }
+        public ReactiveCommand<RxVoid, Task> GetAllFavoriteFoldersCommand { get => _getAllFavoriteFoldersCommand; }
 
         //Settings Commands
         public ReactiveCommand<string, Task> PickImageWidthCommand { get => _pickImageWidthCommand; }
@@ -830,9 +830,9 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<ItemsControl, Task> BackUpFolderDescriptionToTextFileOnCurrentPageCommand { get => _backUpFolderDescriptionToTextFileOnCurrentPageCommand; }
 
         //Application Commands
-        public ReactiveCommand<Unit, Task> DeleteLibraryCommand { get => _deleteLibraryCommand; }
+        public ReactiveCommand<RxVoid, Task> DeleteLibraryCommand { get => _deleteLibraryCommand; }
 
-        public ReactiveCommand<Unit, Unit> ExitAppCommand { get => _exitAppCommand; }
+        public ReactiveCommand<RxVoid, RxVoid> ExitAppCommand { get => _exitAppCommand; }
 
         //should technically have its own repo but only plan on having only this one method just keeping it in images repo.
         public async Task GetTagsList(UnitOfWork? uow = null)
