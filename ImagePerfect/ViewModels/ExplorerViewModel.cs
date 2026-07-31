@@ -9,6 +9,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -192,6 +193,7 @@ namespace ImagePerfect.ViewModels
         }
         private async Task MapTagsToImagesAddToObservable()
         {
+            //Stopwatch sw = Stopwatch.StartNew();
             //DB pull displayImages in the correct order I want to keep it
             //Parallel.ForEachAsync does not iterate in order. Need order preserved. 
             //so iterate over the correct count and store the results in order -- correct slot/index.
@@ -206,6 +208,7 @@ namespace ImagePerfect.ViewModels
                     ImageViewModel imageViewModel = await ImageMapper.GetImageVm(taggedImage);
                     results[i] = imageViewModel;
                 });
+            //Debug.WriteLine(sw.ElapsedMilliseconds);
             List<ImageViewModel> temp = new List<ImageViewModel>(results);
             // This must be on the UI thread
             await Dispatcher.UIThread.InvokeAsync(() =>

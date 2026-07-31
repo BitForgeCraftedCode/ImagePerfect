@@ -14,6 +14,7 @@ namespace ImagePerfect.ObjectMappers
             {
                 ImageId = image.ImageId,
                 ImageBitmap = await ImageHelper.FormatImage(image.ImagePath),
+                //ImageBitmap = await ImageHelper.FormatImageNetVips(image.ImagePath),
                 ImagePath = image.ImagePath,
                 FileName = image.FileName,
                 ImageTags = MapTagsListToString(image.Tags),

@@ -19,6 +19,7 @@ namespace ImagePerfect.ObjectMappers
                 FolderPath = folder.FolderPath,
                 HasChildren = folder.HasChildren,
                 CoverImageBitmap = folder.CoverImagePath == "" ? ImageHelper.LoadFromResource(new Uri("avares://ImagePerfect/Assets/computer-folder-dual-tone-icon.png")) : await ImageHelper.FormatImage(folder.CoverImagePath),
+                //CoverImageBitmap = folder.CoverImagePath == "" ? ImageHelper.LoadFromResource(new Uri("avares://ImagePerfect/Assets/computer-folder-dual-tone-icon.png")) : await ImageHelper.FormatImageNetVips(folder.CoverImagePath),
                 CoverImagePath = folder.CoverImagePath,
                 FolderDescription = folder.FolderDescription,
                 FolderTags = MapTagsListToString(folder.Tags),
