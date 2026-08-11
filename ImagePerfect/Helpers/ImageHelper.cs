@@ -116,14 +116,6 @@ namespace ImagePerfect.Helpers
                 //this will fail if an image is corrupted or libvips cannot decode it
                 try
                 {
-                    //using var image = VipsImage.Thumbnail(path, 600);
-                    //using var orientedImage = image.Autorot();
-
-                    //var buffer = orientedImage.WriteToBuffer(".webp");
-
-                    //using var ms = new MemoryStream(buffer);
-                    //Bitmap img = new Bitmap(ms);
-                    //return img;
 
                     using var thumb = VipsImage.Thumbnail(path, 600);
                     using var oriented = thumb.Autorot();
