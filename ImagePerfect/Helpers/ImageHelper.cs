@@ -119,17 +119,17 @@ namespace ImagePerfect.Helpers
                     // libvips images are lazy pipelines -- nothing actually decodes/executes until
                     // you ask for output (e.g. WriteToMemory below). Each line here just extends
                     // the pipeline description; it's cheap.
-
                     using var thumb = VipsImage.Thumbnail(path, 600);
                     using var oriented = thumb.Autorot();
+                    using var sharpened = oriented.Sharpen(); // small, cheap, noticeably crisper thumbnails
 
                     // Avalonia's Bgra8888 format requires exactly 4 bands (B, G, R, A).
                     // Some source images (JPEGs, mostly) decode as 3 bands (just R,G,B) with no
                     // alpha channel at all. If that's the case, tack on a 4th band that's a
                     // constant 255 (fully opaque) so the pixel layout matches what Avalonia expects.
-                    using var rgba = oriented.Bands == 3
-                        ? oriented.Bandjoin(255)    // RGB -> RGBA, alpha = fully opaque
-                        : oriented;                 // already 4 bands (e.g. PNG with alpha), leave as-is
+                    using var rgba = sharpened.Bands == 3
+                        ? sharpened.Bandjoin(255)    // RGB -> RGBA, alpha = fully opaque
+                        : sharpened;                 // already 4 bands (e.g. PNG with alpha), leave as-is
 
                     // Reorder R,G,B,A -> B,G,R,A to match Avalonia's Bgra8888 layout
                     // libvips decodes pixels in R, G, B, A band order.

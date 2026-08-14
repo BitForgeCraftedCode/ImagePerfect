@@ -16,9 +16,10 @@ namespace ImagePerfect
         public static int Main(string[] args)
         {     
             ConfigureSerilog();
-       
+            
             try
             {
+                NetVips.NetVips.Concurrency = 2; // each vips op uses 2 thread internally; your outer Parallel.ForEachAsync provides the parallelism = 4 dont oversubscribe
                 Log.Information("ImagePerfect starting");
                 BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
                 Log.Information("ImagePerfect shutting down normally");

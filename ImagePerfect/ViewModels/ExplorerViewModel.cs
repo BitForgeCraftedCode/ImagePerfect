@@ -193,7 +193,7 @@ namespace ImagePerfect.ViewModels
         }
         private async Task MapTagsToImagesAddToObservable()
         {
-            //Stopwatch sw = Stopwatch.StartNew();
+            Stopwatch sw = Stopwatch.StartNew();
             //DB pull displayImages in the correct order I want to keep it
             //Parallel.ForEachAsync does not iterate in order. Need order preserved. 
             //so iterate over the correct count and store the results in order -- correct slot/index.
@@ -208,7 +208,7 @@ namespace ImagePerfect.ViewModels
                     ImageViewModel imageViewModel = await ImageMapper.GetImageVm(taggedImage);
                     results[i] = imageViewModel;
                 });
-            //Debug.WriteLine(sw.ElapsedMilliseconds);
+            Log.Information("Images Loaded ms " + sw.ElapsedMilliseconds);
             List<ImageViewModel> temp = new List<ImageViewModel>(results);
             // This must be on the UI thread
             await Dispatcher.UIThread.InvokeAsync(() =>
