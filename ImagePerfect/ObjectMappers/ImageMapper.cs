@@ -13,8 +13,8 @@ namespace ImagePerfect.ObjectMappers
             ImageViewModel imageVm = new()
             {
                 ImageId = image.ImageId,
-                ImageBitmap = await ImageHelper.FormatImage(image.ImagePath),
-                //ImageBitmap = await ImageHelper.FormatImageNetVips(image.ImagePath),
+                //ImageBitmap = await ImageHelper.FormatImage(image.ImagePath),
+                ImageBitmap = await ImageHelper.FormatImageNetVips(image.ImagePath),
                 ImagePath = image.ImagePath,
                 FileName = image.FileName,
                 ImageTags = MapTagsListToString(image.Tags),
