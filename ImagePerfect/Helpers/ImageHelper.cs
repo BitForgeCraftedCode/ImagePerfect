@@ -3,10 +3,8 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Runtime.InteropServices;
@@ -104,6 +102,7 @@ namespace ImagePerfect.Helpers
 
         //need to rotate portrait images and resize for screen
         //NetVips version of FormatImage for benchmarking against ImageSharp in parallel callers.
+        //NetVips version is proven to be faster although much more complex to understand. leaving the ImageSharp method above unused for now.
         public static async Task<Bitmap> FormatImageNetVips(string path)
         {
             if (File.Exists(path))
@@ -279,7 +278,7 @@ namespace ImagePerfect.Helpers
                             // Best case: Avalonia's internal buffer stride matches ours exactly
                             // (no padding on either side), so we can copy the whole thing in one go.
                             // Starting at index 0 of pixels, copy pixels.Length bytes total, writing them starting at address fb.Address.
-                            System.Runtime.InteropServices.Marshal.Copy(pixels, 0, fb.Address, pixels.Length);
+                            Marshal.Copy(pixels, 0, fb.Address, pixels.Length);
                         }
                         else
                         {
@@ -296,7 +295,7 @@ namespace ImagePerfect.Helpers
                             {
                                 //starting at index y * srcRowBytes (row) of pixels, copy srcRowBytes (row) bytes total, writing them starting at address fb.Address + y * fb.RowBytes
                                 //fb.Address + y * fb.RowBytes (address to start + how far into the buffer row y is) -> gets the actual real memory address of row y
-                                System.Runtime.InteropServices.Marshal.Copy(pixels, y * srcRowBytes, fb.Address + y * fb.RowBytes, srcRowBytes);
+                                Marshal.Copy(pixels, y * srcRowBytes, fb.Address + y * fb.RowBytes, srcRowBytes);
                             }
                         }
                     }
@@ -305,7 +304,6 @@ namespace ImagePerfect.Helpers
                 }
                 catch(Exception ex)
                 {
-                    Debug.WriteLine("NetVips failed: " + ex);
                     return LoadFromResource(new Uri("avares://ImagePerfect/Assets/missing_image.png"));
                 }
             }
