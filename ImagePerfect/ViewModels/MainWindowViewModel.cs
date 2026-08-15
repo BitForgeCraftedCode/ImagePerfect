@@ -78,6 +78,7 @@ namespace ImagePerfect.ViewModels
         private ReactiveCommand<ImageViewModel, Task> _editImageTagsCommand;
         private ReactiveCommand<ImageViewModel, Task> _addImageRatingCommand;
         private ReactiveCommand<Tag, Task> _removeTagOnAllImagesCommand;
+        private ReactiveCommand<Tag, Task> _editTagOnAllImagesCommand;
         private ReactiveCommand<ImageViewModel, Task> _openImageInExternalViewerCommand;
         private ReactiveCommand<ImageViewModel, Task> _moveImageToTrashCommand;
         private ReactiveCommand<IList, Task> _moveSelectedImagesToTrashCommand;
@@ -346,6 +347,9 @@ namespace ImagePerfect.ViewModels
             });
             _removeTagOnAllImagesCommand = ReactiveCommand.Create(async (Tag selectedTag) => {
                 await ModifyImageDataVm.RemoveTagOnAllImages(selectedTag);
+            });
+            _editTagOnAllImagesCommand = ReactiveCommand.Create(async (Tag selectedTag) => {
+                await ModifyImageDataVm.EditTagOnAllImages(selectedTag);
             });
             _openImageInExternalViewerCommand = ReactiveCommand.Create(async (ImageViewModel imageVm) => {
                 await ExternalProgramVm.OpenImageInExternalViewer(imageVm);
@@ -747,6 +751,8 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<ImageViewModel, Task> AddImageRatingCommand { get => _addImageRatingCommand; }
 
         public ReactiveCommand<Tag, Task> RemoveTagOnAllImagesCommand { get => _removeTagOnAllImagesCommand; }
+
+        public ReactiveCommand<Tag, Task> EditTagOnAllImagesCommand { get => _editTagOnAllImagesCommand; }
 
         public ReactiveCommand<ImageViewModel, Task> OpenImageInExternalViewerCommand { get => _openImageInExternalViewerCommand; }
 

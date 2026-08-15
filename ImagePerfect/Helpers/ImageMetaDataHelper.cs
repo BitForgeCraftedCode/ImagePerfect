@@ -56,6 +56,15 @@ namespace ImagePerfect.Helpers
             await WriteRatingToImage(imageSharpImage, image);
         }
 
+        public static async Task<bool> EditTagOnAllImages(List<ImagePerfectImage> images, Tag selectedTag)
+        {
+            List<ImagePerfectImage> sortedImages = images
+               .OrderBy(img => Path.GetDirectoryName(img.ImagePath))
+               .ThenBy(img => Path.GetFileName(img.ImagePath))
+               .ToList();
+
+            return true;
+        }
         public static async Task<bool> RemoveTagFromAllImages(List<ImagePerfectImage> images, Tag selectedTag)
         {
             /*

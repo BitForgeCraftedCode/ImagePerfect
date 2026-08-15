@@ -8,8 +8,10 @@ using MsBox.Avalonia;
 using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Models;
 using MySqlConnector;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,6 +24,7 @@ namespace ImagePerfect.ViewModels
         private readonly MySqlDataSource _dataSource;
         private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
+        private string _textForEditTagOnAllImages = string.Empty;
         public ModifyImageDataViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel) 
 		{
             _dataSource = dataSource;
@@ -29,6 +32,11 @@ namespace ImagePerfect.ViewModels
             _mainWindowViewModel = mainWindowViewModel;
         }
 
+        public string TextForEditTagOnAllImages
+        {
+            get => _textForEditTagOnAllImages;
+            set => this.RaiseAndSetIfChanged(ref _textForEditTagOnAllImages, value);
+        }
         //update image sql and metadata only. 
         public async Task UpdateImage(ImageViewModel imageVm, string fieldUpdated)
         {
@@ -142,6 +150,60 @@ namespace ImagePerfect.ViewModels
             }
         }
 
+        public async Task EditTagOnAllImages(Tag selectedTag)
+        {
+            //no tag selected or no edited text for new tag just return
+            if (selectedTag == null || string.IsNullOrEmpty(TextForEditTagOnAllImages))
+                return;
+
+            var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
+                new MessageBoxCustomParams
+                {
+                    ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Yes", },
+                            new ButtonDefinition { Name = "No", },
+                        },
+                    ContentTitle = "Edit Tag",
+                    ContentMessage = $"CAUTION you are about to edit tag {selectedTag.TagName} to {TextForEditTagOnAllImages} this could take a long time are you sure?",
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                    MinWidth = 500  // optional, so it doesn’t wrap too soon
+                }
+            );
+            var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
+            if (boxResult != "Yes")
+                return;
+
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            ImageMethods imageMethods = new ImageMethods(uow);
+
+            _mainWindowViewModel.ShowLoading = true;
+            try
+            {
+                //select all images from db with tag get as List<Image>
+                (List<Image> images, List<ImageTag> tags) imageTagResult = await imageMethods.GetAllImagesWithTags(new List<string> { selectedTag.TagName }, false, _mainWindowViewModel.ExplorerVm.CurrentDirectory);
+                List<Image> taggedImages = imageTagResult.images;
+                //no taggedImages returned just exit
+                if (taggedImages == null || taggedImages.Count == 0)
+                    return;
+
+
+                //pass those images to method that edits the tag on physical image metadata
+                bool success = await ImageMetaDataHelper.EditTagOnAllImages(taggedImages, selectedTag);
+                //if thats a success edit from data base
+                if (success)
+                {
+                    
+                    //Update TagsList to show in UI
+                    await _mainWindowViewModel.GetTagsList(uow);
+                }
+            }
+            finally
+            {
+                _mainWindowViewModel.ShowLoading = false;
+            }
+        }
         public async Task RemoveTagOnAllImages(Tag selectedTag)
         {
             //nothing selected just return
@@ -174,14 +236,14 @@ namespace ImagePerfect.ViewModels
             {
                 //select all images from db with tag get as List<Image>
                 (List<Image> images, List<ImageTag> tags) imageTagResult = await imageMethods.GetAllImagesWithTags(new List<string> { selectedTag.TagName }, false, _mainWindowViewModel.ExplorerVm.CurrentDirectory);
-                List<Image> taggedImags = imageTagResult.images;
+                List<Image> taggedImages = imageTagResult.images;
                 //no taggedImages returned just exit
-                if (taggedImags == null || taggedImags.Count == 0)
+                if (taggedImages == null || taggedImages.Count == 0)
                     return;
                         
 
                 //pass those images to method that removes the tag from physical image metadata
-                bool success = await ImageMetaDataHelper.RemoveTagFromAllImages(taggedImags, selectedTag);
+                bool success = await ImageMetaDataHelper.RemoveTagFromAllImages(taggedImages, selectedTag);
                 //if thats a success remove from data base
                 if (success)
                 {
