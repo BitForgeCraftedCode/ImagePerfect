@@ -102,12 +102,13 @@ namespace ImagePerfect.Helpers
 
         }
 
+        //need to rotate portrait images and resize for screen
         //NetVips version of FormatImage for benchmarking against ImageSharp in parallel callers.
         public static async Task<Bitmap> FormatImageNetVips(string path)
         {
             if (File.Exists(path))
             {
-                //any file that starts with a . will cause an ImageSharp error -- need filename here not path
+                //any file that starts with a . will cause an error -- need filename here not path
                 if (PathHelper.GetFileNameFromImagePath(path).StartsWith("."))
                 {
                     return LoadFromResource(new Uri("avares://ImagePerfect/Assets/missing_image.png"));
@@ -143,7 +144,7 @@ namespace ImagePerfect.Helpers
                     using var bgra = rgba[2].Bandjoin(rgba[1], rgba[0], rgba[3]);
 
                     // This is where the pipeline actually executes. WriteToMemory<byte> forces
-                    // libvips to run everything queued above (thumbnail, autorot, band reorder)
+                    // libvips to run everything queued above (thumbnail, autorot, sharpen, band reorder)
                     // and hand back a flat byte array: lengthArray = width * height * 4 bytes, tightly packed, 4bytes is the bgra
                     // row after row, no padding between rows.
                     // In C#, a byte array (byte[]) is a fixed-size, sequential collection of 8-bit unsigned integers that can hold values ranging from 0 to 255
