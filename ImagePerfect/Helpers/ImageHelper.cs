@@ -225,6 +225,27 @@ namespace ImagePerfect.Helpers
                     // libvips treats the alpha channel independently (Straight Alpha) for PNGs and adds a solid alpha channel for JPEGs.
                     // Avalonia will handle the internal conversion to premultiplied alpha on its own.
 
+                    // AlphaFormat tells Avalonia how to INTERPRET the RGB values relative to alpha —
+                    // it does not trigger any conversion itself. Avalonia trusts this label as fact.
+                    //
+                    // Our pixel data is "straight" alpha: libvips (and virtually all decoders) hand back
+                    // R,G,B at full original strength, completely independent of the alpha value.
+                    // E.g. a 50%-transparent red pixel is R=255,G=0,B=0,A=128 -- NOT dimmed down.
+                    // We never multiplied any color value by alpha anywhere in this pipeline
+                    // (Bandjoin(255) just appends a flat opaque alpha for 3-band/JPEG sources;
+                    // it doesn't touch R,G,B at all).
+                    //
+                    // Premultiplied alpha is a DIFFERENT set of numbers, where RGB is pre-scaled by
+                    // alpha before storage (R' = R * A/255). Some renderers prefer it for cheaper
+                    // compositing math, but it's not what decoders give you.
+                    //
+                    // Unpremul here means: "these bytes are straight alpha" -- an accurate label,
+                    // not a request. If we mislabeled this as Premul while the data is actually
+                    // straight, Avalonia would double-apply alpha scaling internally, and
+                    // semi-transparent PNGs would render too bright/washed out at their edges
+                    // (fully opaque pixels are unaffected, since scaling by 255/255 = 1 is a no-op --
+                    // which is why this class of bug hides easily and only shows up on transparent PNGs).
+
                     // Create an empty writable bitmap of the right size/format for Avalonia to render.
                     // Unpremul = "straight" alpha (RGB values aren't pre-multiplied by alpha),
                     // which is how libvips (and most decoders) hand back pixel data.
