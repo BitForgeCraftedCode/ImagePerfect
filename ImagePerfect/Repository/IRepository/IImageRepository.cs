@@ -27,6 +27,7 @@ namespace ImagePerfect.Repository.IRepository
         Task<bool> DeleteSelectedImages(string sql);
         Task<bool> MoveSelectedImageToNewFolder(string sql);
         Task<bool> RemoveTagOnAllImages(Tag selectedTag);
+        Task<bool> EditTagOnAllImages(Tag selectedTag, string newTag);
         Task<int> GetTotalImages();
         Task UpdateImageDates();
         Task<ImageDatesViewModel> GetImageDates();

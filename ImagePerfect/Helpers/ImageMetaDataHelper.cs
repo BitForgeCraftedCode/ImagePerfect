@@ -56,12 +56,23 @@ namespace ImagePerfect.Helpers
             await WriteRatingToImage(imageSharpImage, image);
         }
 
-        public static async Task<bool> EditTagOnAllImages(List<ImagePerfectImage> images, Tag selectedTag)
+        public static async Task<bool> EditTagOnAllImages(List<ImagePerfectImage> images, Tag selectedTag, string newTag)
         {
             List<ImagePerfectImage> sortedImages = images
                .OrderBy(img => Path.GetDirectoryName(img.ImagePath))
                .ThenBy(img => Path.GetFileName(img.ImagePath))
                .ToList();
+
+                //remove tag from all images
+                //should be able to use RemoveTagFromAllImages() method below
+
+
+                //add new tag to all images
+                //perhaps we can use WriteKeywordToImage() and call that method in a parallel foreach?
+
+
+                //or maybe make EditTagOnAllImages() simiar to RemoveTagFromAllImages but just have it call WriteKeywordToImage() within the parallel foreach 
+                //so basically do the above two steps but within the body of this method
 
             return true;
         }

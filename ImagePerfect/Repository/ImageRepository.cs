@@ -410,6 +410,13 @@ namespace ImagePerfect.Repository
             await txn.CommitAsync();
             return rowsEffectedA + rowsEffectedB >= 1 ? true : false;
         }
+
+        public async Task<bool> EditTagOnAllImages(Tag selectedTag, string newTag)
+        {
+            //should just be able to update tags table where TagId == selectedTag.TagId SET TagName == newTag
+            //actually this will also Edit the tag on all folders as well. Guess my method name are a bit misleading... 
+            return true;
+        }
         public async Task<int> GetTotalImages()
         {
             string sql = @"SELECT COUNT(*) FROM images";

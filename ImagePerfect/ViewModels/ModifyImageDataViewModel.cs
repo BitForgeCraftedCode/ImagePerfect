@@ -190,11 +190,11 @@ namespace ImagePerfect.ViewModels
 
 
                 //pass those images to method that edits the tag on physical image metadata
-                bool success = await ImageMetaDataHelper.EditTagOnAllImages(taggedImages, selectedTag);
+                bool success = await ImageMetaDataHelper.EditTagOnAllImages(taggedImages, selectedTag, TextForEditTagOnAllImages);
                 //if thats a success edit from data base
                 if (success)
                 {
-                    
+                    await imageMethods.EditTagOnAllImages(selectedTag, TextForEditTagOnAllImages);
                     //Update TagsList to show in UI
                     await _mainWindowViewModel.GetTagsList(uow);
                 }
