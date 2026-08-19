@@ -63,18 +63,22 @@ namespace ImagePerfect.Helpers
                .ThenBy(img => Path.GetFileName(img.ImagePath))
                .ToList();
 
-                //remove tag from all images
-                //should be able to use RemoveTagFromAllImages() method below
+            int anyFail = 0;
+            await Parallel.ForEachAsync(sortedImages, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async (img, ct) => {
+                try
+                {
+                    using ImageSharp.Image imageSharpImage = await ImageSharp.Image.LoadAsync(img.ImagePath, ct);
+                    bool success = await EditTag(imageSharpImage, img, selectedTag, newTag);
+                    if (!success)
+                        Interlocked.Exchange(ref anyFail, 1);
+                }
+                catch
+                {
+                    Interlocked.Exchange(ref anyFail, 1);
+                }
+            });
 
-
-                //add new tag to all images
-                //perhaps we can use WriteKeywordToImage() and call that method in a parallel foreach?
-
-
-                //or maybe make EditTagOnAllImages() simiar to RemoveTagFromAllImages but just have it call WriteKeywordToImage() within the parallel foreach 
-                //so basically do the above two steps but within the body of this method
-
-            return true;
+            return anyFail == 0;
         }
         public static async Task<bool> RemoveTagFromAllImages(List<ImagePerfectImage> images, Tag selectedTag)
         {
@@ -266,6 +270,51 @@ namespace ImagePerfect.Helpers
             //File.Move(tempPath, originalPath);
         }
 
+        private static async Task<bool> EditTag(ImageSharp.Image image, ImagePerfectImage imagePerfectImage, Tag selectedTag, string newTag)
+        {
+            if (image.Metadata.IptcProfile == null)
+                image.Metadata.IptcProfile = new IptcProfile();
+
+            string originalPath = imagePerfectImage.ImagePath;
+            string backupPath = Path.ChangeExtension(originalPath, ".bak" + Path.GetExtension(originalPath));
+
+            try
+            {
+                File.Copy(originalPath, backupPath, overwrite: true);
+
+                List<string> keywords = image.Metadata.IptcProfile.Values
+                    .Where(v => v.Tag == IptcTag.Keywords)
+                    .Select(v => v.Value)
+                    .Where(v => !string.IsNullOrWhiteSpace(v))
+                    .Select(v => string.Equals(v.Trim(), selectedTag.TagName.Trim(), StringComparison.Ordinal) ? newTag : v.Trim())
+                    .Distinct()
+                    .ToList();
+
+                if (!keywords.Any(k => string.Equals(k, newTag, StringComparison.Ordinal)))
+                    keywords.Add(newTag);
+
+                image.Metadata.IptcProfile.RemoveValue(IptcTag.Keywords);
+                foreach (string keyword in keywords)
+                {
+                    image.Metadata.IptcProfile.SetValue(IptcTag.Keywords, keyword);
+                }
+
+                await image.SaveAsync(originalPath);
+
+                if (File.Exists(backupPath))
+                    File.Delete(backupPath);
+                return true;
+            }
+            catch
+            {
+                if (File.Exists(backupPath))
+                {
+                    File.Copy(backupPath, originalPath, overwrite: true);
+                    File.Delete(backupPath);
+                }
+                return false;
+            }
+        }
         private static async Task<bool> RemoveTag(ImageSharp.Image image, ImagePerfectImage imagePerfectImage, Tag selectedTag)
         {
             if (image.Metadata.IptcProfile == null)

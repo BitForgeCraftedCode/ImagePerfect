@@ -152,8 +152,9 @@ namespace ImagePerfect.ViewModels
 
         public async Task EditTagOnAllImages(Tag selectedTag)
         {
+            string newTag = TextForEditTagOnAllImages?.Trim() ?? string.Empty;
             //no tag selected or no edited text for new tag just return
-            if (selectedTag == null || string.IsNullOrEmpty(TextForEditTagOnAllImages))
+            if (selectedTag == null || string.IsNullOrEmpty(newTag) || string.Equals(selectedTag.TagName, newTag, StringComparison.Ordinal))
                 return;
 
             var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
@@ -165,7 +166,7 @@ namespace ImagePerfect.ViewModels
                             new ButtonDefinition { Name = "No", },
                         },
                     ContentTitle = "Edit Tag",
-                    ContentMessage = $"CAUTION you are about to edit tag {selectedTag.TagName} to {TextForEditTagOnAllImages} this could take a long time are you sure?",
+                    ContentMessage = $"CAUTION you are about to edit tag {selectedTag.TagName} to {newTag} this could take a long time are you sure?",
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
                     SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
                     MinWidth = 500  // optional, so it doesn’t wrap too soon
@@ -190,13 +191,17 @@ namespace ImagePerfect.ViewModels
 
 
                 //pass those images to method that edits the tag on physical image metadata
-                bool success = await ImageMetaDataHelper.EditTagOnAllImages(taggedImages, selectedTag, TextForEditTagOnAllImages);
+                bool success = await ImageMetaDataHelper.EditTagOnAllImages(taggedImages, selectedTag, newTag);
                 //if thats a success edit from data base
                 if (success)
                 {
-                    await imageMethods.EditTagOnAllImages(selectedTag, TextForEditTagOnAllImages);
-                    //Update TagsList to show in UI
-                    await _mainWindowViewModel.GetTagsList(uow);
+                    bool dbSuccess = await imageMethods.EditTagOnAllImages(selectedTag, newTag);
+                    if (dbSuccess)
+                    {
+                        TextForEditTagOnAllImages = string.Empty;
+                        //Update TagsList to show in UI
+                        await _mainWindowViewModel.GetTagsList(uow);
+                    }
                 }
             }
             finally

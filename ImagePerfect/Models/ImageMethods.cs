@@ -117,7 +117,7 @@ namespace ImagePerfect.Models
 
         public async Task<bool> EditTagOnAllImages(Tag selectedTag, string newTag)
         {
-
+            return await _unitOfWork.Image.EditTagOnAllImages(selectedTag, newTag);
         }
 
         public async Task<int> GetTotalImages()
