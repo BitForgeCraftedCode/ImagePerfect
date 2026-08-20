@@ -411,9 +411,10 @@ namespace ImagePerfect.Repository
             return rowsEffectedA + rowsEffectedB >= 1 ? true : false;
         }
 
-        public async Task<bool> EditTagOnAllImages(Tag selectedTag, string newTag)
+        public async Task<bool> EditTagOnAllImagesAndFolders(Tag selectedTag, string newTag)
         {
-            //actually this will also Edit the tag on all folders as well. Guess my method name are a bit misleading... 
+            //tags table contains tags for images and folders they are connected with joins tables for images and folders
+            //thus this will also Edit the tag on all folders 
             string sql = @"UPDATE tags set TagName = @newTag WHERE TagId = @tagId";
             int rowsAffected = await _connection.ExecuteAsync(sql, new { newTag = newTag, tagId = selectedTag.TagId });
             return rowsAffected > 0;

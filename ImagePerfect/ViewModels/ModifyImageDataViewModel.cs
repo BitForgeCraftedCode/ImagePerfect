@@ -24,7 +24,7 @@ namespace ImagePerfect.ViewModels
         private readonly MySqlDataSource _dataSource;
         private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
-        private string _textForEditTagOnAllImages = string.Empty;
+        private string _textForEditTagOnAllImagesAndFolders = string.Empty;
         public ModifyImageDataViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel) 
 		{
             _dataSource = dataSource;
@@ -32,10 +32,10 @@ namespace ImagePerfect.ViewModels
             _mainWindowViewModel = mainWindowViewModel;
         }
 
-        public string TextForEditTagOnAllImages
+        public string TextForEditTagOnAllImagesAndFolders
         {
-            get => _textForEditTagOnAllImages;
-            set => this.RaiseAndSetIfChanged(ref _textForEditTagOnAllImages, value);
+            get => _textForEditTagOnAllImagesAndFolders;
+            set => this.RaiseAndSetIfChanged(ref _textForEditTagOnAllImagesAndFolders, value);
         }
         //update image sql and metadata only. 
         public async Task UpdateImage(ImageViewModel imageVm, string fieldUpdated)
@@ -150,13 +150,41 @@ namespace ImagePerfect.ViewModels
             }
         }
 
-        public async Task EditTagOnAllImages(Tag selectedTag)
+        //even though this edits tags on images and folders i made the choice to keep in ModifyImageDataViewModel because this
+        //also edits the physical image file meta data. Updating the TagName in tags table is what updates the tag for folders that is a simple operation and most of the complex work is image realated
+        public async Task EditTagOnAllImagesAndFolders(Tag selectedTag)
         {
-            string newTag = TextForEditTagOnAllImages?.Trim() ?? string.Empty;
-            //no tag selected or no edited text for new tag just return
-            if (selectedTag == null || string.IsNullOrEmpty(newTag) || string.Equals(selectedTag.TagName, newTag, StringComparison.Ordinal))
+            string newTag = TextForEditTagOnAllImagesAndFolders?.Trim() ?? string.Empty;
+            //no tag selected or no edited text for new tag or new tag equals old tag just return
+            if (selectedTag == null || string.IsNullOrEmpty(newTag) || string.Equals(selectedTag.TagName.Trim(), newTag, StringComparison.Ordinal))
                 return;
 
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            ImageMethods imageMethods = new ImageMethods(uow);
+            FolderMethods folderMethods = new FolderMethods(uow);
+
+            //make sure new tag is not already in tags table as TagName is unique in sql tags table
+            //db method will fail if i try to update a tag to a tagname that already exists
+            List<Tag> tags = await imageMethods.GetTagsList();
+            if (tags.Any(t => t.TagName == newTag))
+            {
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = $"Edit Tag",
+                        ContentMessage = $"Edited tag cannot have the same name as an existing tag.",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
+                return;
+            }
+             
             var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
                 new MessageBoxCustomParams
                 {
@@ -174,10 +202,7 @@ namespace ImagePerfect.ViewModels
             );
             var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
             if (boxResult != "Yes")
-                return;
-
-            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
-            ImageMethods imageMethods = new ImageMethods(uow);
+                return;            
 
             _mainWindowViewModel.ShowLoading = true;
             try
@@ -185,8 +210,24 @@ namespace ImagePerfect.ViewModels
                 //select all images from db with tag get as List<Image>
                 (List<Image> images, List<ImageTag> tags) imageTagResult = await imageMethods.GetAllImagesWithTags(new List<string> { selectedTag.TagName }, false, _mainWindowViewModel.ExplorerVm.CurrentDirectory);
                 List<Image> taggedImages = imageTagResult.images;
+                //select all folders from db with tag
+                (List<Folder> folders, List<FolderTag> tags) folderTagResult = await folderMethods.GetAllFoldersWithTags(new List<string> { selectedTag.TagName }, false, _mainWindowViewModel.ExplorerVm.CurrentDirectory);
+                List<Folder> taggedFolders = folderTagResult.folders;
+
+                //no taggedImages but folders has tags -- edit db for folders
+                if(taggedImages.Count == 0 && taggedFolders.Count > 0)
+                {
+                    bool dbSuccess = await imageMethods.EditTagOnAllImagesAndFolders(selectedTag, newTag);
+                    if (dbSuccess)
+                    {
+                        TextForEditTagOnAllImagesAndFolders = string.Empty;
+                        //Update TagsList to show in UI
+                        await _mainWindowViewModel.GetTagsList(uow);
+                    }
+                    return;
+                }
                 //no taggedImages returned just exit
-                if (taggedImages == null || taggedImages.Count == 0)
+                if (taggedImages.Count == 0)
                     return;
 
 
@@ -195,10 +236,10 @@ namespace ImagePerfect.ViewModels
                 //if thats a success edit from data base
                 if (success)
                 {
-                    bool dbSuccess = await imageMethods.EditTagOnAllImages(selectedTag, newTag);
+                    bool dbSuccess = await imageMethods.EditTagOnAllImagesAndFolders(selectedTag, newTag);
                     if (dbSuccess)
                     {
-                        TextForEditTagOnAllImages = string.Empty;
+                        TextForEditTagOnAllImagesAndFolders = string.Empty;
                         //Update TagsList to show in UI
                         await _mainWindowViewModel.GetTagsList(uow);
                     }

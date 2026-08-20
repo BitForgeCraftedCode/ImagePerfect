@@ -203,10 +203,10 @@
 					</Button>
 				</StackPanel>
 				<StackPanel Orientation="Horizontal" Grid.Row="2" Grid.Column="0" HorizontalAlignment="Center">
-					<TextBox Margin="5" MaxLength="200" Width="200" Text="{Binding ModifyImageDataVm.TextForEditTagOnAllImages}"/>
+					<TextBox Margin="5" MaxLength="200" Width="200" Text="{Binding ModifyImageDataVm.TextForEditTagOnAllImagesAndFolders}"/>
 					<Button Margin="5"
 							ToolTip.Tip="Will edit The Selected Tag on All Images And Folders Across The Entire Database."
-							Command="{Binding EditTagOnAllImagesCommand}" 
+							Command="{Binding EditTagOnAllImagesAndFoldersCommand}" 
 							CommandParameter="{Binding SelectedItem, ElementName=SelectedTag}"
 							Classes="btn-danger">
 						Edit Tag On All Images And Folders

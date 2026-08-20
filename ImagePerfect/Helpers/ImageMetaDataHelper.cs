@@ -280,33 +280,38 @@ namespace ImagePerfect.Helpers
 
             try
             {
+                //Create a backup
                 File.Copy(originalPath, backupPath, overwrite: true);
-
-                List<string> keywords = image.Metadata.IptcProfile.Values
-                    .Where(v => v.Tag == IptcTag.Keywords)
-                    .Select(v => v.Value)
-                    .Where(v => !string.IsNullOrWhiteSpace(v))
-                    .Select(v => string.Equals(v.Trim(), selectedTag.TagName.Trim(), StringComparison.Ordinal) ? newTag : v.Trim())
-                    .Distinct()
+                //get tags from physical image and replaces oldTag with newTag
+                string oldTag = selectedTag.TagName.Trim();
+                List<string> keywords = image.Metadata.IptcProfile.Values //Get all IPTC metadata values
+                    .Where(v => v.Tag == IptcTag.Keywords) //Keep only values whose tag is Keywords
+                    .Select(v => v.Value.Trim()) //Extract the actual string value
+                    .Where(v => !string.IsNullOrWhiteSpace(v)) //Ignore empty values
+                    .Select(v => string.Equals(v, oldTag, StringComparison.Ordinal) ? newTag : v) //If the keyword is the tag you're replacing, change it to newTag
+                    .Distinct(StringComparer.Ordinal) //Remove duplicates
                     .ToList();
-
+                // If newTag isn't already in the list, add it.
+                // This is a fail-safe in case the DB and physical image metadata are out of sync.
                 if (!keywords.Any(k => string.Equals(k, newTag, StringComparison.Ordinal)))
                     keywords.Add(newTag);
-
+                //remove all from physical image
                 image.Metadata.IptcProfile.RemoveValue(IptcTag.Keywords);
+                //re-add to physical image with new tag
                 foreach (string keyword in keywords)
                 {
                     image.Metadata.IptcProfile.SetValue(IptcTag.Keywords, keyword);
                 }
 
                 await image.SaveAsync(originalPath);
-
+                //delete backup
                 if (File.Exists(backupPath))
                     File.Delete(backupPath);
                 return true;
             }
             catch
             {
+                //Restore backup if save failed
                 if (File.Exists(backupPath))
                 {
                     File.Copy(backupPath, originalPath, overwrite: true);
