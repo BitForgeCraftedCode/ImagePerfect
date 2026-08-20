@@ -24,7 +24,7 @@ namespace ImagePerfect.Repository
         {
             string tableName = GetTableName();
             string sql = $"SELECT * FROM {tableName}";
-            List<T> allDbRows = (List<T>)await _connection.QueryAsync<T>(sql);
+            List<T> allDbRows = (await _connection.QueryAsync<T>(sql)).ToList();
             return allDbRows;
         }
 
@@ -32,7 +32,7 @@ namespace ImagePerfect.Repository
         {
             string tableName = GetTableName();
             string sql = $"SELECT * FROM {tableName} WHERE {column} = @Parameter";
-            List<T> allDbRows = (List<T>)await _connection.QueryAsync<T>(sql, new { Parameter = value });
+            List<T> allDbRows = (await _connection.QueryAsync<T>(sql, new { Parameter = value })).ToList();
             return allDbRows;
         }
         public async Task<T> GetById(int? id)

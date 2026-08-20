@@ -43,11 +43,11 @@ namespace ImagePerfect.Repository
             await conn.OpenAsync();
             await using MySqlTransaction txn = await conn.BeginTransactionAsync();
             string sql1 = $@"SELECT * FROM images WHERE FolderId = @folderId ORDER BY FileName {order}";
-            List<Image> allImagesInFolder = (List<Image>)await conn.QueryAsync<Image>(sql1, new { folderId }, transaction: txn);
+            List<Image> allImagesInFolder = (await conn.QueryAsync<Image>(sql1, new { folderId }, transaction: txn)).ToList();
             string sql2 = $@"SELECT tags.TagId, tags.TagName, images.ImageId FROM images
                             JOIN image_tags_join ON image_tags_join.ImageId = images.ImageId
                             JOIN tags ON image_tags_join.TagId = tags.TagId WHERE images.FolderId = @folderId ORDER BY images.FileName {order};";
-            List<ImageTag> tags = (List<ImageTag>)await conn.QueryAsync<ImageTag>(sql2, new { folderId }, transaction: txn);
+            List<ImageTag> tags = (await conn.QueryAsync<ImageTag>(sql2, new { folderId }, transaction: txn)).ToList();
             await txn.CommitAsync();
             await conn.CloseAsync();
             return (allImagesInFolder, tags);
@@ -59,11 +59,11 @@ namespace ImagePerfect.Repository
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
 
             string sql1 = $@"SELECT * FROM images WHERE ImageFolderPath = @folderPath ORDER BY FileName {order}";
-            List<Image> allImagesInFolder = (List<Image>)await _connection.QueryAsync<Image>(sql1, new { folderPath }, transaction: txn);
+            List<Image> allImagesInFolder = (await _connection.QueryAsync<Image>(sql1, new { folderPath }, transaction: txn)).ToList();
             string sql2 = $@"SELECT tags.TagId, tags.TagName, images.ImageId FROM images
                             JOIN image_tags_join ON image_tags_join.ImageId = images.ImageId
                             JOIN tags ON image_tags_join.TagId = tags.TagId WHERE images.ImageFolderPath = @folderPath ORDER BY images.FileName {order};";
-            List<ImageTag> tags = (List<ImageTag>)await _connection.QueryAsync<ImageTag>(sql2, new { folderPath }, transaction: txn);
+            List<ImageTag> tags = (await _connection.QueryAsync<ImageTag>(sql2, new { folderPath }, transaction: txn)).ToList();
             await txn.CommitAsync();
             return (allImagesInFolder, tags);
         }
@@ -74,11 +74,11 @@ namespace ImagePerfect.Repository
             string path = PathHelper.FormatPathForLikeOperator(folderPath);
 
             string sql1 = @"SELECT * FROM images WHERE ImageFolderPath = @folderPath OR ImageFolderPath LIKE @path ORDER BY ImageFolderPath, FileName";
-            List<Image> allImagesInFolder = (List<Image>)await _connection.QueryAsync<Image>(sql1, new { folderPath, path }, transaction: txn);
+            List<Image> allImagesInFolder = (await _connection.QueryAsync<Image>(sql1, new { folderPath, path }, transaction: txn)).ToList();
             string sql2 = @"SELECT tags.TagId, tags.TagName, images.ImageId FROM images
                             JOIN image_tags_join ON image_tags_join.ImageId = images.ImageId
                             JOIN tags ON image_tags_join.TagId = tags.TagId WHERE images.ImageFolderPath = @folderPath OR images.ImageFolderPath LIKE @path ORDER BY images.ImageFolderPath, images.FileName;";
-            List<ImageTag> tags = (List<ImageTag>)await _connection.QueryAsync<ImageTag>(sql2, new { folderPath, path }, transaction: txn);
+            List<ImageTag> tags = (await _connection.QueryAsync<ImageTag>(sql2, new { folderPath, path }, transaction: txn)).ToList();
             await txn.CommitAsync();
             return (allImagesInFolder, tags);
         }
@@ -103,8 +103,8 @@ namespace ImagePerfect.Repository
                             JOIN image_tags_join ON image_tags_join.ImageId = images.ImageId
                             JOIN tags ON image_tags_join.TagId = tags.TagId WHERE images.ImageRating = @rating ORDER BY images.ImageFolderPath, images.FileName;";
             }
-            List<Image> allImagesAtRating = (List<Image>)await _connection.QueryAsync<Image>(sql1, new { rating, path }, transaction: txn);           
-            List<ImageTag> tags = (List<ImageTag>)await _connection.QueryAsync<ImageTag>(sql2, new { rating, path }, transaction: txn);
+            List<Image> allImagesAtRating = (await _connection.QueryAsync<Image>(sql1, new { rating, path }, transaction: txn)).ToList();           
+            List<ImageTag> tags = (await _connection.QueryAsync<ImageTag>(sql2, new { rating, path }, transaction: txn)).ToList();
             await txn.CommitAsync();
             return (allImagesAtRating, tags);
         }
@@ -129,8 +129,8 @@ namespace ImagePerfect.Repository
                             JOIN image_tags_join ON image_tags_join.ImageId = images.ImageId
                             JOIN tags ON image_tags_join.TagId = tags.TagId WHERE images.DateTakenYear = @year ORDER BY images.ImageFolderPath, images.FileName;";
             }
-            List<Image> allImagesAtYear = (List<Image>)await _connection.QueryAsync<Image>(sql1, new { year, path }, transaction: txn);
-            List<ImageTag> tags = (List<ImageTag>)await _connection.QueryAsync<ImageTag>(sql2, new { year, path }, transaction: txn);
+            List<Image> allImagesAtYear = (await _connection.QueryAsync<Image>(sql1, new { year, path }, transaction: txn)).ToList();
+            List<ImageTag> tags = (await _connection.QueryAsync<ImageTag>(sql2, new { year, path }, transaction: txn)).ToList();
             await txn.CommitAsync();
             return (allImagesAtYear, tags);
         }
@@ -155,8 +155,8 @@ namespace ImagePerfect.Repository
                             JOIN image_tags_join ON image_tags_join.ImageId = images.ImageId
                             JOIN tags ON image_tags_join.TagId = tags.TagId WHERE images.DateTakenYear = @year AND images.DateTakenMonth = @month ORDER BY images.ImageFolderPath, images.FileName;";
             }
-            List<Image> allImagesAtYearMonth = (List<Image>)await _connection.QueryAsync<Image>(sql1, new { year, month, path }, transaction: txn);
-            List<ImageTag> tags = (List<ImageTag>)await _connection.QueryAsync<ImageTag>(sql2, new { year, month, path }, transaction: txn);
+            List<Image> allImagesAtYearMonth = (await _connection.QueryAsync<Image>(sql1, new { year, month, path }, transaction: txn)).ToList();
+            List<ImageTag> tags = (await _connection.QueryAsync<ImageTag>(sql2, new { year, month, path }, transaction: txn)).ToList();
             await txn.CommitAsync();
             return (allImagesAtYearMonth, tags);
         }
@@ -181,8 +181,8 @@ namespace ImagePerfect.Repository
                             JOIN image_tags_join ON image_tags_join.ImageId = images.ImageId
                             JOIN tags ON image_tags_join.TagId = tags.TagId WHERE images.DateTaken BETWEEN @startDate AND @endDate ORDER BY images.ImageFolderPath, images.FileName;";
             }
-            List<Image> allImagesInDateRange = (List<Image>)await _connection.QueryAsync<Image>(sql1, new { startDate = startDate.Date, endDate = endDate.Date, path }, transaction: txn);
-            List<ImageTag> tags = (List<ImageTag>)await _connection.QueryAsync<ImageTag>(sql2, new { startDate = startDate.Date, endDate = endDate.Date, path }, transaction: txn);
+            List<Image> allImagesInDateRange = (await _connection.QueryAsync<Image>(sql1, new { startDate = startDate.Date, endDate = endDate.Date, path }, transaction: txn)).ToList();
+            List<ImageTag> tags = (await _connection.QueryAsync<ImageTag>(sql2, new { startDate = startDate.Date, endDate = endDate.Date, path }, transaction: txn)).ToList();
             await txn.CommitAsync();
             return (allImagesInDateRange, tags);
         }
@@ -217,8 +217,8 @@ namespace ImagePerfect.Repository
                             JOIN tags ON image_tags_join.TagId = tags.TagId ORDER BY images.ImageFolderPath, images.FileName;";
             }
 
-            List<Image> allImagesWithTag = (List<Image>)await _connection.QueryAsync<Image>(sql1, new { tagNames, path, requiredCount }, transaction: txn);
-            List<ImageTag> tags = (List<ImageTag>)await _connection.QueryAsync<ImageTag>(sql2, new { path }, transaction: txn);
+            List<Image> allImagesWithTag = (await _connection.QueryAsync<Image>(sql1, new { tagNames, path, requiredCount }, transaction: txn)).ToList();
+            List<ImageTag> tags = (await _connection.QueryAsync<ImageTag>(sql2, new { path }, transaction: txn)).ToList();
             await txn.CommitAsync();
             return (allImagesWithTag, tags);
         }
@@ -226,7 +226,7 @@ namespace ImagePerfect.Repository
         {
             string regExpString = PathHelper.GetRegExpStringDirectoryTree(directoryPath);
             string sql = @"SELECT * FROM images WHERE REGEXP_LIKE(ImageFolderPath, @regExpString) ORDER BY FileName;";
-            List<Image> images = (List<Image>)await _connection.QueryAsync<Image>(sql, new { regExpString });
+            List<Image> images = (await _connection.QueryAsync<Image>(sql, new { regExpString })).ToList();
             return images;
         }
 
@@ -316,7 +316,7 @@ namespace ImagePerfect.Repository
         public async Task<List<Tag>> GetTagsList()
         {
             string sql = @"SELECT * FROM tags";
-            List<Tag> tags = (List<Tag>)await _connection.QueryAsync<Tag>(sql);
+            List<Tag> tags = (await _connection.QueryAsync<Tag>(sql)).ToList();
             return tags;
         }
 
@@ -351,7 +351,7 @@ namespace ImagePerfect.Repository
 
                 //get all tag id's 
                 string getAllTagIds = @"SELECT TagId, TagName FROM tags WHERE TagName IN @tagNames";
-                List<Tag> allTagsWithIds = (List<Tag>)await conn.QueryAsync<Tag>(getAllTagIds, new { tagNames = allTags }, transaction: txn);
+                List<Tag> allTagsWithIds = (await conn.QueryAsync<Tag>(getAllTagIds, new { tagNames = allTags }, transaction: txn)).ToList();
 
                 //build image tags join
                 List<(int imageId, int tagId)> imageTagsJoin = new List<(int imageId, int tagId)>();

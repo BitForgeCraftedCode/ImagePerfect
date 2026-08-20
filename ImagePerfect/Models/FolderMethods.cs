@@ -1,5 +1,6 @@
 ﻿using ImagePerfect.Repository.IRepository;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 
@@ -16,7 +17,7 @@ namespace ImagePerfect.Models
 
         public async Task<List<Folder>> GetAllFolders()
         {
-            return (List<Folder>)await _unitOfWork.Folder.GetAll();
+            return (await _unitOfWork.Folder.GetAll()).ToList();
         }
 
         public async Task<Folder?> GetRootFolder()
