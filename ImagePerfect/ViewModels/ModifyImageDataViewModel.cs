@@ -151,7 +151,21 @@ namespace ImagePerfect.ViewModels
         }
 
         //even though this edits tags on images and folders i made the choice to keep in ModifyImageDataViewModel because this
-        //also edits the physical image file meta data. Updating the TagName in tags table is what updates the tag for folders that is a simple operation and most of the complex work is image realated
+        //also edits the physical image file meta data. Updating the TagName in tags table is what updates the tag for
+        //folders that is a simple operation and most of the complex work is image realated
+        /* the current flow can leave you with physical image metadata changed but database tag unchanged if the metadata edits succeed and the DB update fails afterward
+            Minimum robust fix
+            1.Change EditTag so it does not delete the backup after SaveAsync.
+            2.Change EditTagOnAllImages so it returns a list of backup paths/results.
+            3.In ModifyImageDataViewModel.EditTagOnAllImagesAndFolders:
+                edit physical files
+                run the DB update
+                if DB update succeeds, delete backups
+                if DB update fails, restore backups
+            4.Use operation-specific backup names instead of photo.bak.jpg.
+
+            or we could log if the db update fails and provide a way to re apply the update
+         */
         public async Task EditTagOnAllImagesAndFolders(Tag selectedTag)
         {
             string newTag = TextForEditTagOnAllImagesAndFolders?.Trim() ?? string.Empty;

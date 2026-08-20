@@ -3,7 +3,6 @@
 <a id="planned-improvements"></a>
 ## 🧰 Planned Improvements
 
-- Tagging improvements (bulk edit)
 - Restore images and folders from trash
 - Scan for new folders in file system (Possible Pro Feature)
 - Backup and restore MySQL database assist (Possible Pro Feature)
