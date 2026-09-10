@@ -135,7 +135,9 @@ namespace ImagePerfect.ViewModels
             }
             //move folder in db
             string newFolderPath = PathHelper.FormatPathFromFolderPicker(_MoveToFolderPath[0]);
-            if (PathHelper.AddNewFolderNameToPathForDirectoryMoveFolder(newFolderPath, folderVm.FolderName) == folderVm.FolderPath)
+            string destinationFolderPath = PathHelper.AddNewFolderNameToPathForDirectoryMoveFolder(newFolderPath, folderVm.FolderName);
+            //checks if user selected the current location of the folder
+            if (destinationFolderPath == folderVm.FolderPath)
             {
                 await MessageBoxManager.GetMessageBoxCustom(
                     new MessageBoxCustomParams
@@ -149,6 +151,25 @@ namespace ImagePerfect.ViewModels
                         WindowStartupLocation = WindowStartupLocation.CenterOwner,
                         SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
                         MinWidth = 500  // optional, so it doesn’t wrap too soon
+                    }
+                ).ShowWindowDialogAsync(Globals.MainWindow);
+                return;
+            }
+            //checks if a folder with that name already exists in the chosen location
+            if (Directory.Exists(destinationFolderPath))
+            {
+                await MessageBoxManager.GetMessageBoxCustom(
+                    new MessageBoxCustomParams
+                    {
+                        ButtonDefinitions = new List<ButtonDefinition>
+                        {
+                            new ButtonDefinition { Name = "Ok", },
+                        },
+                        ContentTitle = "Move Folder",
+                        ContentMessage = $"A folder with this name already exists in the destination location.",
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                        MinWidth = 500  // optional, so it doesnt wrap too soon
                     }
                 ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
