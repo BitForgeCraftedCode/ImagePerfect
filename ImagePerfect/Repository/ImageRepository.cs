@@ -413,11 +413,114 @@ namespace ImagePerfect.Repository
 
         public async Task<bool> EditTagOnAllImagesAndFolders(Tag selectedTag, string newTag)
         {
-            //tags table contains tags for images and folders they are connected with joins tables for images and folders
-            //thus this will also Edit the tag on all folders 
-            string sql = @"UPDATE tags set TagName = @newTag WHERE TagId = @tagId";
-            int rowsAffected = await _connection.ExecuteAsync(sql, new { newTag = newTag, tagId = selectedTag.TagId });
-            return rowsAffected > 0;
+            //tags table contains tags for images and folders connected through join tables.
+            //If the new tag name already exists, merge the old tag into the existing tag instead of
+            //renaming the old tag row and violating the tags.TagName unique key.
+            MySqlTransaction txn = await _connection.BeginTransactionAsync();
+            try
+            {
+                //only returns TagId if newTag equals a current TagName
+                string getExistingTagIdSql = @"SELECT TagId FROM tags WHERE TagName = @newTag LIMIT 1";
+                int? existingTagId = await _connection.QuerySingleOrDefaultAsync<int?>(getExistingTagIdSql, new { newTag }, transaction: txn);
+                //new tag does not already exists OR new tag equals selectedTag (essentially no chanage at all)
+                //so just updated TagName to newTag
+                if (existingTagId == null || existingTagId == selectedTag.TagId)
+                {
+                    string updateTagNameSql = @"UPDATE tags SET TagName = @newTag WHERE TagId = @tagId";
+                    int rowsAffected = await _connection.ExecuteAsync(updateTagNameSql, new { newTag, tagId = selectedTag.TagId }, transaction: txn);
+                    await txn.CommitAsync();
+                    return rowsAffected > 0;
+                }
+                //otherwise new tag already exists and IS NOT equal to selectedTag
+                //so modify join tables
+
+                int targetTagId = existingTagId.Value;
+
+                /* 
+                    Avoid duplicate tag rows on the same image/folder when an item already has both tags.
+                    Example: Image 100 already has Beach (TagId 5) and SummerVacation (TagId 8).
+                    If we want to change Beach -> SummerVacation, we cannot simply:
+                        UPDATE image_tags_join SET TagId = @targetTagId WHERE TagId = @oldTagId
+                    because then you go from 
+                    100, 5
+                    100, 8  to
+                
+                    100, 8
+                    100, 8 which
+                    cannot happen because PRIMARY KEY (ImageId, TagId) doesnt allow duplicate 
+                    
+                    So first find every image that has BOTH:
+                        oldTagId
+                        targetTagId
+
+                    Then delete the oldTagId relationship.
+                    The following UPDATE can then safely change all remaining old-tag relationships to the target tag.
+
+                    Think of the INNER JOIN query like this:
+                    oldTagJoin is the rows I'm starting with. The INNER JOIN searches the second copy of the table for rows that satisfy the ON conditions.
+                    For every match, SQL combines the two rows into one result row.
+
+                    Think of the INNER JOIN as joining two copies of image_tags_join:
+                    
+                         oldTagJoin       = rows with the old TagId
+                         existingTagJoin  = rows with the target TagId
+                    
+                    FROM/WHERE establishes the oldTagJoin rows:
+                         FROM image_tags_join oldTagJoin
+                         WHERE oldTagJoin.TagId = @oldTagId
+                    
+                    INNER JOIN then searches the second copy of the table for a matching row:
+                         INNER JOIN image_tags_join existingTagJoin
+                             ON existingTagJoin.ImageId = oldTagJoin.ImageId
+                             AND existingTagJoin.TagId = @targetTagId
+                    
+                    For each oldTagJoin row, find an existingTagJoin row where:
+                         1. ImageId is the same
+                         2. TagId is @targetTagId
+                    
+                    The DELETE oldTagJoin tells MySQL to delete the old-tag row from each match.
+                    The existingTagJoin row is only used to find the images that already have
+                    the target tag; it is not deleted.
+                    
+                    oldTagJoin = "the rows I'm interested in"
+
+                    INNER JOIN = "for each of those rows, find a matching row in another copy of the table"
+
+                    DELETE oldTagJoin = "delete the rows from my original/old-tag side of those matches."
+                */
+                string deleteDuplicateImageTagJoinsSql = @"DELETE oldTagJoin
+                                                        FROM image_tags_join oldTagJoin
+                                                        INNER JOIN image_tags_join existingTagJoin
+                                                            ON existingTagJoin.ImageId = oldTagJoin.ImageId
+                                                            AND existingTagJoin.TagId = @targetTagId
+                                                        WHERE oldTagJoin.TagId = @oldTagId";
+                await _connection.ExecuteAsync(deleteDuplicateImageTagJoinsSql, new { oldTagId = selectedTag.TagId, targetTagId }, transaction: txn);
+
+                string updateImageTagJoinsSql = @"UPDATE image_tags_join SET TagId = @targetTagId WHERE TagId = @oldTagId";
+                int imageRowsAffected = await _connection.ExecuteAsync(updateImageTagJoinsSql, new { oldTagId = selectedTag.TagId, targetTagId }, transaction: txn);
+
+                string deleteDuplicateFolderTagJoinsSql = @"DELETE oldTagJoin
+                                                         FROM folder_tags_join oldTagJoin
+                                                         INNER JOIN folder_tags_join existingTagJoin
+                                                             ON existingTagJoin.FolderId = oldTagJoin.FolderId
+                                                             AND existingTagJoin.TagId = @targetTagId
+                                                         WHERE oldTagJoin.TagId = @oldTagId";
+                await _connection.ExecuteAsync(deleteDuplicateFolderTagJoinsSql, new { oldTagId = selectedTag.TagId, targetTagId }, transaction: txn);
+
+                string updateFolderTagJoinsSql = @"UPDATE folder_tags_join SET TagId = @targetTagId WHERE TagId = @oldTagId";
+                int folderRowsAffected = await _connection.ExecuteAsync(updateFolderTagJoinsSql, new { oldTagId = selectedTag.TagId, targetTagId }, transaction: txn);
+
+                string deleteOldTagSql = @"DELETE FROM tags WHERE TagId = @oldTagId";
+                int tagRowsAffected = await _connection.ExecuteAsync(deleteOldTagSql, new { oldTagId = selectedTag.TagId }, transaction: txn);
+
+                await txn.CommitAsync();
+                return imageRowsAffected + folderRowsAffected + tagRowsAffected > 0;
+            }
+            catch
+            {
+                await txn.RollbackAsync();
+                return false;
+            }
         }
         public async Task<int> GetTotalImages()
         {

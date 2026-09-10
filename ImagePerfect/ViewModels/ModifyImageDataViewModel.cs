@@ -176,28 +176,6 @@ namespace ImagePerfect.ViewModels
             await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
             ImageMethods imageMethods = new ImageMethods(uow);
             FolderMethods folderMethods = new FolderMethods(uow);
-
-            //make sure new tag is not already in tags table as TagName is unique in sql tags table
-            //db method will fail if i try to update a tag to a tagname that already exists
-            List<Tag> tags = await imageMethods.GetTagsList();
-            if (tags.Any(t => t.TagName == newTag))
-            {
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = $"Edit Tag",
-                        ContentMessage = $"Edited tag cannot have the same name as an existing tag.",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                        MinWidth = 500  // optional, so it doesn’t wrap too soon
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
-                return;
-            }
              
             var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
                 new MessageBoxCustomParams
