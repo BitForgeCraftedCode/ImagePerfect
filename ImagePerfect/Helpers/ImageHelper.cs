@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using NetVips;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Processing;
@@ -123,13 +124,19 @@ namespace ImagePerfect.Helpers
                     using var oriented = thumb.Autorot();
                     using var sharpened = oriented.Sharpen(); // small, cheap, noticeably crisper thumbnails
 
+                    // Normalize colorspace first — grayscale (black and white) JPEGs come back as 1 band,
+                    // and other color spaces (e.g. CMYK) are converted to sRGB.
+                    // This gives us a standard RGB/RGBA representation before
+                    // converting to Avalonia's BGRA8888 format.
+                    using var srgb = sharpened.Colourspace(Enums.Interpretation.Srgb);
+
                     // Avalonia's Bgra8888 format requires exactly 4 bands (B, G, R, A).
                     // Some source images (JPEGs, mostly) decode as 3 bands (just R,G,B) with no
                     // alpha channel at all. If that's the case, tack on a 4th band that's a
                     // constant 255 (fully opaque) so the pixel layout matches what Avalonia expects.
-                    using var rgba = sharpened.Bands == 3
-                        ? sharpened.Bandjoin(255)    // RGB -> RGBA, alpha = fully opaque
-                        : sharpened;                 // already 4 bands (e.g. PNG with alpha), leave as-is
+                    using var rgba = srgb.Bands == 3
+                        ? srgb.Bandjoin(255)    // RGB -> RGBA, alpha = fully opaque
+                        : srgb;                 // already 4 bands (e.g. PNG with alpha), leave as-is
 
                     // Reorder R,G,B,A -> B,G,R,A to match Avalonia's Bgra8888 layout
                     // libvips decodes pixels in R, G, B, A band order.
