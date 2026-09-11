@@ -80,6 +80,8 @@ namespace ImagePerfect.ViewModels
         private ReactiveCommand<Tag, Task> _removeTagOnAllImagesCommand;
         private ReactiveCommand<Tag, Task> _editTagOnAllImagesAndFoldersCommand;
         private ReactiveCommand<ImageViewModel, Task> _openImageInExternalViewerCommand;
+        private ReactiveCommand<ImageViewModel, Task> _rotateImageClockwiseCommand;
+        private ReactiveCommand<ImageViewModel, Task> _rotateImageCounterClockwiseCommand;
         private ReactiveCommand<ImageViewModel, Task> _moveImageToTrashCommand;
         private ReactiveCommand<IList, Task> _moveSelectedImagesToTrashCommand;
         private ReactiveCommand<IList, Task> _moveSelectedImagesUpOneDirectoryCommand;
@@ -353,6 +355,12 @@ namespace ImagePerfect.ViewModels
             });
             _openImageInExternalViewerCommand = ReactiveCommand.Create(async (ImageViewModel imageVm) => {
                 await ExternalProgramVm.OpenImageInExternalViewer(imageVm);
+            });
+            _rotateImageClockwiseCommand = ReactiveCommand.Create(async (ImageViewModel imageVm) => {
+                await ModifyImageDataVm.RotateImageClockwise(imageVm);  
+            });
+            _rotateImageCounterClockwiseCommand = ReactiveCommand.Create(async (ImageViewModel imageVm) => {
+                await ModifyImageDataVm.RotateImageCounterClockwise(imageVm);
             });
             _moveImageToTrashCommand = ReactiveCommand.Create(async (ImageViewModel imageVm) => {
                 await MoveImages.MoveImageToTrash(imageVm);
@@ -755,6 +763,10 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<Tag, Task> EditTagOnAllImagesAndFoldersCommand { get => _editTagOnAllImagesAndFoldersCommand; }
 
         public ReactiveCommand<ImageViewModel, Task> OpenImageInExternalViewerCommand { get => _openImageInExternalViewerCommand; }
+
+        public ReactiveCommand<ImageViewModel, Task> RotateImageClockwiseCommand { get => _rotateImageClockwiseCommand; }
+
+        public ReactiveCommand<ImageViewModel, Task> RotateImageCounterClockwiseCommand { get => _rotateImageCounterClockwiseCommand; }
 
         public ReactiveCommand<ImageViewModel, Task> MoveImageToTrashCommand { get => _moveImageToTrashCommand; }
 

@@ -11,7 +11,6 @@ using MySqlConnector;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -492,6 +491,15 @@ namespace ImagePerfect.ViewModels
             {
                 _mainWindowViewModel.ShowLoading = false;
             }
+        }
+
+        public async Task RotateImageClockwise(ImageViewModel imageVm)
+        {
+       
+        }
+        public async Task RotateImageCounterClockwise(ImageViewModel imageVm) 
+        {
+            
         }
 
     }
