@@ -8,6 +8,7 @@ using MsBox.Avalonia;
 using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Models;
 using MySqlConnector;
+using NetVips;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -493,14 +494,60 @@ namespace ImagePerfect.ViewModels
             }
         }
 
+        //rotate is losssy and thats not good. So is my meta data write methods. That needs to change first. Then come back to this.
         public async Task RotateImageClockwise(ImageViewModel imageVm)
         {
-       
+            //await RotateImage(imageVm, Enums.Angle.D90);
         }
         public async Task RotateImageCounterClockwise(ImageViewModel imageVm) 
         {
-            
+            //await RotateImage(imageVm, Enums.Angle.D270);
         }
+
+        private async Task RotateImage(ImageViewModel imageVm, Enums.Angle angle)
+        {
+            if (imageVm?.ImageBitmap == null || string.IsNullOrWhiteSpace(imageVm.ImagePath) || !File.Exists(imageVm.ImagePath))
+            {
+                await ShowRotateImageMessage("The image could not be found on disk.");
+                return;
+            }
+
+            _mainWindowViewModel.ShowLoading = true;
+            try
+            {
+                // Do not update the displayed thumbnail until NetVips has successfully saved the physical image.
+                await ImageHelper.RotateImageFile(imageVm.ImagePath, angle);
+                //imageVm.ImageBitmap = await ImageHelper.RotateBitmap(imageVm.ImageBitmap, angle);
+                imageVm.ImageBitmap = await ImageHelper.RefreshSingleImage(imageVm);
+            }
+            catch (Exception e)
+            {
+                await ShowRotateImageMessage($"The image could not be rotated.\n{e.Message}");
+            }
+            finally
+            {
+                _mainWindowViewModel.ShowLoading = false;
+            }
+        }
+
+        private static async Task ShowRotateImageMessage(string message)
+        {
+            await MessageBoxManager.GetMessageBoxCustom(
+                new MessageBoxCustomParams
+                {
+                    ButtonDefinitions = new List<ButtonDefinition>
+                    {
+                        new ButtonDefinition { Name = "Ok" },
+                    },
+                    ContentTitle = "Rotate Image",
+                    ContentMessage = message,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    SizeToContent = SizeToContent.WidthAndHeight,
+                    MinWidth = 500
+                }
+            ).ShowWindowDialogAsync(Globals.MainWindow);
+        }
+
 
     }
 }

@@ -1,11 +1,13 @@
 ﻿using Avalonia;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using ImagePerfect.ViewModels;
 using NetVips;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Processing;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Runtime.InteropServices;
@@ -318,6 +320,81 @@ namespace ImagePerfect.Helpers
             {
                 return LoadFromResource(new Uri("avares://ImagePerfect/Assets/missing_image.png"));
             }
+        }
+
+        // Permanently rotates an image while retaining the original path. The source is written to a
+        // temporary file first so a failed save cannot replace the user's image with a partial file.
+        public static async Task RotateImageFile(string path, Enums.Angle angle)
+        {
+            string extension = Path.GetExtension(path);
+            if (string.IsNullOrWhiteSpace(extension))
+            {
+                throw new InvalidOperationException("The image file has no extension, so its format cannot be determined.");
+            }
+
+            string directory = Path.GetDirectoryName(path) ?? throw new InvalidOperationException("The image directory could not be determined.");
+            string temporaryPath = Path.Combine(directory, $"{Path.GetFileNameWithoutExtension(path)}.{Guid.NewGuid():N}{extension}");
+
+            try
+            {
+                // Autorot applies any EXIF orientation before the requested rotation. This writes
+                // normalized pixels rather than leaving an orientation tag for another viewer to apply.
+                //using var source = VipsImage.NewFromFile(path);
+                using var source = VipsImage.NewFromFile(path, kwargs: new VOption
+                {
+                    { "revalidate", true }
+                });
+                using var normalized = source.Autorot();
+                using var rotated = normalized.Rot(angle);
+                //rotated.WriteToFile(temporaryPath);
+                //repeatedly WriteToFile is a lossy process on jpeg and will eventually make the image poor quality. NO GOOD
+                rotated.WriteToFile(temporaryPath, kwargs: new VOption
+                {
+                    { "keep", Enums.ForeignKeep.Icc }
+                });
+
+                File.Move(temporaryPath, path, overwrite: true);
+                LogRotationDebug(path, "after move");
+            }
+            finally
+            {
+                if (File.Exists(temporaryPath))
+                {
+                    File.Delete(temporaryPath);
+                }
+            }
+        }
+        public static void LogRotationDebug(string path, string label)
+        {
+            try
+            {
+                using var img = VipsImage.NewFromFile(path);
+                string orientation;
+                try { orientation = img.Get("orientation")?.ToString() ?? "none"; }
+                catch { orientation = "none"; }
+                Debug.WriteLine($"[{label}] {Path.GetFileName(path)} - {img.Width}x{img.Height}, orientation: {orientation}, mtime: {File.GetLastWriteTimeUtc(path):O}");
+            }
+            catch (Exception e) 
+            {
+                Debug.WriteLine(e.Message);
+            }
+            
+        }
+        public static async Task<Bitmap> RefreshSingleImage(ImageViewModel imageVm)
+        {
+            return await FormatImageNetVips(imageVm.ImagePath);
+        }
+        // Rotates an already displayed bitmap without reloading its folder from disk.
+        public static async Task<Bitmap> RotateBitmap(Bitmap bitmap, Enums.Angle angle)
+        {
+            using var sourceStream = new MemoryStream();
+            bitmap.Save(sourceStream, new PngBitmapEncoderOptions());
+
+            using var source = VipsImage.NewFromBuffer(sourceStream.ToArray(), string.Empty);
+            using var rotated = source.Rot(angle);
+            byte[] rotatedPng = rotated.WriteToBuffer(".png");
+            using var rotatedStream = new MemoryStream(rotatedPng);
+            return new Bitmap(rotatedStream);
         }
     }
 }
