@@ -46,14 +46,46 @@ namespace ImagePerfect.Helpers
 
         public static async Task WriteTagToImage(ImageViewModel imageVm)
         {
-            ImageSharp.Image imageSharpImage = await ImageSharp.Image.LoadAsync(imageVm.ImagePath);
-            await WriteKeywordToImage(imageSharpImage, imageVm);
+            await WriteKeywordToImage(imageVm);
         }
 
         public static async Task AddRatingToImage(ImagePerfectImage image)
         {
-            ImageSharp.Image imageSharpImage = await ImageSharp.Image.LoadAsync(image.ImagePath);
-            await WriteRatingToImage(imageSharpImage, image);
+            string originalPath = image.ImagePath;
+            string backupPath = Path.ChangeExtension(originalPath, ".bak" + Path.GetExtension(originalPath));
+
+            try
+            {
+                // Step 1: Create a backup
+                File.Copy(originalPath, backupPath, overwrite: true);
+
+                // Step 2: Save new rating to image
+                using (var exiftool = new SharpExifTool.ExifTool())
+                {
+                    await exiftool.WriteTagsAsync(
+                    filename: originalPath,
+                    properties: new Dictionary<string, string>
+                    {
+                        ["EXIF:Rating"] = image.ImageRating.ToString()
+                    },
+                    overwriteOriginal: true);
+                }
+
+                // Step 3: If successful, delete backup
+                if (File.Exists(backupPath))
+                    File.Delete(backupPath);
+            }
+            catch
+            {
+                // Step 4: Restore backup if save failed
+                if (File.Exists(backupPath))
+                {
+                    File.Copy(backupPath, originalPath, overwrite: true);
+                    File.Delete(backupPath);
+                }
+
+                throw;
+            }
         }
 
         public static async Task<bool> EditTagOnAllImages(List<ImagePerfectImage> images, Tag selectedTag, string newTag)
@@ -172,104 +204,66 @@ namespace ImagePerfect.Helpers
             }
         }
 
-        //clear all the current keywords add the imagePerfect ones save
-        //this will keep it in sync
-        private static async Task WriteKeywordToImage(ImageSharp.Image image, ImageViewModel imagePerfectImage)
+        //clear all the current keywords, add the imagePerfect ones, save -- keeps physical file in sync with the UI
+        private static async Task WriteKeywordToImage(ImageViewModel imagePerfectImage)
         {
-            if (image.Metadata.IptcProfile == null)
-                image.Metadata.IptcProfile = new IptcProfile();
-
             string originalPath = imagePerfectImage.ImagePath;
             string backupPath = Path.ChangeExtension(originalPath, ".bak" + Path.GetExtension(originalPath));
-            //avoid possible corruption of original images on failed writes
-            try
-            {
-                //Create a backup
-                File.Copy(originalPath, backupPath, overwrite: true);
 
-                if (imagePerfectImage.ImageTags != "" && imagePerfectImage.ImageTags != null)
-                {
-                    //remove all
-                    image.Metadata.IptcProfile.RemoveValue(IptcTag.Keywords);
-
-                    string[] tags = imagePerfectImage.ImageTags.Split(",");
-                    foreach (string tag in tags)
-                    {
-                        //re-add
-                        image.Metadata.IptcProfile.SetValue(IptcTag.Keywords, tag);
-                    }
-                }
-                //just remove all if that is what we want -- this will be the case if the user removes the entire string in the UI
-                else if (imagePerfectImage.ImageTags == "" || imagePerfectImage.ImageTags == null)
-                {
-                    //remove all
-                    image.Metadata.IptcProfile.RemoveValue(IptcTag.Keywords);
-                }
-                await image.SaveAsync(originalPath);
-                //delete backup
-                if (File.Exists(backupPath))
-                    File.Delete(backupPath);
-            }
-            catch (Exception ex) 
-            {
-                //Restore backup if save failed
-                if (File.Exists(backupPath))
-                {
-                    File.Copy(backupPath, originalPath, overwrite: true);
-                    File.Delete(backupPath);
-                }
-            }
-           
-        }
-
-        private static async Task WriteRatingToImage(ImageSharp.Image image, ImagePerfectImage imagePerfectImage)
-        {
-            if(image.Metadata.ExifProfile == null)
-                image.Metadata.ExifProfile = new ExifProfile();
-            ushort newRating = Convert.ToUInt16(imagePerfectImage.ImageRating);
-            image.Metadata.ExifProfile.SetValue(ExifTag.Rating, newRating);
-
-            string originalPath = imagePerfectImage.ImagePath;
-            string backupPath = Path.ChangeExtension(originalPath, ".bak" + Path.GetExtension(originalPath));
-            //avoid possible corruption of original images on failed writes
             try
             {
                 // Step 1: Create a backup
                 File.Copy(originalPath, backupPath, overwrite: true);
 
-                // Step 2: Save modified image to original path
-                await image.SaveAsync(originalPath);
+                using (var exiftool = new SharpExifTool.ExifTool())
+                {
+                    // Step 2: Clear all existing keywords first (assigning empty deletes the tag/all values)
+                    await exiftool.WriteTagsAsync(
+                        filename: originalPath,
+                        properties: new Dictionary<string, string>
+                        {
+                            ["IPTC:Keywords"] = ""
+                        },
+                        overwriteOriginal: true);
 
-                // Step 3: If successful, delete backup
+                    // Step 3: Re-add each tag from the comma separated list, if any
+                    if (!string.IsNullOrEmpty(imagePerfectImage.ImageTags))
+                    {
+                        string[] tags = imagePerfectImage.ImageTags.Split(',');
+                        foreach (string tag in tags)
+                        {
+                            string trimmedTag = tag.Trim();
+                            if (string.IsNullOrEmpty(trimmedTag))
+                                continue;
+
+                            // "+" appends to the list-type tag instead of overwriting it
+                            await exiftool.WriteTagsAsync(
+                                filename: originalPath,
+                                properties: new Dictionary<string, string>
+                                {
+                                    ["IPTC:Keywords+"] = trimmedTag
+                                },
+                                overwriteOriginal: true);
+                        }
+                    }
+                }
+
+                // Step 4: If successful, delete backup
                 if (File.Exists(backupPath))
                     File.Delete(backupPath);
             }
-            catch (Exception ex)
+            catch
             {
-                // Step 4: Restore backup if save failed
+                // Step 5: Restore backup if save failed
                 if (File.Exists(backupPath))
                 {
                     File.Copy(backupPath, originalPath, overwrite: true);
                     File.Delete(backupPath);
                 }
+                throw;
             }
-
-            //option 2 use temp -- keep for now
-            //string originalPath = imagePerfectImage.ImagePath;
-            //string directory = Path.GetDirectoryName(originalPath)!;
-            //string filenameWithoutExt = Path.GetFileNameWithoutExtension(originalPath);
-            //string ext = Path.GetExtension(originalPath);
-            ////imagename.temp.jpg
-            //string tempPath = Path.Combine(directory, $"{filenameWithoutExt}.temp{ext}");
-
-            //// Save to temp -- avoid possible corruption of original images on failed writes
-            //await image.SaveAsync(tempPath);
-
-            //// Replace original with temp
-            //File.Delete(originalPath);
-            //File.Move(tempPath, originalPath);
         }
-
+        
         private static async Task<bool> EditTag(ImageSharp.Image image, ImagePerfectImage imagePerfectImage, Tag selectedTag, string newTag)
         {
             if (image.Metadata.IptcProfile == null)
