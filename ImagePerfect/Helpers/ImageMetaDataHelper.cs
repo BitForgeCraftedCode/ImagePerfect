@@ -100,8 +100,8 @@ namespace ImagePerfect.Helpers
             await Parallel.ForEachAsync(sortedImages, new ParallelOptions { MaxDegreeOfParallelism = 1 }, async (img, ct) => {
                 try
                 {
-                    using ImageSharp.Image imageSharpImage = await ImageSharp.Image.LoadAsync(img.ImagePath, ct);
-                    bool success = await EditTag(imageSharpImage, img, selectedTag, newTag);
+                    ImageSharp.ImageInfo imageSharpInfo = await ImageSharp.Image.IdentifyAsync(img.ImagePath, ct);
+                    bool success = await EditTag(imageSharpInfo, img, selectedTag, newTag);
                     if (!success)
                         Interlocked.Exchange(ref anyFail, 1);
                 }
@@ -266,10 +266,10 @@ namespace ImagePerfect.Helpers
             }
         }
 
-        private static async Task<bool> EditTag(ImageSharp.Image image, ImagePerfectImage imagePerfectImage, Tag selectedTag, string newTag)
+        private static async Task<bool> EditTag(ImageSharp.ImageInfo imageInfo, ImagePerfectImage imagePerfectImage, Tag selectedTag, string newTag)
         {
-            if (image.Metadata.IptcProfile == null)
-                image.Metadata.IptcProfile = new IptcProfile();
+            if (imageInfo.Metadata.IptcProfile == null)
+                imageInfo.Metadata.IptcProfile = new IptcProfile();
 
             string originalPath = imagePerfectImage.ImagePath;
             string backupPath = Path.ChangeExtension(originalPath, ".bak" + Path.GetExtension(originalPath));
@@ -280,7 +280,7 @@ namespace ImagePerfect.Helpers
                 File.Copy(originalPath, backupPath, overwrite: true);
                 //get tags from physical image and replaces oldTag with newTag
                 string oldTag = selectedTag.TagName.Trim();
-                List<string> keywords = image.Metadata.IptcProfile.Values //Get all IPTC metadata values
+                List<string> keywords = imageInfo.Metadata.IptcProfile.Values //Get all IPTC metadata values
                     .Where(v => v.Tag == IptcTag.Keywords) //Keep only values whose tag is Keywords
                     .Select(v => v.Value.Trim()) //Extract the actual string value
                     .Where(v => !string.IsNullOrWhiteSpace(v)) //Ignore empty values
