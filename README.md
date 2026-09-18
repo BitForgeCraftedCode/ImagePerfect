@@ -21,6 +21,7 @@
 - 📊 [Backing Up And Restoring The MySQL Database](docs/BACKUP_RESTORE_MYSQL_DATABASE.md)
 - 📦 [Migrating To A New Computer](docs/MIGRATING_TO_A_NEW_PC.md)
 - 📚 [Tech Stack And Notable Dependencies](docs/TECH_STACK.md)
+- 🪪 [External dependencies](#external-dependencies)
 - 🪪 [License](#license)
 - 📢 [Feedback And Contributions](docs/FEEDBACK_CONTRIBUTIONS.md)
 
@@ -105,6 +106,23 @@ Your feedback now helps shape what both the free and Pro versions might look lik
 ### 📷 Shotwell Import
 - Import existing tags and ratings from Shotwell (if written to images)
 
+<a id="external-dependencies"></a>
+## Third-Party Software
+
+### ExifTool
+
+Image Perfect includes [ExifTool](https://exiftool.org/) for reading and
+writing image metadata.
+
+ExifTool is developed by **Phil Harvey**.
+
+Copyright © 2003–2026 Phil Harvey.
+
+Image Perfect currently bundles **ExifTool 13.59**.
+
+ExifTool is free software; it may be redistributed and/or modified under
+the same terms as Perl. See the `README` included with the bundled ExifTool
+distribution for the applicable license terms.
 
 <a id="license"></a>
 ## 🪪 License
