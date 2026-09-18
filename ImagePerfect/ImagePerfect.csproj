@@ -82,5 +82,8 @@
     <None Update="images.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+	<None Update="ExternalTools\**\*.*">
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</None>
   </ItemGroup>
 </Project>

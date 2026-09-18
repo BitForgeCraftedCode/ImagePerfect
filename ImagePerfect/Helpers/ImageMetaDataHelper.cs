@@ -1,5 +1,7 @@
-﻿using ImagePerfect.Models;
+﻿using CliWrap;
+using ImagePerfect.Models;
 using ImagePerfect.ViewModels;
+using ReactiveUI.Primitives;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Metadata.Profiles.Exif;
 using SixLabors.ImageSharp.Metadata.Profiles.Iptc;
@@ -54,23 +56,25 @@ namespace ImagePerfect.Helpers
             string originalPath = image.ImagePath;
             string backupPath = Path.ChangeExtension(originalPath, ".bak" + Path.GetExtension(originalPath));
 
+            string exifToolPath = OperatingSystem.IsWindows()
+                ? Path.Combine(AppContext.BaseDirectory, "ExternalTools", "ExifTool", "win-x64", "exiftool.exe")
+                : Path.Combine(AppContext.BaseDirectory, "ExternalTools", "ExifTool", "linux-x64", "exiftool");
+
             try
             {
                 // Step 1: Create a backup
                 File.Copy(originalPath, backupPath, overwrite: true);
 
                 // Step 2: Save new rating to image
-                using (var exiftool = new SharpExifTool.ExifTool())
-                {
-                    await exiftool.WriteTagsAsync(
-                    filename: originalPath,
-                    properties: new Dictionary<string, string>
-                    {
-                        ["EXIF:Rating"] = image.ImageRating.ToString()
-                    },
-                    overwriteOriginal: true);
-                }
-
+                //suppressing ExifTool's informational output with -q causes the CliWrap invocation to behave correctly
+                await Cli.Wrap(exifToolPath)
+                    .WithArguments(args => args
+                        .Add("-q") // suppress informational output not errors. dont print "1 image files updated"
+                        .Add("-EXIF:Rating=" + image.ImageRating.ToString())
+                        .Add("-overwrite_original")
+                        .Add(originalPath))
+                    .ExecuteAsync();
+    
                 // Step 3: If successful, delete backup
                 if (File.Exists(backupPath))
                     File.Delete(backupPath);
