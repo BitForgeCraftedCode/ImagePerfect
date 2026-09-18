@@ -19,6 +19,12 @@ namespace ImagePerfect.Helpers
 {
     public static class ImageMetaDataHelper
     {
+        private static string GetExifToolPath()
+        {
+            return OperatingSystem.IsWindows()
+                ? Path.Combine(AppContext.BaseDirectory, "ExternalTools", "ExifTool", "win-x64", "exiftool.exe")
+                : Path.Combine(AppContext.BaseDirectory, "ExternalTools", "ExifTool", "linux-x64", "exiftool");
+        }
         public static async Task<List<ImagePerfectImage>> ScanImagesForMetaData(List<ImagePerfectImage> images)
         {
             await Parallel.ForEachAsync(images, 
@@ -55,10 +61,7 @@ namespace ImagePerfect.Helpers
         {
             string originalPath = image.ImagePath;
             string backupPath = Path.ChangeExtension(originalPath, ".bak" + Path.GetExtension(originalPath));
-
-            string exifToolPath = OperatingSystem.IsWindows()
-                ? Path.Combine(AppContext.BaseDirectory, "ExternalTools", "ExifTool", "win-x64", "exiftool.exe")
-                : Path.Combine(AppContext.BaseDirectory, "ExternalTools", "ExifTool", "linux-x64", "exiftool");
+            string exifToolPath = GetExifToolPath();
 
             try
             {
@@ -210,50 +213,50 @@ namespace ImagePerfect.Helpers
             }
         }
 
-        //clear all the current keywords, add the imagePerfect ones, save -- keeps physical file in sync with the UI
+        //clear all the current keywords, add the imagePerfect ones -- keeps physical file in sync with the UI
         private static async Task WriteKeywordToImage(ImageViewModel imagePerfectImage)
         {
             string originalPath = imagePerfectImage.ImagePath;
             string backupPath = Path.ChangeExtension(originalPath, ".bak" + Path.GetExtension(originalPath));
+            string exifToolPath = GetExifToolPath();
 
             try
             {
                 // Step 1: Create a backup
                 File.Copy(originalPath, backupPath, overwrite: true);
 
-                using (var exiftool = new SharpExifTool.ExifTool())
+                // Step 2: Clear all existing keywords first, in its own invocation
+                await Cli.Wrap(exifToolPath)
+                    .WithArguments(args => args
+                        .Add("-q")
+                        .Add("-IPTC:Keywords=")   // clears IPTC:Keywords 
+                        .Add("-overwrite_original")
+                        .Add(originalPath))
+                    .ExecuteAsync();
+
+                // Step 3: Re-add all tags from the comma separated list in a single second invocation
+                if (!string.IsNullOrEmpty(imagePerfectImage.ImageTags))
                 {
-                    // Step 2: Clear all existing keywords first (assigning empty deletes the tag/all values)
-                    await exiftool.WriteTagsAsync(
-                        filename: originalPath,
-                        properties: new Dictionary<string, string>
+                    string[] tags = imagePerfectImage.ImageTags.Split(',');
+                    await Cli.Wrap(exifToolPath)
+                        .WithArguments(args =>
                         {
-                            ["IPTC:Keywords"] = ""
-                        },
-                        overwriteOriginal: true);
-
-                    // Step 3: Re-add each tag from the comma separated list, if any
-                    if (!string.IsNullOrEmpty(imagePerfectImage.ImageTags))
-                    {
-                        string[] tags = imagePerfectImage.ImageTags.Split(',');
-                        foreach (string tag in tags)
-                        {
-                            string trimmedTag = tag.Trim();
-                            if (string.IsNullOrEmpty(trimmedTag))
-                                continue;
-
-                            // "+" appends to the list-type tag instead of overwriting it
-                            await exiftool.WriteTagsAsync(
-                                filename: originalPath,
-                                properties: new Dictionary<string, string>
-                                {
-                                    ["IPTC:Keywords+"] = trimmedTag
-                                },
-                                overwriteOriginal: true);
-                        }
-                    }
+                            args.Add("-q"); // suppress informational output, not errors
+                            // Re-add each tag from the comma separated list
+                            foreach (string tag in tags)
+                            {
+                                string trimmedTag = tag.Trim();
+                                if (string.IsNullOrEmpty(trimmedTag))
+                                    continue;
+                                // "+=" appends to the list-type tag instead of overwriting it
+                                args.Add("-IPTC:Keywords+=" + trimmedTag);
+                            }
+                            args.Add("-overwrite_original");
+                            args.Add(originalPath);
+                        })
+                        .ExecuteAsync();
                 }
-
+                    
                 // Step 4: If successful, delete backup
                 if (File.Exists(backupPath))
                     File.Delete(backupPath);
@@ -269,7 +272,7 @@ namespace ImagePerfect.Helpers
                 throw;
             }
         }
-
+        
         private static async Task<bool> EditTag(ImageSharp.ImageInfo imageInfo, ImagePerfectImage imagePerfectImage, Tag selectedTag, string newTag)
         {
             if (imageInfo.Metadata.IptcProfile == null)
