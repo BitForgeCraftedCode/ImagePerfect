@@ -95,7 +95,8 @@ namespace ImagePerfect.Helpers
             }
         }
 
-        // MaxDegreeOfParallelism = 1 set to 1 till i can confirm SharpExifTool can safely be called in parallel - set back to 4
+        // CliWrap spins up a brand new, independent OS process per call so maxparallelism of 4 is safe
+        // look into ExifTool -stay_open mode to speed up process here
         public static async Task<bool> EditTagOnAllImages(List<ImagePerfectImage> images, Tag selectedTag, string newTag)
         {
             List<ImagePerfectImage> sortedImages = images
@@ -104,7 +105,7 @@ namespace ImagePerfect.Helpers
                .ToList();
 
             int anyFail = 0;
-            await Parallel.ForEachAsync(sortedImages, new ParallelOptions { MaxDegreeOfParallelism = 1 }, async (img, ct) => {
+            await Parallel.ForEachAsync(sortedImages, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async (img, ct) => {
                 try
                 {
                     ImageSharp.ImageInfo imageSharpInfo = await ImageSharp.Image.IdentifyAsync(img.ImagePath, ct);
@@ -121,7 +122,8 @@ namespace ImagePerfect.Helpers
             return anyFail == 0;
         }
 
-        // MaxDegreeOfParallelism = 1 set to 1 till i can confirm SharpExifTool can safely be called in parallel - set back to 4
+        // CliWrap spins up a brand new, independent OS process per call so maxparallelism of 4 is safe
+        // look into ExifTool -stay_open mode to speed up process here
         public static async Task<bool> RemoveTagFromAllImages(List<ImagePerfectImage> images, Tag selectedTag)
         {
             /*
@@ -152,7 +154,7 @@ namespace ImagePerfect.Helpers
                .ToList();
 
             int anyFail = 0;
-            await Parallel.ForEachAsync(sortedImages, new ParallelOptions { MaxDegreeOfParallelism = 1 }, async (img, ct) => {
+            await Parallel.ForEachAsync(sortedImages, new ParallelOptions { MaxDegreeOfParallelism = 4 }, async (img, ct) => {
                 try
                 {
                     bool success = await RemoveTag(img, selectedTag);
@@ -272,7 +274,7 @@ namespace ImagePerfect.Helpers
                 throw;
             }
         }
-        
+
         private static async Task<bool> EditTag(ImageSharp.ImageInfo imageInfo, ImagePerfectImage imagePerfectImage, Tag selectedTag, string newTag)
         {
             if (imageInfo.Metadata.IptcProfile == null)
@@ -280,7 +282,8 @@ namespace ImagePerfect.Helpers
 
             string originalPath = imagePerfectImage.ImagePath;
             string backupPath = Path.ChangeExtension(originalPath, ".bak" + Path.GetExtension(originalPath));
-            
+            string exifToolPath = GetExifToolPath();
+
             try
             {
                 // Step 1: Create a backup
@@ -299,39 +302,38 @@ namespace ImagePerfect.Helpers
                 if (!keywords.Any(k => string.Equals(k, newTag, StringComparison.Ordinal)))
                     keywords.Add(newTag);
 
-                using (var exiftool = new SharpExifTool.ExifTool())
-                {
-                    //Step 2: remove all from physical image
-                    await exiftool.WriteTagsAsync(
-                       filename: originalPath,
-                       properties: new Dictionary<string, string>
-                       {
-                           ["IPTC:Keywords"] = ""
-                       },
-                       overwriteOriginal: true);
+                // Step 2: Clear all existing keywords first, in its own invocation
+                await Cli.Wrap(exifToolPath)
+                    .WithArguments(args => args
+                        .Add("-q")
+                        .Add("-IPTC:Keywords=")
+                        .Add("-overwrite_original")
+                        .Add(originalPath))
+                    .ExecuteAsync();
 
-                    // Step 3: re-add to physical image
-                    foreach (string keyword in keywords) 
+                // Step 3: Re-add the full keyword list in a single second invocation
+                await Cli.Wrap(exifToolPath)
+                    .WithArguments(args =>
                     {
-                        // "+" appends to the list-type tag instead of overwriting it
-                        await exiftool.WriteTagsAsync(
-                            filename: originalPath,
-                            properties: new Dictionary<string, string>
-                            {
-                                ["IPTC:Keywords+"] = keyword
-                            },
-                            overwriteOriginal: true);
-                    }
-                }
+                        args.Add("-q");
+                        foreach (string keyword in keywords)
+                        {
+                            // "+=" appends to the list-type tag instead of overwriting it
+                            args.Add("-IPTC:Keywords+=" + keyword);
+                        }
+                        args.Add("-overwrite_original");
+                        args.Add(originalPath);
+                    })
+                    .ExecuteAsync();
 
-                // Step 3: If successful, delete backup
+                // Step 4: If successful, delete backup
                 if (File.Exists(backupPath))
                     File.Delete(backupPath);
                 return true;
             }
             catch
             {
-                // Step 4: Restore backup if save failed
+                // Step 5: Restore backup if save failed
                 if (File.Exists(backupPath))
                 {
                     File.Copy(backupPath, originalPath, overwrite: true);
@@ -340,11 +342,12 @@ namespace ImagePerfect.Helpers
                 return false;
             }
         }
-        
+
         private static async Task<bool> RemoveTag(ImagePerfectImage imagePerfectImage, Tag selectedTag)
         {
             string originalPath = imagePerfectImage.ImagePath;
             string backupPath = Path.ChangeExtension(originalPath, ".bak" + Path.GetExtension(originalPath));
+            string exifToolPath = GetExifToolPath();
 
             try
             {
@@ -352,16 +355,13 @@ namespace ImagePerfect.Helpers
                 File.Copy(originalPath, backupPath, overwrite: true);
 
                 // Step 2: Remove just this one value from the list-type tag, leaving the rest intact
-                using (var exiftool = new SharpExifTool.ExifTool())
-                {
-                    await exiftool.WriteTagsAsync(
-                        filename: originalPath,
-                        properties: new Dictionary<string, string>
-                        {
-                            ["IPTC:Keywords-"] = selectedTag.TagName.Trim()
-                        },
-                        overwriteOriginal: true);
-                }
+                await Cli.Wrap(exifToolPath)
+                    .WithArguments(args => args
+                        .Add("-q")
+                        .Add("-IPTC:Keywords-=" + selectedTag.TagName.Trim())
+                        .Add("-overwrite_original")
+                        .Add(originalPath))
+                    .ExecuteAsync();
 
                 // Step 3: If successful, delete backup
                 if (File.Exists(backupPath))
