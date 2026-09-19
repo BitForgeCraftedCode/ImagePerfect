@@ -2,6 +2,7 @@
 using ImagePerfect.Models;
 using ImagePerfect.ViewModels;
 using ReactiveUI.Primitives;
+using Serilog;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Metadata.Profiles.Exif;
 using SixLabors.ImageSharp.Metadata.Profiles.Iptc;
@@ -82,8 +83,9 @@ namespace ImagePerfect.Helpers
                 if (File.Exists(backupPath))
                     File.Delete(backupPath);
             }
-            catch
+            catch(Exception ex)
             {
+                Log.Error(ex,"Add rating to image failed");
                 // Step 4: Restore backup if save failed
                 if (File.Exists(backupPath))
                 {
@@ -263,8 +265,9 @@ namespace ImagePerfect.Helpers
                 if (File.Exists(backupPath))
                     File.Delete(backupPath);
             }
-            catch
+            catch(Exception ex)
             {
+                Log.Error(ex, "Failed to write keyword to image");
                 // Step 5: Restore backup if save failed
                 if (File.Exists(backupPath))
                 {
@@ -331,8 +334,9 @@ namespace ImagePerfect.Helpers
                     File.Delete(backupPath);
                 return true;
             }
-            catch
+            catch(Exception ex)
             {
+                Log.Error(ex, "Failed to edit tag on image");
                 // Step 5: Restore backup if save failed
                 if (File.Exists(backupPath))
                 {
@@ -368,8 +372,9 @@ namespace ImagePerfect.Helpers
                     File.Delete(backupPath);
                 return true;
             }
-            catch
+            catch(Exception ex)
             {
+                Log.Error(ex, "Failed to remove tag on image");
                 // Step 4: Restore backup if save failed
                 if (File.Exists(backupPath))
                 {
