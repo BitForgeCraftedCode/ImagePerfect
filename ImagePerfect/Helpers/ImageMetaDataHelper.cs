@@ -229,43 +229,49 @@ namespace ImagePerfect.Helpers
                 // Step 1: Create a backup
                 File.Copy(originalPath, backupPath, overwrite: true);
 
-                // Step 2: Clear all existing keywords first, in its own invocation
-                await Cli.Wrap(exifToolPath)
-                    .WithArguments(args => args
-                        .Add("-q")
-                        .Add("-IPTC:Keywords=")   // clears IPTC:Keywords 
-                        .Add("-overwrite_original")
-                        .Add(originalPath))
-                    .ExecuteAsync();
-
-                // Step 3: Re-add all tags from the comma separated list in a single second invocation
+                // Step 2: Replace all existing keywords with the current tag list
                 if (!string.IsNullOrEmpty(imagePerfectImage.ImageTags))
                 {
-                    string[] tags = imagePerfectImage.ImageTags.Split(',');
+                    string[] tags = imagePerfectImage.ImageTags
+                        .Split(',')
+                        .Select(x => x.Trim())
+                        .Where(x => !string.IsNullOrEmpty(x))
+                        .ToArray();
+
                     await Cli.Wrap(exifToolPath)
                         .WithArguments(args =>
                         {
-                            args.Add("-q"); // suppress informational output, not errors
-                            // Re-add each tag from the comma separated list
-                            foreach (string tag in tags)
-                            {
-                                string trimmedTag = tag.Trim();
-                                if (string.IsNullOrEmpty(trimmedTag))
-                                    continue;
-                                // "+=" appends to the list-type tag instead of overwriting it
-                                args.Add("-IPTC:Keywords+=" + trimmedTag);
-                            }
+                            args.Add("-q");
+                            args.Add("-sep");
+                            args.Add(",");
+
+                            if (tags.Length > 0)
+                                args.Add("-IPTC:Keywords=" + string.Join(",", tags));
+                            else
+                                args.Add("-IPTC:Keywords=");
+
                             args.Add("-overwrite_original");
                             args.Add(originalPath);
                         })
                         .ExecuteAsync();
                 }
-                    
+                // Step 3: Clear all existing keywords if ImageTags is null or empty
+                else
+                {
+                    await Cli.Wrap(exifToolPath)
+                        .WithArguments(args => args
+                            .Add("-q")
+                            .Add("-IPTC:Keywords=")
+                            .Add("-overwrite_original")
+                            .Add(originalPath))
+                        .ExecuteAsync();
+                }
+
                 // Step 4: If successful, delete backup
                 if (File.Exists(backupPath))
                     File.Delete(backupPath);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.Error(ex, "Failed to write keyword to image");
                 // Step 5: Restore backup if save failed
@@ -305,39 +311,33 @@ namespace ImagePerfect.Helpers
                 if (!keywords.Any(k => string.Equals(k, newTag, StringComparison.Ordinal)))
                     keywords.Add(newTag);
 
-                // Step 2: Clear all existing keywords first, in its own invocation
-                await Cli.Wrap(exifToolPath)
-                    .WithArguments(args => args
-                        .Add("-q")
-                        .Add("-IPTC:Keywords=")
-                        .Add("-overwrite_original")
-                        .Add(originalPath))
-                    .ExecuteAsync();
-
-                // Step 3: Re-add the full keyword list in a single second invocation
+                // Step 2: Replace all existing keywords with the complete keyword list
                 await Cli.Wrap(exifToolPath)
                     .WithArguments(args =>
                     {
                         args.Add("-q");
-                        foreach (string keyword in keywords)
-                        {
-                            // "+=" appends to the list-type tag instead of overwriting it
-                            args.Add("-IPTC:Keywords+=" + keyword);
-                        }
+                        args.Add("-sep");
+                        args.Add(",");
+
+                        if (keywords.Count > 0)
+                            args.Add("-IPTC:Keywords=" + string.Join(",", keywords));
+                        else
+                            args.Add("-IPTC:Keywords=");
+
                         args.Add("-overwrite_original");
                         args.Add(originalPath);
                     })
                     .ExecuteAsync();
 
-                // Step 4: If successful, delete backup
+                // Step 3: If successful, delete backup
                 if (File.Exists(backupPath))
                     File.Delete(backupPath);
                 return true;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Log.Error(ex, "Failed to edit tag on image");
-                // Step 5: Restore backup if save failed
+                // Step 4: Restore backup if save failed
                 if (File.Exists(backupPath))
                 {
                     File.Copy(backupPath, originalPath, overwrite: true);
@@ -346,7 +346,7 @@ namespace ImagePerfect.Helpers
                 return false;
             }
         }
-
+        
         private static async Task<bool> RemoveTag(ImagePerfectImage imagePerfectImage, Tag selectedTag)
         {
             string originalPath = imagePerfectImage.ImagePath;
