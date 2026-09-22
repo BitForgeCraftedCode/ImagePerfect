@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace ImagePerfect.Helpers
 {
@@ -34,10 +35,13 @@ namespace ImagePerfect.Helpers
         //the entire directory tree of the path
         public static string GetRegExpStringDirectoryTree(string path)
         {
+            // Folder paths can contain regular-expression characters, such as the parentheses
+            // in a name generated after a copy (for example, "animals(2)"). Escape the path
+            // and require a directory boundary so similarly named sibling folders are excluded.
             #if WINDOWS
-            return path.Replace(@"\", @"\\");
+            return $"^{Regex.Escape(path)}(?:\\\\|$)";
             #else
-            return path;
+            return $"^{Regex.Escape(path)}(?:/|$)";
             #endif
         }
         public static string AddNewFolderNameToPathForDirectoryMoveFolder(string newFolderPath, string newFolderName)
