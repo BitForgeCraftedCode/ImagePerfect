@@ -64,6 +64,7 @@ namespace ImagePerfect.ViewModels
         private ReactiveCommand<Tag, Task> _removeTagOnAllFoldersCommand;
         private ReactiveCommand<Tag, Task> _addTagToAllFoldersInCurrentDirectoryCommand;
         private ReactiveCommand<FolderViewModel, Task> _moveFolderToTrashCommand;
+        private ReactiveCommand<FolderViewModel, Task> _deleteFolderFromDataBaseCommand;
         private ReactiveCommand<FolderViewModel, Task> _scanFolderImagesForMetaDataCommand;
         private ReactiveCommand<FolderViewModel, Task> _saveFolderAsFavoriteCommand;
         private ReactiveCommand<RxVoid, Task> _removeAllFavoriteFoldersCommand;
@@ -306,6 +307,9 @@ namespace ImagePerfect.ViewModels
             });
             _moveFolderToTrashCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
                 await MoveFolderToTrash.MoveFolderToTrash(folderVm);
+            });
+            _deleteFolderFromDataBaseCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => { 
+                await MoveFolderToTrash.DeleteFolderFromDataBase(folderVm);
             });
             _scanFolderImagesForMetaDataCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
                 await ScanImagesForMetaDataVm.ScanFolderImagesForMetaData(folderVm, false);
@@ -732,6 +736,8 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<Tag, Task> AddTagToAllFoldersInCurrentDirectoryCommand { get => _addTagToAllFoldersInCurrentDirectoryCommand; }
 
         public ReactiveCommand<FolderViewModel, Task> MoveFolderToTrashCommand { get => _moveFolderToTrashCommand; }
+
+        public ReactiveCommand<FolderViewModel, Task> DeleteFolderFromDataBaseCommand { get => _deleteFolderFromDataBaseCommand; }
 
         public ReactiveCommand<FolderViewModel, Task> ScanFolderImagesForMetaDataCommand { get => _scanFolderImagesForMetaDataCommand; }
 

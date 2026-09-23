@@ -664,6 +664,18 @@
 												</ControlTemplate>
 											</MenuItem.Template>
 										</MenuItem>
+										<MenuItem>
+											<MenuItem.Template>
+												<ControlTemplate>
+													<Button Content="Delete Folder From Database"
+															Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).DeleteFolderFromDataBaseCommand}"
+															CommandParameter="{Binding}"
+															IsEnabled="{Binding !IsRoot}"
+															Classes="btn-danger"
+															Width="320"/>
+												</ControlTemplate>
+											</MenuItem.Template>
+										</MenuItem>
 									</ContextMenu>
 								</StackPanel.ContextMenu>
 								<SelectableTextBlock MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" Text="{Binding FolderName}"/>
