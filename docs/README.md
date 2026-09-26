@@ -38,4 +38,4 @@ You can always return to the [main README](../README.md).
 - [License](../LICENSE.md)
 
 ## Technical
-- [Exif Tool Orientation Values](EXIF_TOOL_ORIENTATION_VALUES)
+- [Exif Tool Orientation Values](EXIF_TOOL_ORIENTATION_VALUES.md)
