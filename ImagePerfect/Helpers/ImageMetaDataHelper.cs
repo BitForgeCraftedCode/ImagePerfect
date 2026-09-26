@@ -395,6 +395,7 @@ namespace ImagePerfect.Helpers
             if (!File.Exists(path))
                 return false;
 
+            string backupPath = Path.ChangeExtension(path, ".bak" + Path.GetExtension(path));
             string exifToolPath = GetExifToolPath();
 
             var typeResult = await Cli.Wrap(exifToolPath)
@@ -406,7 +407,7 @@ namespace ImagePerfect.Helpers
                     args.Add("-FileType");
                     args.Add(path);
                 })
-                .WithValidation(CommandResultValidation.None)
+                .WithValidation(CommandResultValidation.None) // tells CliWrap not to throw an exception if process exits with a non-zero exit code
                 .ExecuteBufferedAsync();
 
             string fileType = typeResult.StandardOutput.Trim();
@@ -414,74 +415,91 @@ namespace ImagePerfect.Helpers
             if (typeResult.ExitCode != 0 || !OrientationCapableTypes.Contains(fileType))
                 return false; // caller shows "this format doesn't support lossless rotation"
 
-            // Read the current EXIF orientation as its numeric value.
-            var readResult = await Cli.Wrap(exifToolPath)
-                .WithArguments(args =>
-                {
-                    args.Add("-q");
-                    args.Add("-S"); // Short flag for short format
-                    args.Add("-s"); // tag values only
-                    args.Add("-n"); // numeric output
-                    args.Add("-EXIF:Orientation");
-                    args.Add(path);
-                })
-                .WithValidation(CommandResultValidation.None) // tells CliWrap not to trow an exception if process exits with a non-zero exit code
-                .ExecuteBufferedAsync();
-
-            if (readResult.ExitCode != 0)
-                return false;
-
-            int currentOrientation = 1;
-
-            if (int.TryParse(readResult.StandardOutput.Trim(), out int parsedOrientation))
-                currentOrientation = parsedOrientation;
-
-            //nested switch expression
-            //Based on the requested rotation, calculate a new orientation from the current orientation, and give me the resulting integer.
-            int newOrientation = angle switch
+            try
             {
-                Enums.Angle.D90 => currentOrientation switch
+                // Read the current EXIF orientation as its numeric value. (throws on non-zero exit code)
+                var readResult = await Cli.Wrap(exifToolPath)
+                    .WithArguments(args =>
+                    {
+                        args.Add("-q");
+                        args.Add("-S"); // Short flag for short format
+                        args.Add("-s"); // tag values only
+                        args.Add("-n"); // numeric output
+                        args.Add("-EXIF:Orientation");
+                        args.Add(path);
+                    })
+                    .ExecuteBufferedAsync();
+
+                int currentOrientation = 1;
+
+                if (int.TryParse(readResult.StandardOutput.Trim(), out int parsedOrientation))
+                    currentOrientation = parsedOrientation;
+
+                //nested switch expression
+                //Based on the requested rotation, calculate a new orientation from the current orientation, and give me the resulting integer.
+                int newOrientation = angle switch
                 {
-                    1 => 6,
-                    2 => 7,
-                    3 => 8,
-                    4 => 5,
-                    5 => 2,
-                    6 => 3,
-                    7 => 4,
-                    8 => 1,
-                    _ => 6
-                },
+                    Enums.Angle.D90 => currentOrientation switch
+                    {
+                        1 => 6,
+                        2 => 7,
+                        3 => 8,
+                        4 => 5,
+                        5 => 2,
+                        6 => 3,
+                        7 => 4,
+                        8 => 1,
+                        _ => 6
+                    },
 
-                Enums.Angle.D270 => currentOrientation switch
+                    Enums.Angle.D270 => currentOrientation switch
+                    {
+                        1 => 8,
+                        2 => 5,
+                        3 => 6,
+                        4 => 7,
+                        5 => 4,
+                        6 => 1,
+                        7 => 2,
+                        8 => 3,
+                        _ => 8
+                    },
+
+                    _ => currentOrientation
+                };
+
+                // Backup before the only step that mutates the file
+                File.Copy(path, backupPath, overwrite: true);
+
+                // Write new orientation (throws on non-zero exit code)
+                await Cli.Wrap(exifToolPath)
+                    .WithArguments(args =>
+                    {
+                        args.Add("-q");
+                        args.Add("-n");
+                        args.Add($"-EXIF:Orientation={newOrientation}");
+                        args.Add("-overwrite_original");
+                        args.Add(path);
+                    })
+                    .ExecuteAsync();
+
+                // Success — remove backup
+                if (File.Exists(backupPath))
+                    File.Delete(backupPath);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Serilog.Log.Error(ex, "Failed to rotate image {Path}", path);
+                // Restore backup if save failed
+                if (File.Exists(backupPath))
                 {
-                    1 => 8,
-                    2 => 5,
-                    3 => 6,
-                    4 => 7,
-                    5 => 4,
-                    6 => 1,
-                    7 => 2,
-                    8 => 3,
-                    _ => 8
-                },
-
-                _ => currentOrientation
-            };
-
-            var writeResult = await Cli.Wrap(exifToolPath)
-                .WithArguments(args =>
-                {
-                    args.Add("-q");
-                    args.Add("-n");
-                    args.Add($"-EXIF:Orientation={newOrientation}");
-                    args.Add("-overwrite_original");
-                    args.Add(path);
-                })
-                .WithValidation(CommandResultValidation.None) // tells CliWrap not to trow an exception if process exits with a non-zero exit code
-                .ExecuteAsync();
-
-            return writeResult.ExitCode == 0;
+                    File.Copy(backupPath, path, overwrite: true);
+                    File.Delete(backupPath);
+                }
+                return false;
+            }
         }
     }
 }
