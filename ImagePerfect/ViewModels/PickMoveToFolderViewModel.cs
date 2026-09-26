@@ -9,6 +9,7 @@ using MsBox.Avalonia.Models;
 using MySqlConnector;
 using ReactiveUI;
 using ReactiveUI.Primitives;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -66,9 +67,54 @@ namespace ImagePerfect.ViewModels
                 ).ShowWindowDialogAsync(Globals.MainWindow);
                 return;
             }
-            //pull current folder and sub folders from db
-            List<Folder> folders = await folderMethods.GetDirectoryTree(folderVm.FolderPath);
-            List<Image> images = await imageMethods.GetAllImagesInDirectoryTree(folderVm.FolderPath);
+            List<Folder> folders = new List<Folder>();
+            List<Image> images = new List<Image>();
+            try
+            {
+                //GetAllImageInDirectoryTree casued a fatal error once. MySqlException Timeout expired before the operation completed
+                //pull current folder and sub folders from db
+                folders = await folderMethods.GetDirectoryTree(folderVm.FolderPath);
+                images = await imageMethods.GetAllImagesInDirectoryTree(folderVm.FolderPath); 
+            }
+            catch(MySqlException ex)
+            {
+                Log.Error(ex, "Database error while preparing folder move for {FolderPath}", folderVm.FolderPath);
+                await MessageBoxManager.GetMessageBoxCustom(
+                   new MessageBoxCustomParams
+                   {
+                       ButtonDefinitions = new List<ButtonDefinition>
+                       {
+                            new ButtonDefinition { Name = "Ok", },
+                       },
+                       ContentTitle = "Move Folder",
+                       ContentMessage = $"Error moving the folder check the logs for more information.",
+                       WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                       SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                       MinWidth = 500  // optional, so it doesn’t wrap too soon
+                   }
+               ).ShowWindowDialogAsync(Globals.MainWindow);
+                return;
+            }
+            catch (Exception ex) 
+            {
+                Log.Error(ex, "Unexpected error while moving {FolderPath}", folderVm.FolderPath);
+                await MessageBoxManager.GetMessageBoxCustom(
+                   new MessageBoxCustomParams
+                   {
+                       ButtonDefinitions = new List<ButtonDefinition>
+                       {
+                            new ButtonDefinition { Name = "Ok", },
+                       },
+                       ContentTitle = "Move Folder",
+                       ContentMessage = $"Error moving the folder check the logs for more information.",
+                       WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                       SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
+                       MinWidth = 500  // optional, so it doesn’t wrap too soon
+                   }
+               ).ShowWindowDialogAsync(Globals.MainWindow);
+                return;
+            }
+            
             if (!images.Any()) 
             {
                 await MessageBoxManager.GetMessageBoxCustom(
