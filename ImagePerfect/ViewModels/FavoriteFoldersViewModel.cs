@@ -1,12 +1,8 @@
-using Avalonia.Controls;
+using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.Repository;
 using Microsoft.Extensions.Configuration;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
 using MySqlConnector;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ImagePerfect.ViewModels
@@ -31,23 +27,11 @@ namespace ImagePerfect.ViewModels
 
         public async Task RemoveAllFavoriteFolders()
         {
-            var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
-                new MessageBoxCustomParams
-                {
-                    ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Yes", },
-                            new ButtonDefinition { Name = "No", },
-                        },
-                    ContentTitle = "Remove Favorite Folders",
-                    ContentMessage = $"Are you sure you want to remove your favorite folders from the data base? The folders on the file system will remain.",
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                    MinWidth = 500  // optional, so it doesn’t wrap too soon
-                }
+            bool boxResult = await MessageBoxHelper.ShowYesNoAsync(
+                "Remove Favorite Folders",
+                $"Are you sure you want to remove your favorite folders from the data base? The folders on the file system will remain."
             );
-            var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
-            if (boxResult == "Yes")
+            if (boxResult)
             {
                 await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
                 FolderMethods folderMethods = new FolderMethods(uow);

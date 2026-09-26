@@ -1,15 +1,10 @@
-using Avalonia.Controls;
 using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.Repository;
 using Microsoft.Extensions.Configuration;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
 using MySqlConnector;
 using ReactiveUI;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -59,20 +54,10 @@ namespace ImagePerfect.ViewModels
             string newFolderPath = PathHelper.GetNewFolderPath(_mainWindowViewModel.ExplorerVm.CurrentDirectory, NewFolderName);
             if (Directory.Exists(newFolderPath))
             {
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = "New Folder",
-                        ContentMessage = $"A folder with this name already exists.",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                        MinWidth = 500  // optional, so it doesn’t wrap too soon
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
+                await MessageBoxHelper.ShowAsync(
+                    "New Folder",
+                    $"A folder with this name already exists."
+                );
                 return;
             }
             await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
@@ -105,20 +90,10 @@ namespace ImagePerfect.ViewModels
                 }
                 catch (Exception e)
                 {
-                    await MessageBoxManager.GetMessageBoxCustom(
-                        new MessageBoxCustomParams
-                        {
-                            ButtonDefinitions = new List<ButtonDefinition>
-                            {
-                                new ButtonDefinition { Name = "Ok", },
-                            },
-                            ContentTitle = "New Folder",
-                            ContentMessage = $"Error {e}.",
-                            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                            SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                            MinWidth = 500  // optional, so it doesn’t wrap too soon
-                        }
-                    ).ShowWindowDialogAsync(Globals.MainWindow);
+                    await MessageBoxHelper.ShowAsync(
+                        "New Folder",
+                        $"Error {e}."
+                    );
                     return;
                 }
             }
