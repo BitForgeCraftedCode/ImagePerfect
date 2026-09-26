@@ -494,14 +494,13 @@ namespace ImagePerfect.ViewModels
             }
         }
 
-        //rotate is losssy and thats not good. So is my meta data write methods. That needs to change first. Then come back to this.
         public async Task RotateImageClockwise(ImageViewModel imageVm)
         {
-            //await RotateImage(imageVm, Enums.Angle.D90);
+            await RotateImage(imageVm, Enums.Angle.D90);
         }
         public async Task RotateImageCounterClockwise(ImageViewModel imageVm) 
         {
-            //await RotateImage(imageVm, Enums.Angle.D270);
+            await RotateImage(imageVm, Enums.Angle.D270);
         }
 
         private async Task RotateImage(ImageViewModel imageVm, Enums.Angle angle)
@@ -515,9 +514,12 @@ namespace ImagePerfect.ViewModels
             _mainWindowViewModel.ShowLoading = true;
             try
             {
-                // Do not update the displayed thumbnail until NetVips has successfully saved the physical image.
-                await ImageHelper.RotateImageFile(imageVm.ImagePath, angle);
-                //imageVm.ImageBitmap = await ImageHelper.RotateBitmap(imageVm.ImageBitmap, angle);
+                if (!await ImageMetaDataHelper.RotateImageMetadata(imageVm.ImagePath, angle))
+                {
+                    throw new InvalidOperationException(
+                        "This image format doesn't support lossless EXIF rotation. Only JPEG, TIFF, and HEIC/HEIF are supported.");
+                }
+
                 imageVm.ImageBitmap = await ImageHelper.RefreshSingleImage(imageVm);
             }
             catch (Exception e)

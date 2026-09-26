@@ -7,3 +7,6 @@
 > If that’s your setup, make sure to **scan the folder for metadata before adding or changing ratings/tags** in ImagePerfect.
 >
 > ImagePerfect is non-destructive, with the **only exception** being that it writes ratings and tags directly into your image files. Scanning first ensures your existing Shotwell data is loaded correctly and helps avoid accidentally overwriting it.
+>
+> The latest version of ImagePerfect modifies image tags and metadata in a lossless way using ExifTool. Previous versions re-saved the image and were lossy. Be sure to compile the latest version
+

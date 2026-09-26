@@ -1,6 +1,8 @@
 ﻿using CliWrap;
+using CliWrap.Buffered;
 using ImagePerfect.Models;
 using ImagePerfect.ViewModels;
+using NetVips;
 using ReactiveUI.Primitives;
 using Serilog;
 using SixLabors.ImageSharp;
@@ -85,7 +87,7 @@ namespace ImagePerfect.Helpers
             }
             catch(Exception ex)
             {
-                Log.Error(ex,"Add rating to image failed");
+                Serilog.Log.Error(ex,"Add rating to image failed");
                 // Step 4: Restore backup if save failed
                 if (File.Exists(backupPath))
                 {
@@ -273,7 +275,7 @@ namespace ImagePerfect.Helpers
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Failed to write keyword to image");
+                Serilog.Log.Error(ex, "Failed to write keyword to image");
                 // Step 5: Restore backup if save failed
                 if (File.Exists(backupPath))
                 {
@@ -336,7 +338,7 @@ namespace ImagePerfect.Helpers
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Failed to edit tag on image");
+                Serilog.Log.Error(ex, "Failed to edit tag on image");
                 // Step 4: Restore backup if save failed
                 if (File.Exists(backupPath))
                 {
@@ -374,7 +376,7 @@ namespace ImagePerfect.Helpers
             }
             catch(Exception ex)
             {
-                Log.Error(ex, "Failed to remove tag on image");
+                Serilog.Log.Error(ex, "Failed to remove tag on image");
                 // Step 4: Restore backup if save failed
                 if (File.Exists(backupPath))
                 {
@@ -383,6 +385,103 @@ namespace ImagePerfect.Helpers
                 }
                 return false;
             }
-        }  
+        }
+        private static readonly HashSet<string> OrientationCapableTypes = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "JPEG", "JPG", "TIFF", "HEIC", "HEIF"
+        };
+        public static async Task<bool> RotateImageMetadata(string path, Enums.Angle angle)
+        {
+            if (!File.Exists(path))
+                return false;
+
+            string exifToolPath = GetExifToolPath();
+
+            var typeResult = await Cli.Wrap(exifToolPath)
+                .WithArguments(args =>
+                {
+                    args.Add("-q");
+                    args.Add("-S");
+                    args.Add("-s");
+                    args.Add("-FileType");
+                    args.Add(path);
+                })
+                .WithValidation(CommandResultValidation.None)
+                .ExecuteBufferedAsync();
+
+            string fileType = typeResult.StandardOutput.Trim();
+
+            if (typeResult.ExitCode != 0 || !OrientationCapableTypes.Contains(fileType))
+                return false; // caller shows "this format doesn't support lossless rotation"
+
+            // Read the current EXIF orientation as its numeric value.
+            var readResult = await Cli.Wrap(exifToolPath)
+                .WithArguments(args =>
+                {
+                    args.Add("-q");
+                    args.Add("-S"); // Short flag for short format
+                    args.Add("-s"); // tag values only
+                    args.Add("-n"); // numeric output
+                    args.Add("-EXIF:Orientation");
+                    args.Add(path);
+                })
+                .WithValidation(CommandResultValidation.None) // tells CliWrap not to trow an exception if process exits with a non-zero exit code
+                .ExecuteBufferedAsync();
+
+            if (readResult.ExitCode != 0)
+                return false;
+
+            int currentOrientation = 1;
+
+            if (int.TryParse(readResult.StandardOutput.Trim(), out int parsedOrientation))
+                currentOrientation = parsedOrientation;
+
+            //nested switch expression
+            //Based on the requested rotation, calculate a new orientation from the current orientation, and give me the resulting integer.
+            int newOrientation = angle switch
+            {
+                Enums.Angle.D90 => currentOrientation switch
+                {
+                    1 => 6,
+                    2 => 7,
+                    3 => 8,
+                    4 => 5,
+                    5 => 2,
+                    6 => 3,
+                    7 => 4,
+                    8 => 1,
+                    _ => 6
+                },
+
+                Enums.Angle.D270 => currentOrientation switch
+                {
+                    1 => 8,
+                    2 => 5,
+                    3 => 6,
+                    4 => 7,
+                    5 => 4,
+                    6 => 1,
+                    7 => 2,
+                    8 => 3,
+                    _ => 8
+                },
+
+                _ => currentOrientation
+            };
+
+            var writeResult = await Cli.Wrap(exifToolPath)
+                .WithArguments(args =>
+                {
+                    args.Add("-q");
+                    args.Add("-n");
+                    args.Add($"-EXIF:Orientation={newOrientation}");
+                    args.Add("-overwrite_original");
+                    args.Add(path);
+                })
+                .WithValidation(CommandResultValidation.None) // tells CliWrap not to trow an exception if process exits with a non-zero exit code
+                .ExecuteAsync();
+
+            return writeResult.ExitCode == 0;
+        }
     }
 }
