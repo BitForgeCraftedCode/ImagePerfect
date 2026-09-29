@@ -1,11 +1,7 @@
-﻿using Avalonia.Controls;
-using ImagePerfect.Helpers;
+﻿using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.Repository;
 using Microsoft.Extensions.Configuration;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
 using MySqlConnector;
 using ReactiveUI;
 using ReactiveUI.Primitives;
@@ -201,43 +197,21 @@ namespace ImagePerfect.ViewModels
                         errorMsg += "Some zips could not be moved to ImagePerfectTRASH:\n\n" +
                                     string.Join("\n\n", moveErrors);
                     }
-                    await MessageBoxManager.GetMessageBoxCustom(
-                        new MessageBoxCustomParams
-                        {
-                            ButtonDefinitions = new List<ButtonDefinition>
-                            {
-                                new ButtonDefinition { Name = "Ok", },
-                            },
-                            ContentTitle = "Extract Zips In Folders",
-                            CanResize = true,
-                            ContentMessage = errorMsg,
-                            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                            SizeToContent = SizeToContent.WidthAndHeight,
-                            MinWidth = 500,
-                            MinHeight = 600,
-
-                        }
-                    ).ShowWindowDialogAsync(Globals.MainWindow);
+                    await MessageBoxHelper.ShowAsync(
+                        "Extract Zips In Folders",
+                        errorMsg,
+                        true,
+                        600
+                    );
                 }
                 else
                 {
-                    await MessageBoxManager.GetMessageBoxCustom(
-                        new MessageBoxCustomParams
-                        {
-                            ButtonDefinitions = new List<ButtonDefinition>
-                            {
-                                new ButtonDefinition { Name = "Ok", },
-                            },
-                            ContentTitle = "Extract Zips In Folders",
-                            CanResize = true,
-                            ContentMessage = $"All zips were extracted successfully, and zip files moved to ImagePerfectTRASH.",
-                            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                            SizeToContent = SizeToContent.WidthAndHeight,
-                            MinWidth = 500,
-                            MinHeight = 400,
-
-                        }
-                    ).ShowWindowDialogAsync(Globals.MainWindow);
+                    await MessageBoxHelper.ShowAsync(
+                        "Extract Zips In Folders",
+                        $"All zips were extracted successfully, and zip files moved to ImagePerfectTRASH.",
+                        true,
+                        400
+                    );
                 }
                 _mainWindowViewModel.ShowLoading = false;
             }

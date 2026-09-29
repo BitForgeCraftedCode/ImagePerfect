@@ -4,9 +4,6 @@ using ImagePerfect.Models;
 using ImagePerfect.ObjectMappers;
 using ImagePerfect.Repository;
 using Microsoft.Extensions.Configuration;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
 using MySqlConnector;
 using System;
 using System.Collections.Generic;
@@ -151,23 +148,12 @@ namespace ImagePerfect.ViewModels
                 string errorMsg = string.Empty;
                 errorMsg += "Some text files failed to be read: \n\n" + string.Join("\n\n", errors);
 
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = "Add text file to folder description",
-                        CanResize = true,
-                        ContentMessage = errorMsg,
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,
-                        MinWidth = 500,
-                        MinHeight = 600,
-
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
+                await MessageBoxHelper.ShowAsync(
+                    "Add text file to folder description",
+                    errorMsg,
+                    true,
+                    600
+                );
             }
         }
 
@@ -201,23 +187,12 @@ namespace ImagePerfect.ViewModels
                 string errorMsg = string.Empty;
                 errorMsg += "Some text files failed to be written: \n\n" + string.Join("\n\n", errors);
 
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = "Back up folder description",
-                        CanResize = true,
-                        ContentMessage = errorMsg,
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,
-                        MinWidth = 500,
-                        MinHeight = 600,
-
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
+                await MessageBoxHelper.ShowAsync(
+                    "Back up folder description",
+                    errorMsg,
+                    true,
+                    600
+                );
             }
         }
     }

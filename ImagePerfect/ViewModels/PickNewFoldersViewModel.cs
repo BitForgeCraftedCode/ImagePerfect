@@ -1,11 +1,7 @@
-﻿using Avalonia.Controls;
-using ImagePerfect.Helpers;
+﻿using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.Repository;
 using Microsoft.Extensions.Configuration;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
 using MySqlConnector;
 using ReactiveUI;
 using ReactiveUI.Primitives;
@@ -103,24 +99,12 @@ namespace ImagePerfect.ViewModels
                      string.Join("\n", zipLocations) +
                      "\n\nPlease extract the zip files before adding these folders to the library.";
 
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = "Add Folders",
-                        CanResize = true,
-                        ContentMessage = message, 
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,
-                        MinWidth = 500,
-                        MinHeight = 600,
-                       
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
-
+                await MessageBoxHelper.ShowAsync(
+                    "Add Folders",
+                    message,
+                    true,
+                    600
+                );
                 _mainWindowViewModel.ShowLoading = false;
                 return;
             }
