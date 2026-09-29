@@ -1,11 +1,8 @@
-using Avalonia.Controls;
+ï»¿using Avalonia.Controls;
 using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.Repository;
 using Microsoft.Extensions.Configuration;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
 using MySqlConnector;
 using System.Collections.Generic;
 using System.Linq;
@@ -90,23 +87,11 @@ namespace ImagePerfect.ViewModels
 
         public async Task ScanAllFoldersOnCurrentPage(ItemsControl foldersItemsControl)
         {
-            var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
-                new MessageBoxCustomParams
-                {
-                    ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Yes", },
-                            new ButtonDefinition { Name = "No", },
-                        },
-                    ContentTitle = "Scan All Folders",
-                    ContentMessage = $"CAUTION this could take a long time are you sure? Make sure to import images first.",
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                    MinWidth = 500  // optional, so it doesn’t wrap too soon
-                }
+            bool boxResult = await MessageBoxHelper.ShowYesNoAsync(
+                "Scan All Folders",
+                $"CAUTION this could take a long time are you sure? Make sure to import images first."
             );
-            var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
-            if (boxResult == "Yes")
+            if (boxResult)
             {
                 _mainWindowViewModel.ShowLoading = true;
                 List<FolderViewModel> allFolders = foldersItemsControl.Items.OfType<FolderViewModel>()

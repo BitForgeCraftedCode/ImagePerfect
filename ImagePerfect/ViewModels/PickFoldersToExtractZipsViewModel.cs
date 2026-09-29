@@ -1,4 +1,4 @@
-using Avalonia.Controls;
+ï»¿using Avalonia.Controls;
 using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.Repository;
@@ -49,20 +49,10 @@ namespace ImagePerfect.ViewModels
             Folder? rootFolder = await folderMethods.GetRootFolder();
             if (rootFolder == null)
             {
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = "Extract Zips In Folders",
-                        ContentMessage = $"You need to add a root library folder first.",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                        MinWidth = 500  // optional, so it doesn’t wrap too soon
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
+                await MessageBoxHelper.ShowAsync(
+                    "Extract Zips In Folders",
+                    $"You need to add a root library folder first."
+                );
                 return;
             }
             _ZipFolders = await _SelectZipFoldersInteraction.Handle(rootFolder.FolderPath);
@@ -93,21 +83,10 @@ namespace ImagePerfect.ViewModels
 
                 if (!allZipFiles.Any())
                 {
-                    await MessageBoxManager.GetMessageBoxCustom(
-                        new MessageBoxCustomParams
-                        {
-                            ButtonDefinitions = new List<ButtonDefinition>
-                            {
-                            new ButtonDefinition { Name = "Ok", },
-                            },
-                            ContentTitle = "Extract Zips In Folders",
-                            ContentMessage = $"No zip files were found in the selected folders.",
-                            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                            SizeToContent = SizeToContent.WidthAndHeight,
-                            MinWidth = 500
-                        }
-                    ).ShowWindowDialogAsync(Globals.MainWindow);
-
+                    await MessageBoxHelper.ShowAsync(
+                        "Extract Zips In Folders",
+                        $"No zip files were found in the selected folders."
+                    );
                     return;
                 }
                 try

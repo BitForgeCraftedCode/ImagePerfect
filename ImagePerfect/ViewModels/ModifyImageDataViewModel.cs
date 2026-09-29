@@ -1,12 +1,9 @@
-using Avalonia.Controls;
+ï»¿using Avalonia.Controls;
 using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.ObjectMappers;
 using ImagePerfect.Repository;
 using Microsoft.Extensions.Configuration;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
 using MySqlConnector;
 using NetVips;
 using ReactiveUI;
@@ -47,20 +44,10 @@ namespace ImagePerfect.ViewModels
             bool success = await imageMethods.UpdateImage(image);
             if (!success)
             {
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = $"Add {fieldUpdated}",
-                        ContentMessage = $"Image {fieldUpdated} update error. Try again.",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                        MinWidth = 500  // optional, so it doesn’t wrap too soon
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
+                await MessageBoxHelper.ShowAsync(
+                    $"Add {fieldUpdated}",
+                    $"Image {fieldUpdated} update error. Try again."
+                );
                 return;
             }
             //write rating to image metadata
@@ -177,23 +164,11 @@ namespace ImagePerfect.ViewModels
             ImageMethods imageMethods = new ImageMethods(uow);
             FolderMethods folderMethods = new FolderMethods(uow);
              
-            var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
-                new MessageBoxCustomParams
-                {
-                    ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Yes", },
-                            new ButtonDefinition { Name = "No", },
-                        },
-                    ContentTitle = "Edit Tag",
-                    ContentMessage = $"CAUTION you are about to edit tag {selectedTag.TagName} to {newTag} this could take a long time are you sure?",
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                    MinWidth = 500  // optional, so it doesn’t wrap too soon
-                }
+            bool boxResult = await MessageBoxHelper.ShowYesNoAsync(
+                "Edit Tag",
+                $"CAUTION you are about to edit tag {selectedTag.TagName} to {newTag} this could take a long time are you sure?"
             );
-            var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
-            if (boxResult != "Yes")
+            if (!boxResult)
                 return;            
 
             _mainWindowViewModel.ShowLoading = true;
@@ -247,23 +222,11 @@ namespace ImagePerfect.ViewModels
             //nothing selected just return
             if (selectedTag == null)
                 return;
-            var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
-                new MessageBoxCustomParams
-                {
-                    ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Yes", },
-                            new ButtonDefinition { Name = "No", },
-                        },
-                    ContentTitle = "Remove Tag",
-                    ContentMessage = $"CAUTION you are about to remove a tag this could take a long time are you sure?",
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                    MinWidth = 500  // optional, so it doesn’t wrap too soon
-                }
+            bool boxResult = await MessageBoxHelper.ShowYesNoAsync(
+                "Remove Tag",
+                $"CAUTION you are about to remove a tag this could take a long time are you sure?"
             );
-            var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
-            if (boxResult != "Yes")
+            if (!boxResult)
                 return;
 
             await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
@@ -377,20 +340,10 @@ namespace ImagePerfect.ViewModels
 
         private static async Task ShowRenameImageMessage(string message)
         {
-            await MessageBoxManager.GetMessageBoxCustom(
-                new MessageBoxCustomParams
-                {
-                    ButtonDefinitions = new List<ButtonDefinition>
-                    {
-                        new ButtonDefinition { Name = "Ok", },
-                    },
-                    ContentTitle = "Rename Image",
-                    ContentMessage = message,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    SizeToContent = SizeToContent.WidthAndHeight,
-                    MinWidth = 500
-                }
-            ).ShowWindowDialogAsync(Globals.MainWindow);
+            await MessageBoxHelper.ShowAsync(
+                "Rename Image",
+                message
+            );
         }
 
         public async Task RenameImage(ImageViewModel imageVm)
@@ -534,20 +487,10 @@ namespace ImagePerfect.ViewModels
 
         private static async Task ShowRotateImageMessage(string message)
         {
-            await MessageBoxManager.GetMessageBoxCustom(
-                new MessageBoxCustomParams
-                {
-                    ButtonDefinitions = new List<ButtonDefinition>
-                    {
-                        new ButtonDefinition { Name = "Ok" },
-                    },
-                    ContentTitle = "Rotate Image",
-                    ContentMessage = message,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    SizeToContent = SizeToContent.WidthAndHeight,
-                    MinWidth = 500
-                }
-            ).ShowWindowDialogAsync(Globals.MainWindow);
+            await MessageBoxHelper.ShowAsync(
+                "Rotate Image",
+                message
+            );
         }
 
 

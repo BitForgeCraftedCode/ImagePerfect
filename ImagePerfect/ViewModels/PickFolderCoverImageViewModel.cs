@@ -1,11 +1,7 @@
-using Avalonia.Controls;
-using ImagePerfect.Helpers;
+ï»¿using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.Repository;
 using Microsoft.Extensions.Configuration;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
 using MySqlConnector;
 using ReactiveUI;
 using ReactiveUI.Primitives;
@@ -53,20 +49,10 @@ namespace ImagePerfect.ViewModels
             pathCheck = PathHelper.RemoveOneFolderFromPath(pathCheck);
             if (pathCheck != folderVm.FolderPath)
             {
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = "Cover Image",
-                        ContentMessage = $"You can only select a cover image that is within its own folder.",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                        MinWidth = 500  // optional, so it doesn’t wrap too soon
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
+                await MessageBoxHelper.ShowAsync(
+                    "Cover Image",
+                    $"You can only select a cover image that is within its own folder."
+                );
                 return;
             }
             await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);

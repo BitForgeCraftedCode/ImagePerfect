@@ -1,13 +1,11 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
+using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.Repository;
 using ImagePerfect.Views;
 using Microsoft.Extensions.Configuration;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
 using MySqlConnector;
 using ReactiveUI;
 using ReactiveUI.Primitives;
@@ -884,23 +882,11 @@ namespace ImagePerfect.ViewModels
        
         private async Task DeleteLibrary()
         {
-            var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
-                new MessageBoxCustomParams
-                {
-                    ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Yes", },
-                            new ButtonDefinition { Name = "No", },
-                        },
-                    ContentTitle = "Delete Library",
-                    ContentMessage = $"Are you sure you want to delete your library? The images on the file system will remain.",
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                    MinWidth = 500  // optional, so it doesn’t wrap too soon
-                }
+            bool boxResult = await MessageBoxHelper.ShowYesNoAsync(
+                "Delete Library",
+                $"Are you sure you want to delete your library? The images on the file system will remain."
             );
-            var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
-            if (boxResult == "Yes")
+            if (boxResult)
             {
                 //remove all folders -- this will drop images as well. 
                 await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);

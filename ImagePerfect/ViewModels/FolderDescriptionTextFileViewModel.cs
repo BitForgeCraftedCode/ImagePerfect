@@ -1,4 +1,4 @@
-using Avalonia.Controls;
+ï»¿using Avalonia.Controls;
 using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.ObjectMappers;
@@ -34,38 +34,18 @@ namespace ImagePerfect.ViewModels
         {
             if (PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath) == _mainWindowViewModel.InitializeVm.RootFolderLocation)
             {
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = "Copy Description",
-                        ContentMessage = $"Cannot copy description from root folder.",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                        MinWidth = 500  // optional, so it doesn’t wrap too soon
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
+                await MessageBoxHelper.ShowAsync(
+                    "Copy Description",
+                    $"Cannot copy description from root folder."
+                );
                 return;
             }
             if (String.IsNullOrEmpty(folderVm.FolderDescription))
             {
-                await MessageBoxManager.GetMessageBoxCustom(
-                   new MessageBoxCustomParams
-                   {
-                       ButtonDefinitions = new List<ButtonDefinition>
-                       {
-                            new ButtonDefinition { Name = "Ok", },
-                       },
-                       ContentTitle = "Copy Description",
-                       ContentMessage = $"The folder must have a description to copy.",
-                       WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                       SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                       MinWidth = 500  // optional, so it doesn’t wrap too soon
-                   }
-               ).ShowWindowDialogAsync(Globals.MainWindow);
+                await MessageBoxHelper.ShowAsync(
+                    "Copy Description",
+                    $"The folder must have a description to copy."
+                );
                 return;
             }
             await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
@@ -73,23 +53,11 @@ namespace ImagePerfect.ViewModels
             Folder containingFolder = await folderMethods.GetFolderAtDirectory(PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath));
             if (!string.IsNullOrEmpty(containingFolder.FolderDescription))
             {
-                var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                            {
-                                new ButtonDefinition { Name = "Yes", },
-                                new ButtonDefinition { Name = "No", },
-                            },
-                        ContentTitle = "Copy Description",
-                        ContentMessage = $"Containing folder already has a description. Do you want to overwrite it?",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                        MinWidth = 500  // optional, so it doesn’t wrap too soon
-                    }
+                bool boxResult = await MessageBoxHelper.ShowYesNoAsync(
+                    "Copy Description",
+                    $"Containing folder already has a description. Do you want to overwrite it?"
                 );
-                var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
-                if (boxResult == "No")
+                if (!boxResult)
                 {
                     return;
                 }

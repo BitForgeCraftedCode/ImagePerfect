@@ -1,11 +1,7 @@
-using Avalonia.Controls;
-using ImagePerfect.Helpers;
+ï»¿using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.Repository;
 using Microsoft.Extensions.Configuration;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
 using MySqlConnector;
 using ReactiveUI;
 using System.Collections;
@@ -42,20 +38,10 @@ namespace ImagePerfect.ViewModels
         {
             if (selectedImages is null || selectedImages.Count == 0)
             {
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = "Move Image",
-                        ContentMessage = $"You need to select images to move.",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                        MinWidth = 500  // optional, so it doesn’t wrap too soon
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
+                await MessageBoxHelper.ShowAsync(
+                    "Move Image",
+                    $"You need to select images to move."
+                );
                 return;
             }
             await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
@@ -71,20 +57,10 @@ namespace ImagePerfect.ViewModels
             string pathCheck = PathHelper.FormatPathFromFolderPicker(_MoveImagesToFolderPath[0]);
             if (!pathCheck.Contains(rootFolder.FolderPath))
             {
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = "Move Images",
-                        ContentMessage = $"You can only move images to folders that are within your root library.",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                        MinWidth = 500  // optional, so it doesn’t wrap too soon
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
+                await MessageBoxHelper.ShowAsync(
+                    "Move Images",
+                    $"You can only move images to folders that are within your root library."
+                );
                 return;
             }
             //set the move to directory

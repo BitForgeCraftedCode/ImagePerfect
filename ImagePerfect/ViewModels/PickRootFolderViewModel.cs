@@ -1,12 +1,8 @@
-using Avalonia.Controls;
-using ImagePerfect.Helpers;
+ï»¿using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.ObjectMappers;
 using ImagePerfect.Repository;
 using Microsoft.Extensions.Configuration;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
 using MySqlConnector;
 using ReactiveUI;
 using ReactiveUI.Primitives;
@@ -47,20 +43,10 @@ namespace ImagePerfect.ViewModels
             Folder? rootFolder = await folderMethods.GetRootFolder();
             if (rootFolder != null)
             {
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = "Add Library",
-                        ContentMessage = $"You already have a root library folder. You have to delete your library to add different one.",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                        MinWidth = 500  // optional, so it doesn’t wrap too soon
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
+                await MessageBoxHelper.ShowAsync(
+                    "Add Library",
+                    $"You already have a root library folder. You have to delete your library to add different one."
+                );
                 return;
             }
 

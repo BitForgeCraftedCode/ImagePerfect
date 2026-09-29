@@ -1,16 +1,11 @@
-using Avalonia.Controls;
-using ImagePerfect.Helpers;
+ï»¿using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.ObjectMappers;
 using ImagePerfect.Repository;
 using Microsoft.Extensions.Configuration;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
 using MySqlConnector;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -38,20 +33,10 @@ namespace ImagePerfect.ViewModels
             bool success = await folderMethods.UpdateFolder(folder);
             if (!success)
             {
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = $"Add {fieldUpdated}",
-                        ContentMessage = $"Folder {fieldUpdated} update error. Try again",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                        MinWidth = 500  // optional, so it doesn’t wrap too soon
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
+                await MessageBoxHelper.ShowAsync(
+                    $"Add {fieldUpdated}",
+                    $"Folder {fieldUpdated} update error. Try again"
+                );
                 return;
             }
         }
@@ -120,23 +105,11 @@ namespace ImagePerfect.ViewModels
             //nothing selected just return
             if (selectedTag == null)
                 return;
-            var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
-            new MessageBoxCustomParams
-                {
-                    ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Yes", },
-                            new ButtonDefinition { Name = "No", },
-                        },
-                    ContentTitle = "Remove Tag",
-                    ContentMessage = $"CAUTION you are about to remove a tag this could take a long time are you sure?",
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                    MinWidth = 500  // optional, so it doesn’t wrap too soon
-                }
+            bool boxResult = await MessageBoxHelper.ShowYesNoAsync(
+                "Remove Tag",
+                $"CAUTION you are about to remove a tag this could take a long time are you sure?"
             );
-            var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
-            if (boxResult != "Yes")
+            if (!boxResult)
                 return;
 
             await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
@@ -176,25 +149,13 @@ namespace ImagePerfect.ViewModels
             (List<Folder> folders, List<FolderTag> tags) folderResults = await folderMethods.GetFoldersInDirectory(_mainWindowViewModel.ExplorerVm.CurrentDirectory, _mainWindowViewModel.ExplorerVm.LoadFoldersAscending);
             List<Folder> folders = folderResults.folders;
 
-            var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
-            new MessageBoxCustomParams
-            {
-                ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Yes", },
-                            new ButtonDefinition { Name = "No", },
-                        },
-                ContentTitle = "Add Tag To All Folders",
-                ContentMessage = $"You're about to add the tag {selectedTag.TagName} to all {folders.Count} folders in the current directory.\n\n"
+            bool boxResult = await MessageBoxHelper.ShowYesNoAsync(
+                "Add Tag To All Folders",
+                $"You're about to add the tag {selectedTag.TagName} to all {folders.Count} folders in the current directory.\n\n"
                 + "Important: This action affects only the folders in the current directory - not any folders shown because of filters or searches. \n\n"
-                + "Make sure you have the current directory loaded before continuing.\nDo you want to proceed?",
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                MinWidth = 500  // optional, so it doesn’t wrap too soon
-            }
+                + "Make sure you have the current directory loaded before continuing.\nDo you want to proceed?"
             );
-            var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
-            if (boxResult != "Yes")
+            if (!boxResult)
                 return;
             _mainWindowViewModel.ShowLoading = true;
             try
@@ -219,20 +180,10 @@ namespace ImagePerfect.ViewModels
         }
         private static async Task ShowRenameFolderMessage(string message)
         {
-            await MessageBoxManager.GetMessageBoxCustom(
-                new MessageBoxCustomParams
-                {
-                    ButtonDefinitions = new List<ButtonDefinition>
-                    {
-                        new ButtonDefinition { Name = "Ok", },
-                    },
-                    ContentTitle = "Rename Folder",
-                    ContentMessage = message,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    SizeToContent = SizeToContent.WidthAndHeight,
-                    MinWidth = 500
-                }
-            ).ShowWindowDialogAsync(Globals.MainWindow);
+            await MessageBoxHelper.ShowAsync(
+                "Rename Folder",
+                message
+            );
         }
         public async Task RenameFolder(FolderViewModel folderVm)
         {

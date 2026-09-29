@@ -1,4 +1,4 @@
-using Avalonia.Controls;
+ï»¿using Avalonia.Controls;
 using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.Repository;
@@ -48,20 +48,10 @@ namespace ImagePerfect.ViewModels
             Folder? rootFolder = await folderMethods.GetRootFolder();
             if (rootFolder == null)
             {
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = "Add Folders",
-                        ContentMessage = $"You need to add a root library folder first before new folders can be added to it.",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                        MinWidth = 500  // optional, so it doesn’t wrap too soon
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
+                await MessageBoxHelper.ShowAsync(
+                    "Add Folders",
+                    $"You need to add a root library folder first before new folders can be added to it."
+                );
                 return;
             }
 
@@ -75,20 +65,10 @@ namespace ImagePerfect.ViewModels
             string pathCheck = PathHelper.FormatPathFromFolderPicker(_NewFolders[0]);
             if (!pathCheck.Contains(rootFolder.FolderPath))
             {
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = "Add Folders",
-                        ContentMessage = $"You can only add folders that are within your root library folder.",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                        MinWidth = 500  // optional, so it doesn’t wrap too soon
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
+                await MessageBoxHelper.ShowAsync(
+                    "Add Folders",
+                    $"You can only add folders that are within your root library folder."
+                );
                 return;
             }
             //check for parent folder -- must add parent folder 1st to prevent double import
@@ -96,20 +76,10 @@ namespace ImagePerfect.ViewModels
             List<Folder> parentFolderDirTree = await folderMethods.GetDirectoryTree(parentDirectory);
             if (parentFolderDirTree.Count == 0)
             {
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = "Add Folders",
-                        ContentMessage = $"Add the parent folder first.",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                        MinWidth = 500  // optional, so it doesn’t wrap too soon
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
+                await MessageBoxHelper.ShowAsync(
+                    "Add Folders",
+                    $"Add the parent folder first."
+                );
                 return;
             }
             _mainWindowViewModel.ShowLoading = true;
@@ -173,20 +143,10 @@ namespace ImagePerfect.ViewModels
             }
             if (_NewFolders.Count == 0) 
             {
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = "Add Folders",
-                        ContentMessage = $"All the folders selected are already in the library.",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                        MinWidth = 500  // optional, so it doesn’t wrap too soon
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
+                await MessageBoxHelper.ShowAsync(
+                    "Add Folders",
+                    $"All the folders selected are already in the library."
+                );
                 _mainWindowViewModel.ShowLoading = false;
                 return;
             }

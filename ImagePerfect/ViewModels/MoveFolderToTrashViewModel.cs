@@ -1,11 +1,7 @@
-using Avalonia.Controls;
-using ImagePerfect.Helpers;
+﻿using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.Repository;
 using Microsoft.Extensions.Configuration;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
 using MySqlConnector;
 using Serilog;
 using System;
@@ -35,41 +31,17 @@ namespace ImagePerfect.ViewModels
             List<Folder> folderAndSubFolders = await folderMethods.GetDirectoryTree(folderVm.FolderPath);
             if (folderAndSubFolders.Count > 1)
             {
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = "Delete Folder From Database",
-                        ContentMessage = $"\"{folderVm.FolderName}\"\n\nThe above folder contains subfolders.\nPlease delete or move those first before removing this folder.",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.Manual,
-                        Width = 500,
-                        Height = double.NaN,
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
+                await MessageBoxHelper.ShowAsync(
+                    "Delete Folder From Database",
+                    $"\"{folderVm.FolderName}\"\n\nThe above folder contains subfolders.\nPlease delete or move those first before removing this folder."
+                );
                 return;
             }
-            var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
-                new MessageBoxCustomParams
-                {
-                    ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Yes", },
-                            new ButtonDefinition { Name = "No", },
-                        },
-                    ContentTitle = "Delete Folder From Database",
-                    ContentMessage = $"\"{folderVm.FolderName}\"\n\nAre you sure you want to delete this folder from the database?\nThe physical folder itself (if there) will remain in its current location. ",
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    SizeToContent = SizeToContent.Manual,
-                    Width = 500,
-                    Height = double.NaN,
-                }
+            bool boxResult = await MessageBoxHelper.ShowYesNoAsync(
+                "Delete Folder From Database",
+                $"\"{folderVm.FolderName}\"\n\nAre you sure you want to delete this folder from the database?\nThe physical folder itself (if there) will remain in its current location. "
             );
-            var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
-            if (boxResult == "Yes")
+            if (boxResult)
             {
                 try
                 {
@@ -119,41 +91,17 @@ namespace ImagePerfect.ViewModels
             List<Folder> folderAndSubFolders = await folderMethods.GetDirectoryTree(folderVm.FolderPath);
             if (folderAndSubFolders.Count > 1) 
             {
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = "Delete Folder",
-                        ContentMessage = $"\"{folderVm.FolderName}\"\n\nThe above folder contains subfolders.\nPlease delete or move those first before removing this folder.",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.Manual,
-                        Width = 500,
-                        Height = double.NaN,
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
+                await MessageBoxHelper.ShowAsync(
+                    "Delete Folder",
+                    $"\"{folderVm.FolderName}\"\n\nThe above folder contains subfolders.\nPlease delete or move those first before removing this folder."
+                );
                 return;
             }
-            var boxYesNo = MessageBoxManager.GetMessageBoxCustom(
-                new MessageBoxCustomParams
-                {
-                    ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Yes", },
-                            new ButtonDefinition { Name = "No", },
-                        },
-                    ContentTitle = "Delete Folder",
-                    ContentMessage = $"\"{folderVm.FolderName}\"\n\nAre you sure you want to move the above folder to trash?",
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    SizeToContent = SizeToContent.Manual, 
-                    Width = 500,
-                    Height= double.NaN,
-                }
+            bool boxResult = await MessageBoxHelper.ShowYesNoAsync(
+                "Delete Folder",
+                $"\"{folderVm.FolderName}\"\n\nAre you sure you want to move the above folder to trash?"
             );
-            var boxResult = await boxYesNo.ShowWindowDialogAsync(Globals.MainWindow);
-            if (boxResult == "Yes") 
+            if (boxResult)
             {
                 try
                 {
@@ -198,21 +146,10 @@ namespace ImagePerfect.ViewModels
                     }
                     else
                     {
-                        await MessageBoxManager.GetMessageBoxCustom(
-                            new MessageBoxCustomParams
-                            {
-                                ButtonDefinitions = new List<ButtonDefinition>
-                                {
-                                    new ButtonDefinition { Name = "Ok", },
-                                },
-                                ContentTitle = "Delete Folder",
-                                ContentMessage = $"\"{folderVm.FolderName}\"\n\nThe above folder is no longer in the directory\n{pathThatContainsFolder}.\nPlease check your filesystem for it.",
-                                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                                SizeToContent = SizeToContent.Manual,
-                                Width = 500,
-                                Height = double.NaN,
-                            }
-                        ).ShowWindowDialogAsync(Globals.MainWindow);
+                        await MessageBoxHelper.ShowAsync(
+                            "Delete Folder",
+                            $"\"{folderVm.FolderName}\"\n\nThe above folder is no longer in the directory\n{pathThatContainsFolder}.\nPlease check your filesystem for it."
+                        );
                         _mainWindowViewModel.ShowLoading = false;
                         return;
                     }

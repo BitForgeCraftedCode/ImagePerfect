@@ -1,12 +1,7 @@
-using System;
-using System.Collections.Generic;
-using MsBox.Avalonia;
+ï»¿using System;
 using System.Diagnostics;
 using System.IO;
 using ImagePerfect.Helpers;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Models;
-using Avalonia.Controls;
 using System.Threading.Tasks;
 
 namespace ImagePerfect.ViewModels
@@ -24,20 +19,10 @@ namespace ImagePerfect.ViewModels
             string imagePathForProcessStart = PathHelper.FormatFilePathForProcessStart(imageVm.ImagePath);
             if (!File.Exists(imageVm.ImagePath))
             {
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = "Open Image",
-                        ContentMessage = $"This image file no longer exists.",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                        MinWidth = 500  // optional, so it doesn’t wrap too soon
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
+                await MessageBoxHelper.ShowAsync(
+                    "Open Image",
+                    $"This image file no longer exists."
+                );
                 return;
             }
             if (File.Exists(externalImageViewerExePath))
@@ -53,45 +38,25 @@ namespace ImagePerfect.ViewModels
                 }
                 catch (Exception ex) 
                 {
-                    await MessageBoxManager.GetMessageBoxCustom(
-                        new MessageBoxCustomParams
-                        {
-                            ButtonDefinitions = new List<ButtonDefinition>
-                            {
-                                new ButtonDefinition { Name = "Ok", },
-                            },
-                            ContentTitle = "Error",
-                            ContentMessage = $"Failed to launch external viewer:\n{ex.Message}",
-                            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                            SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                            MinWidth = 500  // optional, so it doesn’t wrap too soon
-                        }
-                    ).ShowWindowDialogAsync(Globals.MainWindow);
+                    await MessageBoxHelper.ShowAsync(
+                        "Error",
+                        $"Failed to launch external viewer:\n{ex.Message}"
+                    );
                 }
                 
             }
             else
             {
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = "No External Viewer Configured",
-                        ContentMessage = $"To open images, you need to choose an external image viewer.\n\n" +
-                        $"What to do:\n" +
-                        $"1. Install an image viewer if you don't already have one.\n" +
-                        $"      -Windows suggestions: Nomacs, XnView, IrfanView\n" +
-                        $"      -Linux suggestions: Eye of GNOME (/usr/bin/eog), gThumb, Gwenview\n" +
-                        $"2. In ImagePerfect, go to Settings -> Pick External Image Viewer and select the viewer's executable file.\n" +
-                        $"      -Example: C:\\Program Files\\nomacs\\bin\\nomacs.exe\n",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                        MinWidth = 500  // optional, so it doesn’t wrap too soon
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
+                await MessageBoxHelper.ShowAsync(
+                    "No External Viewer Configured",
+                    $"To open images, you need to choose an external image viewer.\n\n" +
+                    $"What to do:\n" +
+                    $"1. Install an image viewer if you don't already have one.\n" +
+                    $"      -Windows suggestions: Nomacs, XnView, IrfanView\n" +
+                    $"      -Linux suggestions: Eye of GNOME (/usr/bin/eog), gThumb, Gwenview\n" +
+                    $"2. In ImagePerfect, go to Settings -> Pick External Image Viewer and select the viewer's executable file.\n" +
+                    $"      -Example: C:\\Program Files\\nomacs\\bin\\nomacs.exe\n"
+                );
                 return;
             }
         }
@@ -101,23 +66,13 @@ namespace ImagePerfect.ViewModels
             string folderPathForProcessStart = PathHelper.FormatFilePathForProcessStart(_mainWindowViewModel.ExplorerVm.CurrentDirectory);
             if (!File.Exists(externalFileExplorerExePath)) 
             {
-                await MessageBoxManager.GetMessageBoxCustom(
-                    new MessageBoxCustomParams
-                    {
-                        ButtonDefinitions = new List<ButtonDefinition>
-                        {
-                            new ButtonDefinition { Name = "Ok", },
-                        },
-                        ContentTitle = "Open Directory Error",
-                        ContentMessage = $"Your operating system's default file manager could not be found.\n\n" +
-                        $"Windows: expected at C:\\Windows\\explorer.exe\n" +
-                        $"Linux: expected xdg-open at /usr/bin/xdg-open\n\n" +
-                        $"If this tool is installed and you still see this message, please submit a bug report.",
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                        SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                        MinWidth = 500  // optional, so it doesn’t wrap too soon
-                    }
-                ).ShowWindowDialogAsync(Globals.MainWindow);
+                await MessageBoxHelper.ShowAsync(
+                    "Open Directory Error",
+                    $"Your operating system's default file manager could not be found.\n\n" +
+                    $"Windows: expected at C:\\Windows\\explorer.exe\n" +
+                    $"Linux: expected xdg-open at /usr/bin/xdg-open\n\n" +
+                    $"If this tool is installed and you still see this message, please submit a bug report."
+                );
                 return;
             }
             if (Directory.Exists(_mainWindowViewModel.ExplorerVm.CurrentDirectory))
@@ -133,21 +88,11 @@ namespace ImagePerfect.ViewModels
                 }
                 catch (Exception ex) 
                 {
-                    await MessageBoxManager.GetMessageBoxCustom(
-                        new MessageBoxCustomParams
-                        {
-                            ButtonDefinitions = new List<ButtonDefinition>
-                            {
-                                new ButtonDefinition { Name = "Ok", },
-                            },
-                            ContentTitle = "Open Directory Error",
-                            ContentMessage = $"Failed to open directory in default file manager:\n{ex.Message}.\n\n" +
-                            $"Please submit this error message as a bug report.",
-                            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                            SizeToContent = SizeToContent.WidthAndHeight,  // <-- lets it grow with content
-                            MinWidth = 500  // optional, so it doesn’t wrap too soon
-                        }
-                    ).ShowWindowDialogAsync(Globals.MainWindow);
+                    await MessageBoxHelper.ShowAsync(
+                        "Open Directory Error",
+                        $"Failed to open directory in default file manager:\n{ex.Message}.\n\n" +
+                        $"Please submit this error message as a bug report."
+                    );
                 }
             }
         }
