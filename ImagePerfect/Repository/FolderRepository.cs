@@ -119,6 +119,18 @@ namespace ImagePerfect.Repository
             return (allFoldersAtRating,tags);
         }
 
+        /*
+            SELECT folders.* FROM folders
+	            JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId
+	            JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.FolderRating = 0 AND tags.TagName IN ('Vacation','Hiking')
+                GROUP BY folders.FolderId HAVING COUNT(DISTINCT tags.TagName) = 2 ORDER BY folders.FolderPath, folders.FolderName;
+
+            -- The JOINs find the tags belonging to each folder. The WHERE clause initially
+            -- finds rating 0 folders having either Vacation or Hiking. GROUP BY combines
+            -- the matching tag rows back into one row per folder, and HAVING requires that
+            -- both distinct tags were found, so only folders tagged with BOTH Vacation
+            -- and Hiking are returned.
+        */
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithRatingAndTag(int rating, List<string> tagNames, bool filterInCurrentDirectory, string currentDirectory)
         {
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
@@ -153,6 +165,164 @@ namespace ImagePerfect.Repository
             List<Folder> allFoldersWithRatingAndTag = (await _connection.QueryAsync<Folder>(sql1, new { path, rating, tagNames, requiredCount }, transaction: txn)).ToList();
             List<FolderTag> tags = (await _connection.QueryAsync<FolderTag>(sql2, new { path, rating, tagNames, requiredCount }, transaction: txn)).ToList();
             await txn.CommitAsync();
+            return (allFoldersWithRatingAndTag, tags);
+        }
+
+        /*
+            NOT EXISTS returns TRUE when the subquery returns no rows, and FALSE when it returns at least one row.
+
+            SELECT folders.* FROM folders
+                JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId
+                JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.FolderRating = 0 AND tags.TagName IN ('Vacation','Hiking')
+                AND NOT EXISTS (
+                    SELECT 1 FROM folder_tags_join ftjExclude
+                    JOIN tags tExclude ON ftjExclude.TagId = tExclude.TagId
+                    WHERE ftjExclude.FolderId = folders.FolderId
+                    AND tExclude.TagName IN ('RootFolder')
+                )
+                GROUP BY folders.FolderId HAVING COUNT(DISTINCT tags.TagName) = 2 ORDER BY folders.FolderPath, folders.FolderName;
+
+            -- The JOINs and WHERE clause initially find rating 0 folders having either
+            -- Vacation or Hiking. NOT EXISTS removes any folder that also has RootFolder.
+            -- GROUP BY/HAVING then requires that both Vacation and Hiking were found, so
+            -- the final result contains only rating 0 folders having BOTH Vacation and
+            -- Hiking, but NOT RootFolder.
+
+            -- NOT EXISTS checks each folder from the outer query to see if that folder
+            -- has a tag matching one of the excluded tags. The subquery independently
+            -- searches folder_tags_join/tags for the current folder (ftjExclude.FolderId = folders.FolderId)
+            -- If a RootFolder row is found, EXISTS
+            -- is TRUE and NOT EXISTS becomes FALSE, so that folder is excluded. If no
+            -- RootFolder row is found, EXISTS is FALSE and NOT EXISTS becomes TRUE, so
+            -- the folder is kept.
+         */
+        public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithRatingAndTagExcludingTag(int rating, List<string>? tagNames, List<string>? tagNamesExclude, bool filterInCurrentDirectory, string currentDirectory)
+        {
+            MySqlTransaction txn = await _connection.BeginTransactionAsync();
+            string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
+            string sql1 = string.Empty;
+            string sql2 = string.Empty;
+
+            int requiredCount = tagNames?.Count ?? 0;
+
+            if (filterInCurrentDirectory)
+            {
+                //includeTags and excludeTags
+                if (requiredCount > 0 && tagNamesExclude?.Count > 0)
+                {
+                    sql1 = $@"SELECT folders.* FROM folders
+                    JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId
+                    JOIN tags ON folder_tags_join.TagId = tags.TagId 
+                    WHERE folders.FolderRating = @rating 
+                    AND tags.TagName IN @tagNames 
+                    AND folders.FolderPath LIKE @path
+                    AND NOT EXISTS (
+                        SELECT 1 FROM folder_tags_join ftjExclude
+                        JOIN tags tExclude ON ftjExclude.TagId = tExclude.TagId
+                        WHERE ftjExclude.FolderId = folders.FolderId
+                        AND tExclude.TagName IN @tagNamesExclude
+                    )
+                    GROUP BY folders.FolderId 
+                    HAVING COUNT(DISTINCT tags.TagName) = @requiredCount 
+                    ORDER BY folders.FolderPath, folders.FolderName;";
+                }
+                //includeTags only
+                else if (requiredCount > 0)
+                {
+                    sql1 = $@"SELECT folders.* FROM folders
+                    JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId
+                    JOIN tags ON folder_tags_join.TagId = tags.TagId 
+                    WHERE folders.FolderRating = @rating 
+                    AND tags.TagName IN @tagNames 
+                    AND folders.FolderPath LIKE @path
+                    GROUP BY folders.FolderId 
+                    HAVING COUNT(DISTINCT tags.TagName) = @requiredCount 
+                    ORDER BY folders.FolderPath, folders.FolderName;";
+                }
+                //excludeTags only -- Example: Rating 10 and Not RootFolder
+                else
+                {
+                    sql1 = $@"SELECT folders.* FROM folders
+                    WHERE folders.FolderRating = @rating 
+                    AND folders.FolderPath LIKE @path
+                    AND NOT EXISTS (
+                        SELECT 1 FROM folder_tags_join ftjExclude
+                        JOIN tags tExclude ON ftjExclude.TagId = tExclude.TagId
+                        WHERE ftjExclude.FolderId = folders.FolderId
+                        AND tExclude.TagName IN @tagNamesExclude
+                    )
+                    ORDER BY folders.FolderPath, folders.FolderName;";
+                }
+
+                sql2 = $@"SELECT tags.TagId, tags.TagName, folders.FolderId FROM folders 
+                JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId 
+                JOIN tags ON folder_tags_join.TagId = tags.TagId 
+                WHERE folders.FolderRating = @rating 
+                AND folders.FolderPath LIKE @path 
+                ORDER BY folders.FolderPath, folders.FolderName;";
+            }
+            else
+            {
+                if (requiredCount > 0 && tagNamesExclude?.Count > 0)
+                {
+                    sql1 = $@"SELECT folders.* FROM folders
+                    JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId
+                    JOIN tags ON folder_tags_join.TagId = tags.TagId 
+                    WHERE folders.FolderRating = @rating 
+                    AND tags.TagName IN @tagNames
+                    AND NOT EXISTS (
+                        SELECT 1 FROM folder_tags_join ftjExclude
+                        JOIN tags tExclude ON ftjExclude.TagId = tExclude.TagId
+                        WHERE ftjExclude.FolderId = folders.FolderId
+                        AND tExclude.TagName IN @tagNamesExclude
+                    )
+                    GROUP BY folders.FolderId 
+                    HAVING COUNT(DISTINCT tags.TagName) = @requiredCount 
+                    ORDER BY folders.FolderPath, folders.FolderName;";
+                }
+                else if (requiredCount > 0)
+                {
+                    sql1 = $@"SELECT folders.* FROM folders
+                    JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId
+                    JOIN tags ON folder_tags_join.TagId = tags.TagId 
+                    WHERE folders.FolderRating = @rating 
+                    AND tags.TagName IN @tagNames
+                    GROUP BY folders.FolderId 
+                    HAVING COUNT(DISTINCT tags.TagName) = @requiredCount 
+                    ORDER BY folders.FolderPath, folders.FolderName;";
+                }
+                else
+                {
+                    sql1 = $@"SELECT folders.* FROM folders
+                    WHERE folders.FolderRating = @rating 
+                    AND NOT EXISTS (
+                        SELECT 1 FROM folder_tags_join ftjExclude
+                        JOIN tags tExclude ON ftjExclude.TagId = tExclude.TagId
+                        WHERE ftjExclude.FolderId = folders.FolderId
+                        AND tExclude.TagName IN @tagNamesExclude
+                    )
+                    ORDER BY folders.FolderPath, folders.FolderName;";
+                }
+
+                sql2 = @"SELECT tags.TagId, tags.TagName, folders.FolderId FROM folders 
+                JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId 
+                JOIN tags ON folder_tags_join.TagId = tags.TagId 
+                WHERE folders.FolderRating = @rating 
+                ORDER BY folders.FolderPath, folders.FolderName;";
+            }
+
+            List<Folder> allFoldersWithRatingAndTag = (await _connection.QueryAsync<Folder>(
+                sql1,
+                new { path, rating, tagNames, tagNamesExclude, requiredCount },
+                transaction: txn)).ToList();
+
+            List<FolderTag> tags = (await _connection.QueryAsync<FolderTag>(
+                sql2,
+                new { path, rating, tagNames, tagNamesExclude, requiredCount },
+                transaction: txn)).ToList();
+
+            await txn.CommitAsync();
+
             return (allFoldersWithRatingAndTag, tags);
         }
 

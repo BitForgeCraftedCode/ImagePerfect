@@ -56,6 +56,7 @@ namespace ImagePerfect.ViewModels
             ImageTagsFilter,
             FolderTagsFilter,
             FolderTagAndRatingFilter,
+            FolderTagAndRatingFilterWithExclude, //update SavedDirVM
             FolderDescriptionFilter,
             FolderDescriptionAndTagsFilter,
             FolderAlphabeticalFilter,
@@ -77,10 +78,13 @@ namespace ImagePerfect.ViewModels
         public DateTimeOffset endDateForFilter;
         public string textForFilter = string.Empty;
         public List<string> tagsForFilter = new List<string>();
+        public List<string> tagsForExcludeFilter = new List<string>();
         public List<string> tagsForFolderFilter = new List<string>();
         public List<string> tagsForImageFilter = new List<string>();
         public List<string> tagsForFolderDescriptionAndTagsFilter = new List<string>();
         private int _comboFolderFilterRating = 10;
+        private IList<Tag> _selectedIncludeFolderFilterTags = [];
+        private IList<Tag> _selectedExcludeFolderFilterTags = [];
         private bool _filterInCurrentDirectory = true;
         private bool _loadFoldersAscending = true;
         private bool _loadImagesAscending = true;
@@ -152,6 +156,18 @@ namespace ImagePerfect.ViewModels
         {
             get => _comboFolderFilterRating;
             set => this.RaiseAndSetIfChanged(ref _comboFolderFilterRating, value);
+        }
+
+        public IList<Tag> SelectedIncludeFolderFilterTags
+        {
+            get => _selectedIncludeFolderFilterTags;
+            set => this.RaiseAndSetIfChanged(ref _selectedIncludeFolderFilterTags, value);
+        }
+
+        public IList<Tag> SelectedExcludeFolderFilterTags
+        {
+            get => _selectedExcludeFolderFilterTags;
+            set => this.RaiseAndSetIfChanged(ref _selectedExcludeFolderFilterTags, value);
         }
 
         public string TextForFolderDescriptionAndTagsFilter
@@ -567,6 +583,10 @@ namespace ImagePerfect.ViewModels
                     (List<Folder> folders, List<FolderTag> tags) folderRatingAndTagResult = await folderMethods.GetAllFoldersWithRatingAndTag(ComboFolderFilterRating, tagsForFilter, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolders(folderRatingAndTagResult);
                     break;
+                case Filters.FolderTagAndRatingFilterWithExclude:
+                    (List<Folder> folders, List<FolderTag> tags) folderRatingAndTagWithExcludeResult = await folderMethods.GetAllFoldersWithRatingAndTagExcludingTag(ComboFolderFilterRating, tagsForFilter, tagsForExcludeFilter, FilterInCurrentDirectory, CurrentDirectory);
+                    await SetDisplayFoldersForRefreshFolders(folderRatingAndTagWithExcludeResult);
+                    break;
                 case Filters.FolderDescriptionFilter:
                     (List<Folder> folders, List<FolderTag> tags) folderDescriptionResult = await folderMethods.GetAllFoldersWithDescriptionText(textForFilter, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolders(folderDescriptionResult);
@@ -684,6 +704,10 @@ namespace ImagePerfect.ViewModels
                 case Filters.FolderTagAndRatingFilter:
                     (List<Folder> folders, List<FolderTag> tags) folderRatingAndTagResult = await folderMethods.GetAllFoldersWithRatingAndTag(ComboFolderFilterRating, tagsForFilter, FilterInCurrentDirectory, CurrentDirectory);
                     await SetDisplayFoldersForRefreshFolderProps(folderRatingAndTagResult, folderVm);
+                    break;
+                case Filters.FolderTagAndRatingFilterWithExclude:
+                    (List<Folder> folders, List<FolderTag> tags) folderRatingAndTagWithExcludeResult = await folderMethods.GetAllFoldersWithRatingAndTagExcludingTag(ComboFolderFilterRating, tagsForFilter, tagsForExcludeFilter, FilterInCurrentDirectory, CurrentDirectory);
+                    await SetDisplayFoldersForRefreshFolderProps(folderRatingAndTagWithExcludeResult, folderVm);
                     break;
                 case Filters.FolderDescriptionFilter:
                     (List<Folder> folders, List<FolderTag> tags) folderDescriptionResult = await folderMethods.GetAllFoldersWithDescriptionText(textForFilter, FilterInCurrentDirectory, CurrentDirectory);

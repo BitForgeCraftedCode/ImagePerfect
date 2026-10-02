@@ -50,6 +50,11 @@ namespace ImagePerfect.Models
             return await _unitOfWork.Folder.GetAllFoldersWithRatingAndTag(rating, tagNames, filterInCurrentDirectory, currentDirectory);
         }
 
+        public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithRatingAndTagExcludingTag(int rating, List<string>? tagNames, List<string>? tagNamesExclude, bool filterInCurrentDirectory, string currentDirectory)
+        {
+            return await _unitOfWork.Folder.GetAllFoldersWithRatingAndTagExcludingTag(rating, tagNames, tagNamesExclude, filterInCurrentDirectory, currentDirectory);
+        }
+
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithNoImportedImages(bool filterInCurrentDirectory, string currentDirectory)
         {
             return await _unitOfWork.Folder.GetAllFoldersWithNoImportedImages(filterInCurrentDirectory, currentDirectory);

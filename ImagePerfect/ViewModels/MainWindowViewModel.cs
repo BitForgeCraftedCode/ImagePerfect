@@ -99,6 +99,7 @@ namespace ImagePerfect.ViewModels
         private ReactiveCommand<RxVoid, Task> _filterFoldersDateModifiedInCurrentDirectoryCommand;
         private ReactiveCommand<string, Task> _filterFoldersInCurrentDirectoryByStartingLetterCommand;
         private ReactiveCommand<IList, Task> _filterFolderOnRatingAndTagCommand;
+        private ReactiveCommand<RxVoid, Task> _filterFolderOnRatingAndTagExcludeCommand;
         private ReactiveCommand<decimal, Task> _filterFoldersOnRatingCommand;
         private ReactiveCommand<IList, Task> _filterFolderOnTagsCommand;
         private ReactiveCommand<string, Task> _filterFoldersOnDescriptionCommand;
@@ -475,6 +476,20 @@ namespace ImagePerfect.ViewModels
                 ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderTagAndRatingFilter;
                 await ExplorerVm.RefreshFolders();
             });
+            _filterFolderOnRatingAndTagExcludeCommand = ReactiveCommand.Create(async () => { 
+                List<Tag> selectedIncludeTags = ExplorerVm.SelectedIncludeFolderFilterTags.OfType<Tag>().ToList();
+                List<Tag> selectedExcludeTags = ExplorerVm.SelectedExcludeFolderFilterTags.OfType<Tag>().ToList();
+                if (selectedIncludeTags.Count() == 0 && selectedExcludeTags.Count() == 0)
+                    return;
+                List<string> tagsForIncludeFilter = selectedIncludeTags.Select(t => t.TagName).ToList();
+                List<string> tagsForExcludeFilter = selectedExcludeTags.Select(t => t.TagName).ToList();
+                ExplorerVm.tagsForFilter = tagsForIncludeFilter;
+                ExplorerVm.tagsForExcludeFilter = tagsForExcludeFilter;
+                ExplorerVm.ResetPagination();
+                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderTagAndRatingFilterWithExclude;
+                await ExplorerVm.RefreshFolders();
+
+            });
             _filterFoldersOnRatingCommand = ReactiveCommand.Create(async (decimal rating) => {
                 ExplorerVm.ResetPagination();
                 ExplorerVm.selectedRatingForFilter = Decimal.ToInt32(rating);
@@ -805,6 +820,7 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<string, Task> FilterFoldersInCurrentDirectoryByStartingLetterCommand { get => _filterFoldersInCurrentDirectoryByStartingLetterCommand; }
 
         public ReactiveCommand<IList, Task> FilterFolderOnRatingAndTagCommand { get => _filterFolderOnRatingAndTagCommand; }
+        public ReactiveCommand<RxVoid, Task> FilterFolderOnRatingAndTagExcludeCommand { get => _filterFolderOnRatingAndTagExcludeCommand; }
 
         public ReactiveCommand<decimal, Task> FilterFoldersOnRatingCommand { get => _filterFoldersOnRatingCommand; }
 
