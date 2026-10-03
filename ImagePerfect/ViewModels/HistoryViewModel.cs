@@ -100,13 +100,12 @@ namespace ImagePerfect.ViewModels
                 //update filter variables
                 SavedCurrentFilter = explorer.currentFilter,
                 SavedSelectedLetterForFilter = explorer.selectedLetterForFilter,
-                SavedSelectedRatingForFilter = explorer.selectedRatingForFilter,
+                SavedRatingForFilter = explorer.RatingForFilter,
                 SavedSelectedYearForFilter = explorer.selectedYearForFilter,
                 SavedSelectedMonthForFilter = explorer.selectedMonthForFilter,
                 SavedStartDateForFilter = explorer.startDateForFilter,
                 SavedEndDateForFilter = explorer.endDateForFilter,
                 SavedTextForFilter = explorer.textForFilter,
-                SavedComboFolderFilterRating = explorer.ComboFolderFilterRating,
                 SavedTextForFolderDescriptionAndTagsFilter = explorer.TextForFolderDescriptionAndTagsFilter,
                 SavedTagsForIncludeFilter = explorer.tagsForIncludeFilter,
                 SavedTagsForExcludeFilter = explorer.tagsForExcludeFilter,
@@ -334,13 +333,12 @@ namespace ImagePerfect.ViewModels
             //filter variables
             explorer.currentFilter = saveDirectoryItem.SavedCurrentFilter;
             explorer.selectedLetterForFilter = saveDirectoryItem.SavedSelectedLetterForFilter;
-            explorer.selectedRatingForFilter = saveDirectoryItem.SavedSelectedRatingForFilter;
+            explorer.RatingForFilter = saveDirectoryItem.SavedRatingForFilter;
             explorer.selectedYearForFilter = saveDirectoryItem.SavedSelectedYearForFilter;
             explorer.selectedMonthForFilter = saveDirectoryItem.SavedSelectedMonthForFilter;
             explorer.startDateForFilter = saveDirectoryItem.SavedStartDateForFilter;
             explorer.endDateForFilter = saveDirectoryItem.SavedEndDateForFilter;
             explorer.textForFilter = saveDirectoryItem.SavedTextForFilter;
-            explorer.ComboFolderFilterRating = saveDirectoryItem.SavedComboFolderFilterRating;
             explorer.TextForFolderDescriptionAndTagsFilter = saveDirectoryItem.SavedTextForFolderDescriptionAndTagsFilter;
             explorer.tagsForIncludeFilter = saveDirectoryItem.SavedTagsForIncludeFilter;
             explorer.tagsForExcludeFilter = saveDirectoryItem.SavedTagsForExcludeFilter;

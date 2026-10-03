@@ -47,7 +47,7 @@ namespace ImagePerfect.Models
         [NotMapped]
         public string SavedSelectedLetterForFilter { get; set; } = "A";
         [NotMapped]
-        public int SavedSelectedRatingForFilter { get; set; } = 0;
+        public int SavedRatingForFilter { get; set; } = 0;
         [NotMapped]
         public int SavedSelectedYearForFilter { get; set; } = 0;
         [NotMapped]
@@ -58,8 +58,6 @@ namespace ImagePerfect.Models
         public DateTimeOffset SavedEndDateForFilter { get; set; }
         [NotMapped]
         public string SavedTextForFilter { get; set; } = string.Empty;
-        [NotMapped]
-        public int SavedComboFolderFilterRating { get; set; } = 10;
         [NotMapped]
         public List<string> SavedTagsForIncludeFilter { get; set; } = new List<string>();
         [NotMapped]

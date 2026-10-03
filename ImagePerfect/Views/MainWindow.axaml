@@ -247,7 +247,7 @@
 				</Button>
 				<NumericUpDown Grid.Row="1" Grid.Column="0" Minimum="0" Maximum="10" Width="200" Height="32"
 								   Margin="5" ParsingNumberStyle="Integer" FormatString="0"
-								   Value="{Binding ExplorerVm.ComboFolderFilterRating}" />
+								   Value="{Binding ExplorerVm.RatingForFilter}" />
 
 				<ListBox Grid.Row="1" Grid.Column="1" x:Name="SelectedTagsForFolderFilter"  SelectionMode="Multiple" ItemsSource="{Binding TagsList}" Height="100" Width="200">
 					<ListBox.ItemTemplate>

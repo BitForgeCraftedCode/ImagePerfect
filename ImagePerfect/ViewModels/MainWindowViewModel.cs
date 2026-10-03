@@ -394,13 +394,13 @@ namespace ImagePerfect.ViewModels
             });
             _filterImagesOnRatingCommand = ReactiveCommand.Create(async (decimal rating) => {
                 ExplorerVm.ResetPagination();
-                ExplorerVm.selectedRatingForFilter = Decimal.ToInt32(rating);
+                ExplorerVm.RatingForFilter = Decimal.ToInt32(rating);
                 ExplorerVm.currentFilter = ExplorerViewModel.Filters.ImageRatingFilter;
                 await ExplorerVm.RefreshImages();
             });
             _filterFiveStarImagesInCurrentDirectoryCommand = ReactiveCommand.Create(async (decimal rating) => {
                 ExplorerVm.ResetPagination();
-                ExplorerVm.selectedRatingForFilter = Decimal.ToInt32(rating);
+                ExplorerVm.RatingForFilter = Decimal.ToInt32(rating);
                 ExplorerVm.currentFilter = ExplorerViewModel.Filters.FiveStarImagesInCurrentDirectory;
                 await ExplorerVm.RefreshImages();
             });
@@ -492,7 +492,7 @@ namespace ImagePerfect.ViewModels
             });
             _filterFoldersOnRatingCommand = ReactiveCommand.Create(async (decimal rating) => {
                 ExplorerVm.ResetPagination();
-                ExplorerVm.selectedRatingForFilter = Decimal.ToInt32(rating);
+                ExplorerVm.RatingForFilter = Decimal.ToInt32(rating);
                 ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderRatingFilter;
                 await ExplorerVm.RefreshFolders();
             });
