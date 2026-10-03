@@ -63,8 +63,6 @@ namespace ImagePerfect.Models
         [NotMapped]
         public List<string> SavedTagsForExcludeFilter { get; set; } = new List<string>();
         [NotMapped]
-        public string SavedTextForFolderDescriptionAndTagsFilter { get; set; } = string.Empty;
-        [NotMapped]
         public bool SavedFilterInCurrentDirectory { get; set; } = true;
         [NotMapped]
         public bool SavedLoadFoldersAscending { get; set; } = true;

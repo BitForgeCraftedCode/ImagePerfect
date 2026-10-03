@@ -105,8 +105,7 @@ namespace ImagePerfect.ViewModels
                 SavedSelectedMonthForFilter = explorer.selectedMonthForFilter,
                 SavedStartDateForFilter = explorer.startDateForFilter,
                 SavedEndDateForFilter = explorer.endDateForFilter,
-                SavedTextForFilter = explorer.textForFilter,
-                SavedTextForFolderDescriptionAndTagsFilter = explorer.TextForFolderDescriptionAndTagsFilter,
+                SavedTextForFilter = explorer.TextForFilter,
                 SavedTagsForIncludeFilter = explorer.tagsForIncludeFilter,
                 SavedTagsForExcludeFilter = explorer.tagsForExcludeFilter,
                 SavedFilterInCurrentDirectory = explorer.FilterInCurrentDirectory,
@@ -338,8 +337,7 @@ namespace ImagePerfect.ViewModels
             explorer.selectedMonthForFilter = saveDirectoryItem.SavedSelectedMonthForFilter;
             explorer.startDateForFilter = saveDirectoryItem.SavedStartDateForFilter;
             explorer.endDateForFilter = saveDirectoryItem.SavedEndDateForFilter;
-            explorer.textForFilter = saveDirectoryItem.SavedTextForFilter;
-            explorer.TextForFolderDescriptionAndTagsFilter = saveDirectoryItem.SavedTextForFolderDescriptionAndTagsFilter;
+            explorer.TextForFilter = saveDirectoryItem.SavedTextForFilter;
             explorer.tagsForIncludeFilter = saveDirectoryItem.SavedTagsForIncludeFilter;
             explorer.tagsForExcludeFilter = saveDirectoryItem.SavedTagsForExcludeFilter;
             explorer.FilterInCurrentDirectory = saveDirectoryItem.SavedFilterInCurrentDirectory;

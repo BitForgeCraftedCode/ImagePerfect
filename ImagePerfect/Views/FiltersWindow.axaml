@@ -101,7 +101,7 @@
 					</Button>
 
 
-					<TextBox Grid.Row="4" Grid.Column="0" Margin="5" MaxLength="200" Width="200" Text="{Binding ExplorerVm.TextForFolderDescriptionAndTagsFilter}" />
+					<TextBox Grid.Row="4" Grid.Column="0" Margin="5" MaxLength="200" Width="200" Text="{Binding ExplorerVm.TextForFilter}" />
 					<ListBox Grid.Row="4" Grid.Column="1" x:Name="SelectedTagsForFolderDescriptionFilter"  SelectionMode="Multiple" ItemsSource="{Binding TagsList}" Height="100" Width="200">
 						<ListBox.ItemTemplate>
 							<DataTemplate>

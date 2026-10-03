@@ -509,17 +509,17 @@ namespace ImagePerfect.ViewModels
             });
             _filterFoldersOnDescriptionCommand = ReactiveCommand.Create(async (string text) => {
                 ExplorerVm.ResetPagination();
-                ExplorerVm.textForFilter = text;
+                ExplorerVm.TextForFilter = text;
                 ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderDescriptionFilter;
                 await ExplorerVm.RefreshFolders();
             });
             _filterFoldersOnDescriptionAndTagsCommand = ReactiveCommand.Create(async (IList tags) =>
             {
                 List<Tag> selectedTags = tags.OfType<Tag>().ToList();
-                if (!selectedTags.Any() || String.IsNullOrEmpty(ExplorerVm.TextForFolderDescriptionAndTagsFilter))
+                if (!selectedTags.Any() || String.IsNullOrEmpty(ExplorerVm.TextForFilter))
                     return;
                 List<string> tagsForIncludeFilter = selectedTags.Select(t => t.TagName).ToList();
-                //TextForFolderDescriptionAndTagsFilter is bound to UI tags passed in as IList
+                //TextForFilter is bound to UI tags passed in as IList
                 ExplorerVm.tagsForIncludeFilter = tagsForIncludeFilter;
                 ExplorerVm.ResetPagination();
                 ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderDescriptionAndTagsFilter;
