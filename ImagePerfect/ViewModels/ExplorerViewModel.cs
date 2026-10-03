@@ -45,7 +45,7 @@ namespace ImagePerfect.ViewModels
         //max value between CurrentFolderPage or CurrentImagePage
         private int _maxCurrentPage = 1;
 
-        //Filters -- if you add new filter variables be sure to update SavedDirectoryVM
+        //Filters -- if you add new filter variables be sure to update SavedDirectory Model and HistoryViewModel
         public enum Filters
         {
             None,
@@ -56,7 +56,7 @@ namespace ImagePerfect.ViewModels
             ImageTagsFilter,
             FolderTagsFilter,
             FolderTagAndRatingFilter,
-            FolderTagAndRatingFilterWithExclude, //update SavedDirVM
+            FolderTagAndRatingFilterWithExclude,
             FolderDescriptionFilter,
             FolderDescriptionAndTagsFilter,
             FolderAlphabeticalFilter,

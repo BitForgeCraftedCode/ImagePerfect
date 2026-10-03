@@ -110,6 +110,7 @@ namespace ImagePerfect.ViewModels
                 SavedTagsForFolderDescriptionAndTagsFilter = explorer.tagsForFolderDescriptionAndTagsFilter,
                 SavedTextForFolderDescriptionAndTagsFilter = explorer.TextForFolderDescriptionAndTagsFilter,
                 SavedTagsForFilter = explorer.tagsForFilter,
+                SavedTagsForExcludeFilter = explorer.tagsForExcludeFilter,
                 SavedTagsForFolderFilter = explorer.tagsForFolderFilter,
                 SavedTagsForImageFilter = explorer.tagsForImageFilter,
                 SavedFilterInCurrentDirectory = explorer.FilterInCurrentDirectory,
@@ -346,6 +347,7 @@ namespace ImagePerfect.ViewModels
             explorer.tagsForFolderDescriptionAndTagsFilter = saveDirectoryItem.SavedTagsForFolderDescriptionAndTagsFilter;
             explorer.TextForFolderDescriptionAndTagsFilter = saveDirectoryItem.SavedTextForFolderDescriptionAndTagsFilter;
             explorer.tagsForFilter = saveDirectoryItem.SavedTagsForFilter;
+            explorer.tagsForExcludeFilter = saveDirectoryItem.SavedTagsForExcludeFilter;
             explorer.tagsForFolderFilter = saveDirectoryItem.SavedTagsForFolderFilter;
             explorer.tagsForImageFilter = saveDirectoryItem.SavedTagsForImageFilter;
             explorer.FilterInCurrentDirectory = saveDirectoryItem.SavedFilterInCurrentDirectory;

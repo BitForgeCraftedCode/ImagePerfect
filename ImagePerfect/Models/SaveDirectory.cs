@@ -63,6 +63,8 @@ namespace ImagePerfect.Models
         [NotMapped]
         public List<string> SavedTagsForFilter { get; set; } = new List<string>();
         [NotMapped]
+        public List<string> SavedTagsForExcludeFilter { get; set; } = new List<string>();
+        [NotMapped]
         public List<string> SavedTagsForFolderFilter { get; set; } = new List<string>();
         [NotMapped]
         public List<string> SavedTagsForImageFilter { get; set; } = new List<string>();
