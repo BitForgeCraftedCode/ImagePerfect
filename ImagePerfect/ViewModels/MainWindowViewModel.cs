@@ -438,8 +438,8 @@ namespace ImagePerfect.ViewModels
                 List<Tag> selectedTags = tags.OfType<Tag>().ToList();
                 if (!selectedTags.Any())
                     return;
-                List<string> tagsForFilter = selectedTags.Select(t => t.TagName).ToList();
-                ExplorerVm.tagsForImageFilter = tagsForFilter;
+                List<string> tagsForIncludeFilter = selectedTags.Select(t => t.TagName).ToList();
+                ExplorerVm.tagsForIncludeFilter = tagsForIncludeFilter;
                 ExplorerVm.ResetPagination();
                 ExplorerVm.currentFilter = ExplorerViewModel.Filters.ImageTagsFilter;
                 await ExplorerVm.RefreshImages();
@@ -470,8 +470,8 @@ namespace ImagePerfect.ViewModels
                 List<Tag> selectedTags = tags.OfType<Tag>().ToList();
                 if (!selectedTags.Any())
                     return;
-                List<string> tagsForFilter = selectedTags.Select(t => t.TagName).ToList();
-                ExplorerVm.tagsForFilter = tagsForFilter;
+                List<string> tagsForIncludeFilter = selectedTags.Select(t => t.TagName).ToList();
+                ExplorerVm.tagsForIncludeFilter = tagsForIncludeFilter;
                 ExplorerVm.ResetPagination();
                 ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderTagAndRatingFilter;
                 await ExplorerVm.RefreshFolders();
@@ -483,7 +483,7 @@ namespace ImagePerfect.ViewModels
                     return;
                 List<string> tagsForIncludeFilter = selectedIncludeTags.Select(t => t.TagName).ToList();
                 List<string> tagsForExcludeFilter = selectedExcludeTags.Select(t => t.TagName).ToList();
-                ExplorerVm.tagsForFilter = tagsForIncludeFilter;
+                ExplorerVm.tagsForIncludeFilter = tagsForIncludeFilter;
                 ExplorerVm.tagsForExcludeFilter = tagsForExcludeFilter;
                 ExplorerVm.ResetPagination();
                 ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderTagAndRatingFilterWithExclude;
@@ -501,8 +501,8 @@ namespace ImagePerfect.ViewModels
                 List<Tag> selectedTags = tags.OfType<Tag>().ToList();
                 if (!selectedTags.Any())
                     return;
-                List<string> tagsForFilter = selectedTags.Select(t => t.TagName).ToList();
-                ExplorerVm.tagsForFolderFilter = tagsForFilter;
+                List<string> tagsForIncludeFilter = selectedTags.Select(t => t.TagName).ToList();
+                ExplorerVm.tagsForIncludeFilter = tagsForIncludeFilter;
                 ExplorerVm.ResetPagination();
                 ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderTagsFilter;
                 await ExplorerVm.RefreshFolders();
@@ -518,9 +518,9 @@ namespace ImagePerfect.ViewModels
                 List<Tag> selectedTags = tags.OfType<Tag>().ToList();
                 if (!selectedTags.Any() || String.IsNullOrEmpty(ExplorerVm.TextForFolderDescriptionAndTagsFilter))
                     return;
-                List<string> tagsForFilter = selectedTags.Select(t => t.TagName).ToList();
+                List<string> tagsForIncludeFilter = selectedTags.Select(t => t.TagName).ToList();
                 //TextForFolderDescriptionAndTagsFilter is bound to UI tags passed in as IList
-                ExplorerVm.tagsForFolderDescriptionAndTagsFilter = tagsForFilter;
+                ExplorerVm.tagsForIncludeFilter = tagsForIncludeFilter;
                 ExplorerVm.ResetPagination();
                 ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderDescriptionAndTagsFilter;
                 await ExplorerVm.RefreshFolders();

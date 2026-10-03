@@ -107,12 +107,9 @@ namespace ImagePerfect.ViewModels
                 SavedEndDateForFilter = explorer.endDateForFilter,
                 SavedTextForFilter = explorer.textForFilter,
                 SavedComboFolderFilterRating = explorer.ComboFolderFilterRating,
-                SavedTagsForFolderDescriptionAndTagsFilter = explorer.tagsForFolderDescriptionAndTagsFilter,
                 SavedTextForFolderDescriptionAndTagsFilter = explorer.TextForFolderDescriptionAndTagsFilter,
-                SavedTagsForFilter = explorer.tagsForFilter,
+                SavedTagsForIncludeFilter = explorer.tagsForIncludeFilter,
                 SavedTagsForExcludeFilter = explorer.tagsForExcludeFilter,
-                SavedTagsForFolderFilter = explorer.tagsForFolderFilter,
-                SavedTagsForImageFilter = explorer.tagsForImageFilter,
                 SavedFilterInCurrentDirectory = explorer.FilterInCurrentDirectory,
                 SavedLoadFoldersAscending = explorer.LoadFoldersAscending
             };
@@ -344,12 +341,9 @@ namespace ImagePerfect.ViewModels
             explorer.endDateForFilter = saveDirectoryItem.SavedEndDateForFilter;
             explorer.textForFilter = saveDirectoryItem.SavedTextForFilter;
             explorer.ComboFolderFilterRating = saveDirectoryItem.SavedComboFolderFilterRating;
-            explorer.tagsForFolderDescriptionAndTagsFilter = saveDirectoryItem.SavedTagsForFolderDescriptionAndTagsFilter;
             explorer.TextForFolderDescriptionAndTagsFilter = saveDirectoryItem.SavedTextForFolderDescriptionAndTagsFilter;
-            explorer.tagsForFilter = saveDirectoryItem.SavedTagsForFilter;
+            explorer.tagsForIncludeFilter = saveDirectoryItem.SavedTagsForIncludeFilter;
             explorer.tagsForExcludeFilter = saveDirectoryItem.SavedTagsForExcludeFilter;
-            explorer.tagsForFolderFilter = saveDirectoryItem.SavedTagsForFolderFilter;
-            explorer.tagsForImageFilter = saveDirectoryItem.SavedTagsForImageFilter;
             explorer.FilterInCurrentDirectory = saveDirectoryItem.SavedFilterInCurrentDirectory;
             explorer.LoadFoldersAscending = saveDirectoryItem.SavedLoadFoldersAscending;
         }
