@@ -98,7 +98,6 @@ namespace ImagePerfect.ViewModels
         //filter folder backing fields
         private ReactiveCommand<RxVoid, Task> _filterFoldersDateModifiedInCurrentDirectoryCommand;
         private ReactiveCommand<string, Task> _filterFoldersInCurrentDirectoryByStartingLetterCommand;
-        private ReactiveCommand<IList, Task> _filterFolderOnRatingAndTagCommand;
         private ReactiveCommand<RxVoid, Task> _filterFolderOnRatingAndTagExcludeCommand;
         private ReactiveCommand<decimal, Task> _filterFoldersOnRatingCommand;
         private ReactiveCommand<IList, Task> _filterFolderOnTagsCommand;
@@ -466,16 +465,6 @@ namespace ImagePerfect.ViewModels
                 ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderAlphabeticalFilter;
                 await ExplorerVm.RefreshFolders();
             });
-            _filterFolderOnRatingAndTagCommand = ReactiveCommand.Create(async (IList tags) => {
-                List<Tag> selectedTags = tags.OfType<Tag>().ToList();
-                if (!selectedTags.Any())
-                    return;
-                List<string> tagsForIncludeFilter = selectedTags.Select(t => t.TagName).ToList();
-                ExplorerVm.tagsForIncludeFilter = tagsForIncludeFilter;
-                ExplorerVm.ResetPagination();
-                ExplorerVm.currentFilter = ExplorerViewModel.Filters.FolderTagAndRatingFilter;
-                await ExplorerVm.RefreshFolders();
-            });
             _filterFolderOnRatingAndTagExcludeCommand = ReactiveCommand.Create(async () => { 
                 List<Tag> selectedIncludeTags = ExplorerVm.SelectedIncludeFolderFilterTags.OfType<Tag>().ToList();
                 List<Tag> selectedExcludeTags = ExplorerVm.SelectedExcludeFolderFilterTags.OfType<Tag>().ToList();
@@ -819,7 +808,6 @@ namespace ImagePerfect.ViewModels
 
         public ReactiveCommand<string, Task> FilterFoldersInCurrentDirectoryByStartingLetterCommand { get => _filterFoldersInCurrentDirectoryByStartingLetterCommand; }
 
-        public ReactiveCommand<IList, Task> FilterFolderOnRatingAndTagCommand { get => _filterFolderOnRatingAndTagCommand; }
         public ReactiveCommand<RxVoid, Task> FilterFolderOnRatingAndTagExcludeCommand { get => _filterFolderOnRatingAndTagExcludeCommand; }
 
         public ReactiveCommand<decimal, Task> FilterFoldersOnRatingCommand { get => _filterFoldersOnRatingCommand; }

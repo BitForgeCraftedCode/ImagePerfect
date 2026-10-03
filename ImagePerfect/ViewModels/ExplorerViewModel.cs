@@ -55,7 +55,6 @@ namespace ImagePerfect.ViewModels
             FolderRatingFilter,
             ImageTagsFilter,
             FolderTagsFilter,
-            FolderTagAndRatingFilter,
             FolderTagAndRatingFilterWithExclude,
             FolderDescriptionFilter,
             FolderDescriptionAndTagsFilter,
@@ -556,8 +555,6 @@ namespace ImagePerfect.ViewModels
                     return await folderMethods.GetAllFoldersAtRating(RatingForFilter, FilterInCurrentDirectory, CurrentDirectory);
                 case Filters.FolderTagsFilter:
                     return await folderMethods.GetAllFoldersWithTags(tagsForIncludeFilter, FilterInCurrentDirectory, CurrentDirectory);
-                case Filters.FolderTagAndRatingFilter:
-                    return await folderMethods.GetAllFoldersWithRatingAndTag(RatingForFilter, tagsForIncludeFilter, FilterInCurrentDirectory, CurrentDirectory);
                 case Filters.FolderTagAndRatingFilterWithExclude:
                     return await folderMethods.GetAllFoldersWithRatingAndTagExcludingTag(RatingForFilter, tagsForIncludeFilter, tagsForExcludeFilter, FilterInCurrentDirectory, CurrentDirectory);
                 case Filters.FolderDescriptionFilter:

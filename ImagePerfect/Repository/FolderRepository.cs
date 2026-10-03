@@ -130,45 +130,7 @@ namespace ImagePerfect.Repository
             -- the matching tag rows back into one row per folder, and HAVING requires that
             -- both distinct tags were found, so only folders tagged with BOTH Vacation
             -- and Hiking are returned.
-        */
-        public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithRatingAndTag(int rating, List<string> tagNames, bool filterInCurrentDirectory, string currentDirectory)
-        {
-            MySqlTransaction txn = await _connection.BeginTransactionAsync();
-            string path = PathHelper.FormatPathForLikeOperator(currentDirectory);
-            string sql1 = string.Empty;
-            string sql2 = string.Empty;
 
-            int requiredCount = tagNames.Count;
-
-
-            if (filterInCurrentDirectory)
-            {
-                sql1 = $@"SELECT folders.* FROM folders
-                    JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId
-                    JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.FolderRating = @rating AND tags.TagName IN @tagNames AND FolderPath LIKE @path 
-                    GROUP BY folders.FolderId HAVING COUNT(DISTINCT tags.TagName) = @requiredCount ORDER BY folders.FolderPath, folders.FolderName;";
-                sql2 = $@"SELECT tags.TagId, tags.TagName, folders.FolderId FROM folders 
-                        JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId 
-                        JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.FolderRating = @rating AND FolderPath LIKE @path ORDER BY folders.FolderPath, folders.FolderName;";
-            }
-            else
-            {
-                sql1 = $@"SELECT folders.* FROM folders
-                    JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId
-                    JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.FolderRating = @rating AND tags.TagName IN @tagNames 
-                    GROUP BY folders.FolderId HAVING COUNT(DISTINCT tags.TagName) = @requiredCount ORDER BY folders.FolderPath, folders.FolderName;";
-                sql2 = @"SELECT tags.TagId, tags.TagName, folders.FolderId FROM folders 
-                        JOIN folder_tags_join ON folder_tags_join.FolderId = folders.FolderId 
-                        JOIN tags ON folder_tags_join.TagId = tags.TagId WHERE folders.FolderRating = @rating ORDER BY folders.FolderPath, folders.FolderName;";
-            }
-            //Note: for sql2 i should just fetch tags for the folders found in the first query -- will have to apply that on all methods
-            List<Folder> allFoldersWithRatingAndTag = (await _connection.QueryAsync<Folder>(sql1, new { path, rating, tagNames, requiredCount }, transaction: txn)).ToList();
-            List<FolderTag> tags = (await _connection.QueryAsync<FolderTag>(sql2, new { path, rating, tagNames, requiredCount }, transaction: txn)).ToList();
-            await txn.CommitAsync();
-            return (allFoldersWithRatingAndTag, tags);
-        }
-
-        /*
             NOT EXISTS returns TRUE when the subquery returns no rows, and FALSE when it returns at least one row.
 
             SELECT folders.* FROM folders
@@ -195,6 +157,8 @@ namespace ImagePerfect.Repository
             -- is TRUE and NOT EXISTS becomes FALSE, so that folder is excluded. If no
             -- RootFolder row is found, EXISTS is FALSE and NOT EXISTS becomes TRUE, so
             -- the folder is kept.
+
+            Note: for sql2 i should just fetch tags for the folders found in the first query -- will have to apply that on all methods
          */
         public async Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFoldersWithRatingAndTagExcludingTag(int rating, List<string>? tagNames, List<string>? tagNamesExclude, bool filterInCurrentDirectory, string currentDirectory)
         {

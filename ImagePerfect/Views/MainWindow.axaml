@@ -245,24 +245,6 @@
 						Classes="menu-btn">
 					Filter Folders on Tags
 				</Button>
-				<NumericUpDown Grid.Row="1" Grid.Column="0" Minimum="0" Maximum="10" Width="200" Height="32"
-								   Margin="5" ParsingNumberStyle="Integer" FormatString="0"
-								   Value="{Binding ExplorerVm.RatingForFilter}" />
-
-				<ListBox Grid.Row="1" Grid.Column="1" x:Name="SelectedTagsForFolderFilter"  SelectionMode="Multiple" ItemsSource="{Binding TagsList}" Height="100" Width="200">
-					<ListBox.ItemTemplate>
-						<DataTemplate>
-							<TextBlock Text="{Binding TagName}" HorizontalAlignment="Center"/>
-						</DataTemplate>
-					</ListBox.ItemTemplate>
-				</ListBox>
-				<Button Grid.Row="1" Grid.Column="2" Margin="5" Width="200" HorizontalContentAlignment="Center"
-						Command="{Binding FilterFolderOnRatingAndTagCommand}"
-						CommandParameter="{Binding SelectedItems, ElementName=SelectedTagsForFolderFilter}"
-						Classes="menu-btn">
-					Filter On Rating And Tags
-				</Button>
-
 				<TextBox Grid.Row="2" Grid.Column="0" Margin="5" MaxLength="200" Width="200" x:Name="FilterFolderDescriptionText"/>
 				<Button Grid.Row="2" Grid.Column="1" Margin="5" Width="200" HorizontalContentAlignment="Center"
 						Command="{Binding FilterFoldersOnDescriptionCommand}"
