@@ -51,8 +51,20 @@ namespace ImagePerfect.ViewModels
                 if (value != null)
                 {
                     // Load automatically when user selects it
-                    LoadHistoryRequest.Handle(value).Subscribe();
+                    LoadSelectedHistory(value);
                 }
+            }
+        }
+
+        private async void LoadSelectedHistory(SaveDirectory value)
+        {
+            try
+            {
+                await LoadHistoryRequest.Handle(value);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to load selected history item");
             }
         }
 

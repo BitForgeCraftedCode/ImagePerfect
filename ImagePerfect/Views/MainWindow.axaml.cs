@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Linq;
 
 namespace ImagePerfect.Views
 {
@@ -96,11 +97,11 @@ namespace ImagePerfect.Views
                     e.Handled = true;
                     break;
                 case Key.Right:
-                    vm.NextPageCommand.Execute().Subscribe();
+                    vm.NextPageCommand.Execute().Subscribe(_ => { });
                     e.Handled = true;
                     break;
                 case Key.Left:
-                    vm.PreviousPageCommand.Execute().Subscribe();
+                    vm.PreviousPageCommand.Execute().Subscribe(_ => { });
                     e.Handled = true;
                     break;
                 //case Key.Tab:
