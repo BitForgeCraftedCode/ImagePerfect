@@ -273,7 +273,8 @@
 				</ListBox>
 				<Button Grid.Row="1" Grid.Column="3" Margin="5" Width="300" HorizontalContentAlignment="Center"
 						Command="{Binding FilterFolderOnRatingAndTagExcludeCommand}"
-						Classes="menu-btn">
+						Classes="menu-btn"
+						ToolTip.Tip="Filter folders by rating and tags. Include Tags must be present; Exclude Tags must not be present. Select at least one Include or Exclude tag.">
 					Filter On Rating And Tags Exclude 2nd Set
 				</Button>
 				<TextBox Grid.Row="2" Grid.Column="0" Margin="5" MaxLength="200" Width="200" x:Name="FilterFolderDescriptionText"/>
