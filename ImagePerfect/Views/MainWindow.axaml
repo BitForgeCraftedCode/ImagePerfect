@@ -524,9 +524,9 @@
 		<!--Manage Images-->
 		<StackPanel Grid.Row="9" IsVisible="{Binding ToggleUI.ShowManageImages}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}" Classes="menu-bg-color">
 			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*" HorizontalAlignment="Center">
-				<StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0">
-					<TextBlock HorizontalAlignment="Stretch" TextAlignment="Center">Manage Images</TextBlock>
-				</StackPanel>
+				<TextBlock Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" TextAlignment="Center">
+					Manage Images
+				</TextBlock>
 				<StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0">
 					<Button Margin="5" HorizontalAlignment="Center"
 					Click="SelectAllButton_Click"
@@ -554,11 +554,16 @@
 		<!--Manage Folders-->
 		<StackPanel Grid.Row="10" IsVisible="{Binding ToggleUI.ShowManageFolders}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}" Classes="menu-bg-color">
 			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*" HorizontalAlignment="Center">
-				<StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0">
-					<TextBlock HorizontalAlignment="Stretch" TextAlignment="Center">Manage Folders</TextBlock>
-				</StackPanel>
+				<TextBlock Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" TextAlignment="Center">
+					Manage Folders
+				</TextBlock>
 				<StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0">
-					
+					<Button Margin="5" HorizontalAlignment="Center"
+						Command=""
+						CommandParameter=""
+						Classes="menu-btn">
+						Move Selected
+					</Button>
 				</StackPanel>
 			</Grid>
 		</StackPanel>
