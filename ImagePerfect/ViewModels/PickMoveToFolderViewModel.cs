@@ -7,7 +7,9 @@ using ReactiveUI;
 using ReactiveUI.Primitives;
 using Serilog;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -28,7 +30,7 @@ namespace ImagePerfect.ViewModels
             _mainWindowViewModel = mainWindowViewModel;
 
             _SelectMoveToFolderInteration = new Interaction<string, List<string>?>();
-			SelectMoveToFolderCommand = ReactiveCommand.CreateFromTask((FolderViewModel folderVm) => SelectMoveToFolder(folderVm));
+			SelectMoveToFolderCommand = ReactiveCommand.Create(async (IList? selectedFolders) => await SelectMoveToFolder(selectedFolders));
 		}
 
 		private List<string>? _MoveToFolderPath;
@@ -37,10 +39,30 @@ namespace ImagePerfect.ViewModels
 
 		public Interaction<string, List<string>?> SelectMoveToFolderInteration { get { return _SelectMoveToFolderInteration; } }
 
-		public ReactiveCommand<FolderViewModel, RxVoid> SelectMoveToFolderCommand { get; }
+		public ReactiveCommand<IList?, Task> SelectMoveToFolderCommand { get; }
 
-		private async Task SelectMoveToFolder(FolderViewModel folderVm)
+		private async Task SelectMoveToFolder(IList? selectedFolders)
 		{
+            if (selectedFolders is null || selectedFolders.Count == 0)
+            {
+                await MessageBoxHelper.ShowAsync(
+                    "Move Folders",
+                    $"You need to select folders to move."
+                );
+                return;
+            }
+            List<FolderViewModel> foldersToMove = selectedFolders.OfType<FolderViewModel>().ToList();
+            //foreach (var folder in foldersToMove) 
+            //{
+            //    Debug.WriteLine(folder.FolderName);
+            //}
+            //for now this is just move 1 folder
+            if (selectedFolders.Count > 1)
+                return;
+
+            
+            FolderViewModel folderVm = foldersToMove.First();
+
             await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
             FolderMethods folderMethods = new FolderMethods(uow);
             ImageMethods imageMethods = new ImageMethods(uow);

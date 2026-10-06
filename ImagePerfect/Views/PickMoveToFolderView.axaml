@@ -6,9 +6,9 @@
 			 xmlns:vm="using:ImagePerfect.ViewModels"
 			 x:DataType="vm:PickMoveToFolderViewModel"
              x:Class="ImagePerfect.Views.PickMoveToFolderView">
-	<Button Content="Move Folder" 
+	<Button Content="Move Folders" 
 			Command="{Binding SelectMoveToFolderCommand}" 
-			CommandParameter="{Binding $parent[StackPanel].DataContext}" 
+			CommandParameter="{Binding Tag, RelativeSource={RelativeSource AncestorType=UserControl}}" 
 			IsEnabled="{Binding !$parent[StackPanel].((vm:FolderViewModel)DataContext).IsRoot}" 
 			Classes="main-btn" 
 			Width="320" />

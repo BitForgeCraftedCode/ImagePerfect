@@ -14,7 +14,6 @@ namespace ImagePerfect.ViewModels
         private bool _showTotalImages = false;
         private bool _showCreateNewFolder = false;
         private bool _showManageImages = false;
-        private bool _showManageFolders = false;
         private bool _showExtendedFolderControls = false;
         private bool _showExtendedImageControls = false;
         private bool _showFolderAlphabeticalFilters = false;
@@ -74,13 +73,6 @@ namespace ImagePerfect.ViewModels
             get => _showManageImages;
             set => this.RaiseAndSetIfChanged(ref _showManageImages, value);
         }
-
-        public bool ShowManageFolders
-        {
-            get => _showManageFolders;
-            set => this.RaiseAndSetIfChanged(ref _showManageFolders, value);
-        }
-
         public void ToggleShowExtendedImageControls()
         {
             ShowExtendedImageControls = !ShowExtendedImageControls;
@@ -131,10 +123,6 @@ namespace ImagePerfect.ViewModels
         public void ToggleManageImages()
         {
             ShowManageImages = !ShowManageImages;
-        }
-        public void ToggleManageFolders()
-        {
-            ShowManageFolders = !ShowManageFolders;
         }
     }
 }
