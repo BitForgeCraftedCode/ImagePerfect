@@ -20,7 +20,7 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-	<Grid ColumnDefinitions="*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,*,Auto,Auto" x:Name="Root">
+	<Grid ColumnDefinitions="*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,*,Auto,Auto" x:Name="Root">
 		<StackPanel Grid.Row="0" Classes="menu-bg-color" IsVisible="{Binding !InitializeVm.HasRootLibrary}">
 			<v:PickRootFolderView DataContext="{Binding PickRootFolder}" x:Name="PickRootFolder"/>
 		</StackPanel>
@@ -143,6 +143,13 @@
 						<MenuItem.Template>
 							<ControlTemplate>
 								<Button Content="Manage Images" Command="{Binding ToggleManageImagesCommand}" Classes="main-btn" Width="235" />
+							</ControlTemplate>
+						</MenuItem.Template>
+					</MenuItem>
+					<MenuItem>
+						<MenuItem.Template>
+							<ControlTemplate>
+								<Button Content="Manage Folders" Command="{Binding ToggleManageFoldersCommand}" Classes="main-btn" Width="235" />
 							</ControlTemplate>
 						</MenuItem.Template>
 					</MenuItem>
@@ -516,8 +523,11 @@
 		</StackPanel>
 		<!--Manage Images-->
 		<StackPanel Grid.Row="9" IsVisible="{Binding ToggleUI.ShowManageImages}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}" Classes="menu-bg-color">
-			<Grid RowDefinitions="Auto" ColumnDefinitions="*" HorizontalAlignment="Center">
+			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*" HorizontalAlignment="Center">
 				<StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0">
+					<TextBlock HorizontalAlignment="Stretch" TextAlignment="Center">Manage Images</TextBlock>
+				</StackPanel>
+				<StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0">
 					<Button Margin="5" HorizontalAlignment="Center"
 					Click="SelectAllButton_Click"
 					Classes="menu-btn">
@@ -541,8 +551,19 @@
 				</StackPanel>
 			</Grid>
 		</StackPanel>
+		<!--Manage Folders-->
+		<StackPanel Grid.Row="10" IsVisible="{Binding ToggleUI.ShowManageFolders}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}" Classes="menu-bg-color">
+			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*" HorizontalAlignment="Center">
+				<StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0">
+					<TextBlock HorizontalAlignment="Stretch" TextAlignment="Center">Manage Folders</TextBlock>
+				</StackPanel>
+				<StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0">
+					
+				</StackPanel>
+			</Grid>
+		</StackPanel>
 		<!--Import and Scan Folders-->
-		<StackPanel Grid.Row="10" IsVisible="{Binding ToggleUI.ShowImportAndScan}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}" Classes="menu-bg-color">
+		<StackPanel Grid.Row="11" IsVisible="{Binding ToggleUI.ShowImportAndScan}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}" Classes="menu-bg-color">
 			<Grid RowDefinitions="Auto" ColumnDefinitions="*" HorizontalAlignment="Center">
 				<StackPanel Orientation="Horizontal" Grid.Row="0" Grid.Column="0">
 					<Button Margin="5" HorizontalAlignment="Center"
@@ -580,186 +601,198 @@
 			</Grid>
 		</StackPanel>
 		<!--Progress Bar-->
-		<ProgressBar Grid.Row="11" Margin="10" IsIndeterminate="True" IsVisible="{Binding ShowLoading}"/>		
+		<ProgressBar Grid.Row="12" Margin="10" IsIndeterminate="True" IsVisible="{Binding ShowLoading}"/>		
 		<!--Folders and Images-->
-		<ScrollViewer Grid.Row="12" x:Name="FoldersAndImagesScrollViewer" AllowAutoHide="False">
+		<ScrollViewer Grid.Row="13" x:Name="FoldersAndImagesScrollViewer" AllowAutoHide="False">
 			<StackPanel>
-				<ItemsControl ItemsSource="{Binding LibraryFolders}" x:Name="FoldersItemsControl">
-					<ItemsControl.ItemsPanel>
+				<ListBox ItemsSource="{Binding LibraryFolders}" x:Name="FoldersItemsControl"
+						 SelectionMode="Multiple"
+						 KeyboardNavigation.TabNavigation="Continue"
+						 SelectionChanged="FolderListBox_SelectionChanged">
+					<ListBox.Styles>
+						<Style Selector="ListBoxItem">
+							<Setter Property="Padding" Value="0"/>
+						</Style>
+						<Style Selector="ListBox">
+							<Setter Property="Background" Value="Black"/>
+						</Style>
+					</ListBox.Styles>
+					<ListBox.ItemsPanel>
 						<ItemsPanelTemplate>
 							<WrapPanel HorizontalAlignment="Center" />
 						</ItemsPanelTemplate>
-					</ItemsControl.ItemsPanel>
-					<ItemsControl.ItemTemplate>
+					</ListBox.ItemsPanel>
+					<ListBox.ItemTemplate>
 						<DataTemplate DataType="vm:FolderViewModel">
 							<!--see code behind for custom tab index add Loaded and Unloaded to FoldersStackPanel if tabbing wanted"-->
 							<!--Loaded="FolderCard_Loaded" Unloaded="FolderCard_Unloaded-->
-							<StackPanel Margin="1" x:Name="FoldersStackPanel">
-								<StackPanel.ContextMenu>
-									<ContextMenu IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
-										<MenuItem>
-											<MenuItem.Template>
-												<ControlTemplate>
-													<Button Content="Move All Images In Folder Up One Directory"
-															Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).MoveAllImagesInFolderUpOneDirectoryCommand}"
-															IsEnabled="{Binding !$parent[StackPanel].((vm:FolderViewModel)DataContext).IsRoot}"
-															CommandParameter="{Binding}"
-															Classes="main-btn"
-															Width="320"/>
-												</ControlTemplate>
-											</MenuItem.Template>
-										</MenuItem>
-										<MenuItem>
-											<MenuItem.Template>
-												<ControlTemplate>
-													<Button Content="Copy Cover Image To Containing Folder" 
-															Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).CopyCoverImageToContainingFolderCommand}"
-															CommandParameter="{Binding}"
-															Classes="main-btn"
-															Width="320"/>
-												</ControlTemplate>
-											</MenuItem.Template>
-										</MenuItem>
-										<MenuItem>
-											<MenuItem.Template>
-												<ControlTemplate>
-													<Button Content="Copy Folder Description To Containing Folder" 
-															Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).CopyFolderDescriptionToContainingFolderCommand}"
-															CommandParameter="{Binding}"
-															Classes="main-btn"
-															Width="320"/>
-												</ControlTemplate>
-											</MenuItem.Template>
-										</MenuItem>
-										<MenuItem>
-											<MenuItem.Template>
-												<ControlTemplate>
-													<v:PickFolderCoverImageView DataContext="{Binding #Root.((vm:MainWindowViewModel)DataContext).PickCoverImage}" />
-												</ControlTemplate>
-											</MenuItem.Template>
-										</MenuItem>
-										<MenuItem>
-											<MenuItem.Template>
-												<ControlTemplate>
-													<v:PickMoveToFolderView DataContext="{Binding #Root.((vm:MainWindowViewModel)DataContext).PickMoveToFolder}" />
-												</ControlTemplate>
-											</MenuItem.Template>
-										</MenuItem>
-										<MenuItem>
-											<MenuItem.Template>
-												<ControlTemplate>
-													<Button Content="Favorite"
-															Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).SaveFolderAsFavoriteCommand}"
-															CommandParameter="{Binding}"
-															Classes="main-btn"
-															Width="320"/>
-												</ControlTemplate>
-											</MenuItem.Template>
-										</MenuItem>
-										<MenuItem>
-											<MenuItem.Template>
-												<ControlTemplate>
-													<Button Content="Toggle Extended Folder Controls"
-															Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleShowExtendedFolderControlsCommand}"
-															Classes="main-btn"
-															Width="320"/>
-												</ControlTemplate>
-											</MenuItem.Template>
-										</MenuItem>
-										<MenuItem>
-											<MenuItem.Template>
-												<ControlTemplate>
-													<Button Content="Trash"
-															Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).MoveFolderToTrashCommand}"
-															CommandParameter="{Binding}"
-															IsEnabled="{Binding !IsRoot}"
-															Classes="btn-danger"
-															Width="320"/>
-												</ControlTemplate>
-											</MenuItem.Template>
-										</MenuItem>
-										<MenuItem>
-											<MenuItem.Template>
-												<ControlTemplate>
-													<Button Content="Delete Folder From Database"
-															Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).DeleteFolderFromDataBaseCommand}"
-															CommandParameter="{Binding}"
-															IsEnabled="{Binding !IsRoot}"
-															Classes="btn-danger"
-															Width="320"/>
-												</ControlTemplate>
-											</MenuItem.Template>
-										</MenuItem>
-									</ContextMenu>
-								</StackPanel.ContextMenu>
-								<SelectableTextBlock MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" Text="{Binding FolderName}"/>
-								<Image MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" Source="{Binding CoverImageBitmap}" />
-								<SelectableTextBlock HorizontalAlignment="Center"
-										   TextWrapping="Wrap"
-										   Text="{Binding FolderTags}"
-										   IsVisible="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"
-										   MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" />
-								<Grid RowDefinitions="Auto" ColumnDefinitions="Auto,Auto" HorizontalAlignment="Center" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
-									<Button
-											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddFolderRatingCommand}"
-											CommandParameter="{Binding}"
-											Click="Folder_Rating_Zero"
-											Background="Black"
-											Grid.Row="0"
-											Grid.Column="0">
-										<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/DownArrowRed.png"></Image>
-									</Button>
-									<ItemsControl ItemsSource="{Binding Stars}" HorizontalAlignment="Center" Grid.Row="0" Grid.Column="1">
-										<ItemsControl.ItemsPanel>
-											<ItemsPanelTemplate>
-												<StackPanel Orientation="Horizontal"/>
-											</ItemsPanelTemplate>
-										</ItemsControl.ItemsPanel>
-										<ItemsControl.ItemTemplate>
-											<DataTemplate>
-												<Button
-													Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddFolderRatingCommand}"
-													CommandParameter="{Binding #FoldersStackPanel.((vm:FolderViewModel)DataContext)}"
-													Click="Folder_Star_Click"
-													Background="Black">
-													<Image Width="18" Height="18" Classes.FolderStarEmpty="{Binding !IsFilled}" Classes.FolderStarNotEmpty="{Binding IsFilled}">
-														<Image.Styles>
-															<Style Selector="Image.FolderStarEmpty">
-																<Setter Property="Source" Value="avares://ImagePerfect/Assets/star_empty.png" />
-															</Style>
-															<Style Selector="Image.FolderStarNotEmpty">
-																<Setter Property="Source" Value="avares://ImagePerfect/Assets/star_filled.png" />
-															</Style>
-														</Image.Styles>
-													</Image>
-												</Button>
-											</DataTemplate>
-										</ItemsControl.ItemTemplate>
-									</ItemsControl>
-								</Grid>
-								<ScrollViewer MaxHeight="150" 
-											  IsVisible="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"
-											  MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}">
-									<SelectableTextBlock TextWrapping="Wrap" Margin="5" Text="{Binding FolderDescription}" />
-								</ScrollViewer>
-								<Grid RowDefinitions="Auto" ColumnDefinitions="*,*,*" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
-									<Button Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2" IsEnabled="{Binding !IsRoot}"
-											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).BackFolderCommand}"
-											CommandParameter="{Binding}" Classes="main-btn tab-btn">
-										Back
-									</Button>
-									<Button Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2" IsEnabled="{Binding !ShowImportImagesButton}"
-											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).NextFolderCommand}"
-											CommandParameter="{Binding}" Classes="main-btn tab-btn">
-										Open
-									</Button>
-									<Button Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2" IsEnabled="{Binding ShowImportImagesButton}"
-										Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).ImportImagesCommand}"
-										CommandParameter="{Binding}" Classes="main-btn">
-										Import Images
-									</Button>
-								</Grid>
-								<!--
+							<ListBoxItem IsSelected="{Binding IsSelected}" x:Name="FoldersListBoxItem">
+								<StackPanel Margin="1" KeyboardNavigation.TabNavigation="Continue" x:Name="FoldersStackPanel">
+									<StackPanel.ContextMenu>
+										<ContextMenu IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
+											<MenuItem>
+												<MenuItem.Template>
+													<ControlTemplate>
+														<Button Content="Move All Images In Folder Up One Directory"
+																Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).MoveAllImagesInFolderUpOneDirectoryCommand}"
+																IsEnabled="{Binding !$parent[StackPanel].((vm:FolderViewModel)DataContext).IsRoot}"
+																CommandParameter="{Binding}"
+																Classes="main-btn"
+																Width="320"/>
+													</ControlTemplate>
+												</MenuItem.Template>
+											</MenuItem>
+											<MenuItem>
+												<MenuItem.Template>
+													<ControlTemplate>
+														<Button Content="Copy Cover Image To Containing Folder"
+																Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).CopyCoverImageToContainingFolderCommand}"
+																CommandParameter="{Binding}"
+																Classes="main-btn"
+																Width="320"/>
+													</ControlTemplate>
+												</MenuItem.Template>
+											</MenuItem>
+											<MenuItem>
+												<MenuItem.Template>
+													<ControlTemplate>
+														<Button Content="Copy Folder Description To Containing Folder"
+																Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).CopyFolderDescriptionToContainingFolderCommand}"
+																CommandParameter="{Binding}"
+																Classes="main-btn"
+																Width="320"/>
+													</ControlTemplate>
+												</MenuItem.Template>
+											</MenuItem>
+											<MenuItem>
+												<MenuItem.Template>
+													<ControlTemplate>
+														<v:PickFolderCoverImageView DataContext="{Binding #Root.((vm:MainWindowViewModel)DataContext).PickCoverImage}" />
+													</ControlTemplate>
+												</MenuItem.Template>
+											</MenuItem>
+											<MenuItem>
+												<MenuItem.Template>
+													<ControlTemplate>
+														<v:PickMoveToFolderView DataContext="{Binding #Root.((vm:MainWindowViewModel)DataContext).PickMoveToFolder}" />
+													</ControlTemplate>
+												</MenuItem.Template>
+											</MenuItem>
+											<MenuItem>
+												<MenuItem.Template>
+													<ControlTemplate>
+														<Button Content="Favorite"
+																Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).SaveFolderAsFavoriteCommand}"
+																CommandParameter="{Binding}"
+																Classes="main-btn"
+																Width="320"/>
+													</ControlTemplate>
+												</MenuItem.Template>
+											</MenuItem>
+											<MenuItem>
+												<MenuItem.Template>
+													<ControlTemplate>
+														<Button Content="Toggle Extended Folder Controls"
+																Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleShowExtendedFolderControlsCommand}"
+																Classes="main-btn"
+																Width="320"/>
+													</ControlTemplate>
+												</MenuItem.Template>
+											</MenuItem>
+											<MenuItem>
+												<MenuItem.Template>
+													<ControlTemplate>
+														<Button Content="Trash"
+																Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).MoveFolderToTrashCommand}"
+																CommandParameter="{Binding}"
+																IsEnabled="{Binding !IsRoot}"
+																Classes="btn-danger"
+																Width="320"/>
+													</ControlTemplate>
+												</MenuItem.Template>
+											</MenuItem>
+											<MenuItem>
+												<MenuItem.Template>
+													<ControlTemplate>
+														<Button Content="Delete Folder From Database"
+																Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).DeleteFolderFromDataBaseCommand}"
+																CommandParameter="{Binding}"
+																IsEnabled="{Binding !IsRoot}"
+																Classes="btn-danger"
+																Width="320"/>
+													</ControlTemplate>
+												</MenuItem.Template>
+											</MenuItem>
+										</ContextMenu>
+									</StackPanel.ContextMenu>
+									<SelectableTextBlock MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" Text="{Binding FolderName}" SelectionBrush="DeepSkyBlue"/>
+									<Image MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" Source="{Binding CoverImageBitmap}" />
+									<SelectableTextBlock HorizontalAlignment="Center"
+											   TextWrapping="Wrap"
+											   Text="{Binding FolderTags}"
+											   IsVisible="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"
+											   MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" />
+									<Grid RowDefinitions="Auto" ColumnDefinitions="Auto,Auto" HorizontalAlignment="Center" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
+										<Button
+												Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddFolderRatingCommand}"
+												CommandParameter="{Binding}"
+												Click="Folder_Rating_Zero"
+												Background="Black"
+												Grid.Row="0"
+												Grid.Column="0">
+											<Image Width="18" Height="18" Source="avares://ImagePerfect/Assets/DownArrowRed.png"></Image>
+										</Button>
+										<ItemsControl ItemsSource="{Binding Stars}" HorizontalAlignment="Center" Grid.Row="0" Grid.Column="1">
+											<ItemsControl.ItemsPanel>
+												<ItemsPanelTemplate>
+													<StackPanel Orientation="Horizontal"/>
+												</ItemsPanelTemplate>
+											</ItemsControl.ItemsPanel>
+											<ItemsControl.ItemTemplate>
+												<DataTemplate>
+													<Button
+														Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddFolderRatingCommand}"
+														CommandParameter="{Binding #FoldersStackPanel.((vm:FolderViewModel)DataContext)}"
+														Click="Folder_Star_Click"
+														Background="Black">
+														<Image Width="18" Height="18" Classes.FolderStarEmpty="{Binding !IsFilled}" Classes.FolderStarNotEmpty="{Binding IsFilled}">
+															<Image.Styles>
+																<Style Selector="Image.FolderStarEmpty">
+																	<Setter Property="Source" Value="avares://ImagePerfect/Assets/star_empty.png" />
+																</Style>
+																<Style Selector="Image.FolderStarNotEmpty">
+																	<Setter Property="Source" Value="avares://ImagePerfect/Assets/star_filled.png" />
+																</Style>
+															</Image.Styles>
+														</Image>
+													</Button>
+												</DataTemplate>
+											</ItemsControl.ItemTemplate>
+										</ItemsControl>
+									</Grid>
+									<ScrollViewer MaxHeight="150"
+												  IsVisible="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"
+												  MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}">
+										<SelectableTextBlock TextWrapping="Wrap" Margin="5" Text="{Binding FolderDescription}" />
+									</ScrollViewer>
+									<Grid RowDefinitions="Auto" ColumnDefinitions="*,*,*" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
+										<Button Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2" IsEnabled="{Binding !IsRoot}"
+												Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).BackFolderCommand}"
+												CommandParameter="{Binding}" Classes="main-btn tab-btn">
+											Back
+										</Button>
+										<Button Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2" IsEnabled="{Binding !ShowImportImagesButton}"
+												Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).NextFolderCommand}"
+												CommandParameter="{Binding}" Classes="main-btn tab-btn">
+											Open
+										</Button>
+										<Button Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2" IsEnabled="{Binding ShowImportImagesButton}"
+											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).ImportImagesCommand}"
+											CommandParameter="{Binding}" Classes="main-btn">
+											Import Images
+										</Button>
+									</Grid>
+									<!--
 								<Grid RowDefinitions="Auto" ColumnDefinitions="*" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" 
 									  IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}"
 									  IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}">
@@ -770,79 +803,80 @@
 									</Button>
 								</Grid>
 								-->
-								<Grid RowDefinitions="Auto" ColumnDefinitions="*,*" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" 
-									  IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}" 
-									  IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}">
-									
-									<Button Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2"
-											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).SaveFolderAsFavoriteCommand}"
-											CommandParameter="{Binding}" Classes="main-btn">
-										Favorite
-									</Button>
-									<Button Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2" IsEnabled="{Binding !IsRoot}"
-											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).MoveFolderToTrashCommand}"
-											CommandParameter="{Binding}" Classes="btn-danger">
-										Trash
-									</Button>
-								</Grid>
-								<Grid RowDefinitions="Auto" ColumnDefinitions="*,*" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
-									<Button Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2" IsVisible="{Binding AreImagesImported}"
-											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).ScanFolderImagesForMetaDataCommand}"
-											CommandParameter="{Binding}" Classes="main-btn">
-										Scan Images For Metadata
-									</Button>
-									<TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2" IsVisible="{Binding FolderContentMetaDataScanned}">
-										Image Metadata Scanned
-									</TextBlock>
-								</Grid>
-								<Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="*,Auto" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
-									<TextBox Grid.Row="0" Grid.Column="0" PlaceholderText="Add Description" Height="100" AcceptsReturn="True" TextWrapping="Wrap" 
-											 Margin="5" 
-											 MaxLength="3000" 
-											 Text="{Binding FolderDescription}"
-											 IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"/>
-									<Button Grid.Row="0" Grid.Column="1" Height="100" Padding="8,40,8,6" Width="100" HorizontalContentAlignment="Center"
-											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddFolderDescriptionCommand}"
-											CommandParameter="{Binding}"
-											IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"
-											Classes="main-btn">
-										Submit
-									</Button>
-									<TextBox Grid.Row="1" Grid.Column="0" Margin="5" MaxLength="2000" 
-											 Text="{Binding FolderTags}"
-											 IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"/>
-									<Button Grid.Row="1" Grid.Column="1" Width="100" HorizontalContentAlignment="Center"
-											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).EditFolderTagsCommand}"
-											CommandParameter="{Binding}"
-											IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"
-											Classes="btn-danger">
-										Remove Tag
-									</Button>
-									<AutoCompleteBox Grid.Row="2" Grid.Column="0" MaxLength="100" Margin="5" Watermark="Add A Tag" 
-													 Text="{Binding NewTag}" 
-													 FilterMode="StartsWith" 
-													 ItemsSource="{Binding #Root.((vm:MainWindowViewModel)DataContext).TagsList}"
-													 ValueMemberBinding="{Binding TagName}"/>
-									<Button Grid.Row="2" Grid.Column="1" Width="100" HorizontalContentAlignment="Center"
-											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddFolderTagsCommand}"
-											CommandParameter="{Binding}" Classes="main-btn">
-										Submit
-									</Button>
-									<TextBox Grid.Row="3" Grid.Column="0" Margin="5" MaxLength="2000"
-											 Text="{Binding FolderName}"
-											 IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"/>
-									<Button Grid.Row="3" Grid.Column="1" Width="100" HorizontalContentAlignment="Center"
-											Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).RenameFolderCommand}"
-											CommandParameter="{Binding}"
-											IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"
-											Classes="btn-danger">
-										Rename
-									</Button>
-								</Grid>					
-							</StackPanel>
+									<Grid RowDefinitions="Auto" ColumnDefinitions="*,*" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}"
+										  IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}"
+										  IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}">
+
+										<Button Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2"
+												Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).SaveFolderAsFavoriteCommand}"
+												CommandParameter="{Binding}" Classes="main-btn">
+											Favorite
+										</Button>
+										<Button Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2" IsEnabled="{Binding !IsRoot}"
+												Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).MoveFolderToTrashCommand}"
+												CommandParameter="{Binding}" Classes="btn-danger">
+											Trash
+										</Button>
+									</Grid>
+									<Grid RowDefinitions="Auto" ColumnDefinitions="*,*" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
+										<Button Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Margin="2" IsVisible="{Binding AreImagesImported}"
+												Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).ScanFolderImagesForMetaDataCommand}"
+												CommandParameter="{Binding}" Classes="main-btn">
+											Scan Images For Metadata
+										</Button>
+										<TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2" IsVisible="{Binding FolderContentMetaDataScanned}">
+											Image Metadata Scanned
+										</TextBlock>
+									</Grid>
+									<Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="*,Auto" MaxWidth="{Binding #Root.((vm:MainWindowViewModel)DataContext).SettingsVm.MaxImageWidth}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
+										<TextBox Grid.Row="0" Grid.Column="0" PlaceholderText="Add Description" Height="100" AcceptsReturn="True" TextWrapping="Wrap"
+												 Margin="5"
+												 MaxLength="3000"
+												 Text="{Binding FolderDescription}"
+												 IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"/>
+										<Button Grid.Row="0" Grid.Column="1" Height="100" Padding="8,40,8,6" Width="100" HorizontalContentAlignment="Center"
+												Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddFolderDescriptionCommand}"
+												CommandParameter="{Binding}"
+												IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"
+												Classes="main-btn">
+											Submit
+										</Button>
+										<TextBox Grid.Row="1" Grid.Column="0" Margin="5" MaxLength="2000"
+												 Text="{Binding FolderTags}"
+												 IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"/>
+										<Button Grid.Row="1" Grid.Column="1" Width="100" HorizontalContentAlignment="Center"
+												Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).EditFolderTagsCommand}"
+												CommandParameter="{Binding}"
+												IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"
+												Classes="btn-danger">
+											Remove Tag
+										</Button>
+										<AutoCompleteBox Grid.Row="2" Grid.Column="0" MaxLength="100" Margin="5" Watermark="Add A Tag"
+														 Text="{Binding NewTag}"
+														 FilterMode="StartsWith"
+														 ItemsSource="{Binding #Root.((vm:MainWindowViewModel)DataContext).TagsList}"
+														 ValueMemberBinding="{Binding TagName}"/>
+										<Button Grid.Row="2" Grid.Column="1" Width="100" HorizontalContentAlignment="Center"
+												Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).AddFolderTagsCommand}"
+												CommandParameter="{Binding}" Classes="main-btn">
+											Submit
+										</Button>
+										<TextBox Grid.Row="3" Grid.Column="0" Margin="5" MaxLength="2000"
+												 Text="{Binding FolderName}"
+												 IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"/>
+										<Button Grid.Row="3" Grid.Column="1" Width="100" HorizontalContentAlignment="Center"
+												Command="{Binding #Root.((vm:MainWindowViewModel)DataContext).RenameFolderCommand}"
+												CommandParameter="{Binding}"
+												IsVisible="{Binding #Root.((vm:MainWindowViewModel)DataContext).ToggleUI.ShowExtendedFolderControls}"
+												Classes="btn-danger">
+											Rename
+										</Button>
+									</Grid>
+								</StackPanel>
+							</ListBoxItem>
 						</DataTemplate>
-					</ItemsControl.ItemTemplate>
-				</ItemsControl>
+					</ListBox.ItemTemplate>
+				</ListBox>
 				
 				<!--See code behind for SelectionChanged used to toggle VM IsSelected with ListBox Selection-->
 				<ListBox ItemsSource="{Binding Images}" x:Name="ImagesListBox"
@@ -1058,7 +1092,7 @@
 			</StackPanel>
 		</ScrollViewer>
 		<!--Pagination-->
-		<StackPanel Grid.Row="13" Orientation="Vertical" HorizontalAlignment="Stretch" Classes="menu-bg-color" IsVisible="{Binding InitializeVm.HasRootLibrary}">
+		<StackPanel Grid.Row="14" Orientation="Vertical" HorizontalAlignment="Stretch" Classes="menu-bg-color" IsVisible="{Binding InitializeVm.HasRootLibrary}">
 			<Grid RowDefinitions="Auto" ColumnDefinitions="Auto, Auto, Auto, Auto, Auto" HorizontalAlignment="Center" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}">
 				<Button Margin="5" Grid.Row="0" Grid.Column="0"
 					Command="{Binding PreviousPageCommand}" Classes="menu-btn">
@@ -1079,7 +1113,7 @@
 				</Button>
 			</Grid>
 		</StackPanel>
-		<StackPanel Grid.Row="14" HorizontalAlignment="Stretch"  Classes="menu-bg-color" IsVisible="{Binding InitializeVm.HasRootLibrary}">
+		<StackPanel Grid.Row="15" HorizontalAlignment="Stretch"  Classes="menu-bg-color" IsVisible="{Binding InitializeVm.HasRootLibrary}">
 			<Grid RowDefinitions="Auto" ColumnDefinitions="Auto,Auto,Auto,Auto" HorizontalAlignment="Center" Margin="0 0 0 10">
 				<Label Grid.Row="0" Grid.Column="0">Total Pages:</Label>
 				<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ExplorerVm.MaxPage}" VerticalAlignment="Center"></TextBlock>

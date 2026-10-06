@@ -24,6 +24,7 @@ namespace ImagePerfect.ViewModels
 		private bool _folderContentMetaDataScanned;
 		private bool _areImagesImported;
 		private bool _showImportImagesButton;
+        private bool _isSelected = false;
 
         private void UpdateStars()
         {
@@ -129,5 +130,11 @@ namespace ImagePerfect.ViewModels
 
         //for many to many relationship folder_tags_join
         public List<FolderTag> Tags { get; set; } = new List<FolderTag>();
-	}
+
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set => this.RaiseAndSetIfChanged(ref _isSelected, value);
+        }
+    }
 }

@@ -37,6 +37,7 @@ namespace ImagePerfect.ViewModels
         private ReactiveCommand<RxVoid, RxVoid> _openFiltersWindowCommand;
         //toggleUI backing fields
         private ReactiveCommand<RxVoid, RxVoid> _toggleManageImagesCommand;
+        private ReactiveCommand<RxVoid, RxVoid> _toggleManageFoldersCommand;
         private ReactiveCommand<string, RxVoid> _toggleFiltersCommand;
         private ReactiveCommand<RxVoid, RxVoid> _toggleCreateNewFolderCommand;
         private ReactiveCommand<RxVoid, Task> _toggleGetTotalImagesCommand;
@@ -221,6 +222,9 @@ namespace ImagePerfect.ViewModels
         {
             _toggleManageImagesCommand = ReactiveCommand.Create(() => {
                 ToggleUI.ToggleManageImages();
+            });
+            _toggleManageFoldersCommand = ReactiveCommand.Create(() => { 
+                ToggleUI.ToggleManageFolders();
             });
             _toggleFiltersCommand = ReactiveCommand.Create((string showFilter) => {
                 ToggleUI.ToggleFilters(showFilter);
@@ -690,6 +694,7 @@ namespace ImagePerfect.ViewModels
 
         //ToggleUI Commands
         public ReactiveCommand<RxVoid, RxVoid> ToggleManageImagesCommand { get => _toggleManageImagesCommand; }
+        public ReactiveCommand<RxVoid, RxVoid> ToggleManageFoldersCommand { get => _toggleManageFoldersCommand; }
 
         public ReactiveCommand<string, RxVoid> ToggleFiltersCommand { get => _toggleFiltersCommand; }
 

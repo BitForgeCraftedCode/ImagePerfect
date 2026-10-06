@@ -171,6 +171,14 @@ namespace ImagePerfect.Views
             }   
         }
 
+        private void FolderListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            foreach (var added in e.AddedItems.OfType<FolderViewModel>())
+                added.IsSelected = true;
+
+            foreach (var removed in e.RemovedItems.OfType<FolderViewModel>())
+                removed.IsSelected = false;
+        }
         //keeps Vms IsSelected in sync with ListBox Selection
         private void ListBox_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
