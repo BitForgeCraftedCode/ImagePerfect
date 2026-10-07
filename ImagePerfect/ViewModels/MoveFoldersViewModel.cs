@@ -26,22 +26,95 @@ namespace ImagePerfect.ViewModels
             _mainWindowViewModel = mainWindowViewModel;
         }
 
+        /*
+         * a separate UnitOfWork per folder can isolate failures somewhat: each folder gets its own database connection and lifetime, 
+         * so a connection or unit-of-work problem for one move is less likely to affect the next.
+         */
         public async Task MoveFolders(List<FolderViewModel> foldersToMove, string newFolderPath)
         {
-            FolderViewModel folderVm = foldersToMove.First();
+            List<FolderViewModel> validFolders = new List<FolderViewModel>();
+            List<string> errors = new List<string>();
+            try
+            {
+                _mainWindowViewModel.ShowLoading = true;
+                foreach (FolderViewModel folder in foldersToMove)
+                {
+                    string? error = await ValidateFolderMove(folder, newFolderPath);
+                    if (error == null)
+                        validFolders.Add(folder);
+                    else
+                        errors.Add($"{folder.FolderName}: {error}");
+                }
 
+                foreach (FolderViewModel folder in validFolders)
+                {
+                    await MoveFolder(folder, newFolderPath);
+                }
+
+                if (errors.Count > 0)
+                {
+                    await MessageBoxHelper.ShowAsync("Move Folders", string.Join(Environment.NewLine, errors));
+                }
+                //update lib folders to show the folder has moved
+                if(validFolders.Count > 0) 
+                    await _mainWindowViewModel.ExplorerVm.RefreshFolders();
+                _mainWindowViewModel.ShowLoading = false;
+            }
+            catch (Exception ex) 
+            {
+                Log.Error(ex, "Unexpected error moving folders");
+                await MessageBoxHelper.ShowAsync(
+                   "Move Folder",
+                   $"Error moving the folder check the logs for more information."
+               );
+                return;
+            }
+            finally
+            {
+               
+                _mainWindowViewModel.ShowLoading = false;
+            }
+            
+        }
+
+        private async Task<string?> ValidateFolderMove(FolderViewModel folderVm, string newFolderPath)
+        {
             await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
             FolderMethods folderMethods = new FolderMethods(uow);
             ImageMethods imageMethods = new ImageMethods(uow);
             Folder? rootFolder = await folderMethods.GetRootFolder();
             if (rootFolder == null)
+                return "You need to add a root library folder first before you can move a folder in it.";
+            if (!newFolderPath.Contains(rootFolder.FolderPath, StringComparison.OrdinalIgnoreCase)) //add check to make sure user is picking folders within the root libary directory
+                return "The destination must be within your root library folder.";
+            if (newFolderPath.Contains(folderVm.FolderPath, StringComparison.OrdinalIgnoreCase)) //Cannot move folder to one of its subfolders
+                return "The destination is a subfolder of the source folder.";
+            string destinationFolderPath = PathHelper.AddNewFolderNameToPathForDirectoryMoveFolder(newFolderPath, folderVm.FolderName);
+            if (destinationFolderPath == folderVm.FolderPath)
+                return "The folder is already in this location.";
+            if (Directory.Exists(destinationFolderPath))
+                return "A folder with this name already exists in the destination location.";
+            try
             {
-                await MessageBoxHelper.ShowAsync(
-                    "Move Folder",
-                    $"You need to add a root library folder first before you can move a folder in it."
-                );
-                return;
+                List<Image> images = await imageMethods.GetAllImagesInDirectoryTree(folderVm.FolderPath);
+                if (!images.Any())
+                    return "The folder must have images imported to move it.";
             }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error validating folder move for {FolderPath}", folderVm.FolderPath);
+                return "Could not validate this folder; check the logs for more information.";
+            }
+            return null;
+        }
+
+        private async Task MoveFolder(FolderViewModel folderVm, string newFolderPath)
+        {
+
+            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+            FolderMethods folderMethods = new FolderMethods(uow);
+            ImageMethods imageMethods = new ImageMethods(uow);
+           
             List<Folder> folders = new List<Folder>();
             List<Image> images = new List<Image>();
             try
@@ -69,33 +142,7 @@ namespace ImagePerfect.ViewModels
                 );
                 return;
             }
-
-            if (!images.Any())
-            {
-                await MessageBoxHelper.ShowAsync(
-                    "Move Folder",
-                    $"The folder must have images imported to move it."
-                );
-                return;
-            }
-            //add check to make sure user is picking folders within the root libary directory
-            if (!newFolderPath.Contains(rootFolder.FolderPath))
-            {
-                await MessageBoxHelper.ShowAsync(
-                    "Move Folder",
-                    $"You can only move folders that are within your root library folder."
-                );
-                return;
-            }
-            //Cannot move folder to one of its subfolders
-            if (newFolderPath.Contains(folderVm.FolderPath))
-            {
-                await MessageBoxHelper.ShowAsync(
-                    "Move Folder",
-                    $"The destination folder is a subfolder of the source folder. Cannot do this."
-                );
-                return;
-            }
+           
             //move folder in db
             string destinationFolderPath = PathHelper.AddNewFolderNameToPathForDirectoryMoveFolder(newFolderPath, folderVm.FolderName);
             //checks if user selected the current location of the folder
@@ -116,7 +163,6 @@ namespace ImagePerfect.ViewModels
                 );
                 return;
             }
-            _mainWindowViewModel.ShowLoading = true;
 
             //modify folder path and folder, cover image path, and images
             folders = PathHelper.ModifyFolderPathsForFolderMove(folders, folderVm.FolderName, newFolderPath);
@@ -141,9 +187,6 @@ namespace ImagePerfect.ViewModels
                     parentOfTheFolderToMove.HasChildren = Directory.GetDirectories(parentOfTheFolderToMove.FolderPath).Any();
                     await folderMethods.UpdateFolder(moveToFolder);
                     await folderMethods.UpdateFolder(parentOfTheFolderToMove);
-                    //update lib folders to show the folder has moved
-                    string foldersDirectoryPath = PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath);
-                    await _mainWindowViewModel.ExplorerVm.RefreshFolders(foldersDirectoryPath, uow);
                 }
                 catch (Exception e)
                 {
@@ -151,7 +194,6 @@ namespace ImagePerfect.ViewModels
                         "Move Folder",
                         $"Sorry something went wrong. \n {e}"
                     );
-                    _mainWindowViewModel.ShowLoading = false;
                     return;
                 }
             }
@@ -161,10 +203,8 @@ namespace ImagePerfect.ViewModels
                     "Move Folder",
                     $"Sorry something went wrong"
                 );
-                _mainWindowViewModel.ShowLoading = false;
                 return;
             }
-            _mainWindowViewModel.ShowLoading = false;
 
         }
 

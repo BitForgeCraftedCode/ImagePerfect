@@ -52,17 +52,20 @@ namespace ImagePerfect.ViewModels
                 return;
             }
             List<FolderViewModel> foldersToMove = selectedFolders.OfType<FolderViewModel>().ToList();
-            //foreach (var folder in foldersToMove) 
-            //{
-            //    Debug.WriteLine(folder.FolderName);
-            //}
-            //for now this is just move 1 folder
-            if (selectedFolders.Count > 1)
+            if (foldersToMove.Count == 0)
+            {
+                await MessageBoxHelper.ShowAsync("Move Folders", "The selection does not contain any folders to move.");
                 return;
+            }
+            if (foldersToMove.Count > 20)
+            {
+                await MessageBoxHelper.ShowAsync("Move Folders", "You cannot move more that 20 folders at once.");
+                return;
+            }
 
             _MoveToFolderPath = await _SelectMoveToFolderInteration.Handle(_mainWindowViewModel.ExplorerVm.CurrentDirectory);
             //list will be empty if Cancel is pressed exit method
-            if (_MoveToFolderPath.Count == 0)
+            if (_MoveToFolderPath == null || _MoveToFolderPath.Count == 0)
             {
                 return;
             }
