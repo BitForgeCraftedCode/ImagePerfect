@@ -517,9 +517,11 @@
 		<!--Manage Images-->
 		<StackPanel Grid.Row="9" IsVisible="{Binding ToggleUI.ShowManageImages}" IsEnabled="{Binding !#Root.((vm:MainWindowViewModel)DataContext).ShowLoading}" Classes="menu-bg-color">
 			<Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*" HorizontalAlignment="Center">
+				<!--
 				<TextBlock Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" TextAlignment="Center">
 					Manage Images
 				</TextBlock>
+				-->
 				<StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0">
 					<Button Margin="5" HorizontalAlignment="Center"
 					Click="SelectAllButton_Click"
