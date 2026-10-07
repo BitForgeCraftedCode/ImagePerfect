@@ -148,6 +148,7 @@ namespace ImagePerfect.ViewModels
             SettingsVm = new SettingsViewModel(_dataSource, _configuration, this);
             MoveImages = new MoveImagesViewModel(_dataSource, _configuration, this);
             MoveFolderToTrash = new MoveFolderToTrashViewModel(_dataSource, _configuration, this);
+            MoveFoldersVm = new MoveFoldersViewModel(_dataSource, _configuration, this);
             CreateNewFolder = new CreateNewFolderViewModel(_dataSource, _configuration, this);
 
             InitializeWindowCommands();
@@ -651,6 +652,7 @@ namespace ImagePerfect.ViewModels
         public SettingsViewModel SettingsVm { get; }
         public MoveImagesViewModel MoveImages { get; }
         public MoveFolderToTrashViewModel MoveFolderToTrash { get; }
+        public MoveFoldersViewModel MoveFoldersVm { get; }
         public CreateNewFolderViewModel CreateNewFolder { get; }
         public ToggleUIViewModel ToggleUI { get; } = new ToggleUIViewModel();
 
