@@ -3,7 +3,6 @@
 <a id="planned-improvements"></a>
 ## 🧰 Planned Improvements
 
-- Move multiple folders at once
 - Restore images and folders from trash
 - Slideshow maker
 - Scan for new folders in file system (Possible Pro Feature)
