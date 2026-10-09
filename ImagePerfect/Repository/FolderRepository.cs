@@ -3,6 +3,7 @@ using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.Repository.IRepository;
 using MySqlConnector;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -515,10 +516,30 @@ namespace ImagePerfect.Repository
 
         public async Task<bool> AddCoverImage(string coverImagePath, int folderId)
         {
-            int rowsEffected = 0;
-            string sql = @"UPDATE folders SET CoverImagePath = @coverImagePath WHERE FolderId = @folderId";
-            rowsEffected = await _connection.ExecuteAsync(sql, new { coverImagePath, folderId });
-            return rowsEffected > 0 ? true : false;
+            if (string.IsNullOrWhiteSpace(coverImagePath))
+            {
+                return false;
+            }
+
+            const string updateSql = @"UPDATE folders SET CoverImagePath = @coverImagePath WHERE FolderId = @folderId";
+            const string readBackSql = @"SELECT CoverImagePath FROM folders WHERE FolderId = @folderId";
+
+            MySqlTransaction txn = await _connection.BeginTransactionAsync();
+            await _connection.ExecuteAsync(updateSql, new { coverImagePath, folderId }, transaction: txn);
+
+            string? storedCoverImagePath = await _connection.QuerySingleOrDefaultAsync<string?>(
+                readBackSql,
+                new { folderId },
+                transaction: txn);
+
+            if (!string.Equals(storedCoverImagePath, coverImagePath, StringComparison.Ordinal))
+            {
+                await txn.RollbackAsync();
+                return false;
+            }
+
+            await txn.CommitAsync();
+            return true;
         }
 
         public async Task<bool> MoveFolder(string folderMoveSql, string imageMoveSql)

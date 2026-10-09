@@ -107,6 +107,10 @@ namespace ImagePerfect.ViewModels
                 if (!success)
                 {
                     Log.Warning("Failed to update cover image in DB for folder {FolderId}", containingFolder.FolderId);
+                    await MessageBoxHelper.ShowAsync(
+                        "Copy Cover",
+                        "The containing folder's cover image path could not be verified in the database. The image was not copied."
+                    );
                     return;
                 }
                 //copy file in file system

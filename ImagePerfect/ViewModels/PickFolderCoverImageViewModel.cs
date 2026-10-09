@@ -64,6 +64,13 @@ namespace ImagePerfect.ViewModels
                 string foldersDirectoryPath = PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath);
                 await _mainWindowViewModel.ExplorerVm.RefreshFolderProps(foldersDirectoryPath, folderVm, uow);
             }
+            else
+            {
+                await MessageBoxHelper.ShowAsync(
+                    "Cover Image",
+                    "The cover image path could not be verified in the database."
+                );
+            }
         }
     }
 }
