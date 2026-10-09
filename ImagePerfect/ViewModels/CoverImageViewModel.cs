@@ -94,6 +94,16 @@ namespace ImagePerfect.ViewModels
                 //add cover image path to containing folder
                 bool success = await folderMethods.UpdateCoverImage(coverImageNewPath, containingFolder.FolderId);
                 Log.Information("DB update cover image for folder {FolderId}, Success={Success}", containingFolder.FolderId, success);
+                //oddly sometimes the above reports success but folder doesnt have the new cover. 
+                //get the folder and log info
+                Folder updatedContainingFolder = await folderMethods.GetFolderById(containingFolder.FolderId);
+                Log.Information(
+                    "DB read-back cover image for folder {FolderId} at {FolderPath}: Requested={RequestedCoverImagePath}, Stored={StoredCoverImagePath}, Matches={Matches}",
+                    containingFolder.FolderId,
+                    containingFolder.FolderPath,
+                    coverImageNewPath,
+                    updatedContainingFolder.CoverImagePath,
+                    string.Equals(updatedContainingFolder.CoverImagePath, coverImageNewPath, StringComparison.Ordinal));
                 if (!success)
                 {
                     Log.Warning("Failed to update cover image in DB for folder {FolderId}", containingFolder.FolderId);
