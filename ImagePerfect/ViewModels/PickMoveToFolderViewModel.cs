@@ -18,20 +18,36 @@ using Image = ImagePerfect.Models.Image;
 
 namespace ImagePerfect.ViewModels
 {
-	public class PickMoveToFolderViewModel : ViewModelBase
+    public class PickMoveToFolderViewModel : ViewModelBase
 	{
         private readonly MySqlDataSource _dataSource;
         private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
+        private bool _canMoveFolders;
         public PickMoveToFolderViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel) 
 		{
             _dataSource = dataSource;
             _configuration = config;
             _mainWindowViewModel = mainWindowViewModel;
 
+            _canMoveFolders = _mainWindowViewModel.ExplorerVm.currentFilter == ExplorerViewModel.Filters.None;
+            _mainWindowViewModel.ExplorerVm.PropertyChanged += ExplorerVm_PropertyChanged;
+
             _SelectMoveToFolderInteration = new Interaction<string, List<string>?>();
 			SelectMoveToFolderCommand = ReactiveCommand.Create(async (IList? selectedFolders) => await SelectMoveToFolder(selectedFolders));
 		}
+
+        public bool CanMoveFolders
+        {
+            get => _canMoveFolders;
+            private set => this.RaiseAndSetIfChanged(ref _canMoveFolders, value);
+        }
+
+        private void ExplorerVm_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(ExplorerViewModel.currentFilter))
+                CanMoveFolders = _mainWindowViewModel.ExplorerVm.currentFilter == ExplorerViewModel.Filters.None;
+        }
 
 		private List<string>? _MoveToFolderPath;
 
@@ -43,6 +59,12 @@ namespace ImagePerfect.ViewModels
 
 		private async Task SelectMoveToFolder(IList? selectedFolders)
 		{
+            if (!CanMoveFolders)
+            {
+                await MessageBoxHelper.ShowAsync("Move Folders", "Clear the active filter before moving folders.");
+                return;
+            }
+
             if (selectedFolders is null || selectedFolders.Count == 0)
             {
                 await MessageBoxHelper.ShowAsync(

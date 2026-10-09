@@ -5,6 +5,7 @@
              mc:Ignorable="d"
 			 xmlns:vm="using:ImagePerfect.ViewModels"
 			 x:DataType="vm:PickMoveToFolderViewModel"
+			 IsEnabled="{Binding CanMoveFolders}"
              x:Class="ImagePerfect.Views.PickMoveToFolderView">
 	<Button Content="Move Folders" 
 			Command="{Binding SelectMoveToFolderCommand}" 

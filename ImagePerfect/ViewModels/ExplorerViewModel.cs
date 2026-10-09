@@ -68,7 +68,15 @@ namespace ImagePerfect.ViewModels
             AllFoldersWithMetadataNotScanned,
             AllFoldersWithoutCovers
         }
-        public Filters currentFilter = Filters.None;
+        private Filters _currentFilter = Filters.None;
+        public Filters currentFilter
+        {
+            get => _currentFilter;
+            set
+            {
+                this.RaiseAndSetIfChanged(ref _currentFilter, value);
+            }
+        }
         public string selectedLetterForFilter = "A";
         public int selectedYearForFilter = 0;
         public int selectedMonthForFilter = 0;

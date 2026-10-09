@@ -126,6 +126,7 @@ namespace ImagePerfect.ViewModels
         //application commands backing fields
         private ReactiveCommand<RxVoid, Task> _deleteLibraryCommand;
         private ReactiveCommand<RxVoid, RxVoid> _exitAppCommand;
+        private PickMoveToFolderViewModel? _pickMoveToFolder;
         public MainWindowViewModel() { }
         public MainWindowViewModel(MySqlDataSource dataSource, IConfiguration config)
         {
@@ -663,7 +664,12 @@ namespace ImagePerfect.ViewModels
 
         public PickFoldersToExtractZipsViewModel PickZipFolders { get => new PickFoldersToExtractZipsViewModel(_dataSource, _configuration, this); }
 
-        public PickMoveToFolderViewModel PickMoveToFolder { get => new PickMoveToFolderViewModel(_dataSource, _configuration, this); }
+        /* all other pickers on every access creates a new picker (PickMoveToFolder is special)
+         * ??= (null-coalescing assignment operator) used to assign the value of the right-hand operand to the left-hand operand only if the left-hand operand evaluates to null
+         * Since the picker subscribes to ExplorerVm.PropertyChanged, creating multiple instances could leave multiple listeners updating unused view models. 
+         * Caching keeps one listener and one CanMoveFolders value for the lifetime of the main window
+         */
+        public PickMoveToFolderViewModel PickMoveToFolder { get => _pickMoveToFolder ??= new PickMoveToFolderViewModel(_dataSource, _configuration, this); }
 
         public PickImageMoveToFolderViewModel PickImageMoveToFolder { get => new PickImageMoveToFolderViewModel(_dataSource, _configuration, this); }
 
