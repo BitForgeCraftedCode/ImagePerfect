@@ -26,10 +26,6 @@ namespace ImagePerfect.ViewModels
             _mainWindowViewModel = mainWindowViewModel;
         }
 
-        /*
-         * a separate UnitOfWork per folder can isolate failures somewhat: each folder gets its own database connection and lifetime, 
-         * so a connection or unit-of-work problem for one move is less likely to affect the next.
-         */
         public async Task MoveFolders(List<FolderViewModel> foldersToMove, string newFolderPath)
         {
             List<FolderViewModel> validFolders = new List<FolderViewModel>();
@@ -46,10 +42,8 @@ namespace ImagePerfect.ViewModels
                         errors.Add($"{folder.FolderName}: {error}");
                 }
 
-                foreach (FolderViewModel folder in validFolders)
-                {
-                    await MoveFolder(folder, newFolderPath);
-                }
+                if (validFolders.Count > 0)
+                    await MoveFoldersCore(validFolders, newFolderPath);
 
                 if (errors.Count > 0)
                 {
@@ -90,9 +84,9 @@ namespace ImagePerfect.ViewModels
             if (newFolderPath.Contains(folderVm.FolderPath, StringComparison.OrdinalIgnoreCase)) //Cannot move folder to one of its subfolders
                 return "The destination is a subfolder of the source folder.";
             string destinationFolderPath = PathHelper.AddNewFolderNameToPathForDirectoryMoveFolder(newFolderPath, folderVm.FolderName);
-            if (destinationFolderPath == folderVm.FolderPath)
+            if (destinationFolderPath == folderVm.FolderPath) //checks if user selected the current location of the folder
                 return "The folder is already in this location.";
-            if (Directory.Exists(destinationFolderPath))
+            if (Directory.Exists(destinationFolderPath)) //checks if a folder with that name already exists in the chosen location
                 return "A folder with this name already exists in the destination location.";
             try
             {
@@ -108,106 +102,105 @@ namespace ImagePerfect.ViewModels
             return null;
         }
 
-        private async Task MoveFolder(FolderViewModel folderVm, string newFolderPath)
+        private async Task MoveFoldersCore(List<FolderViewModel> foldersToMove, string newFolderPath)
         {
-
             await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
             FolderMethods folderMethods = new FolderMethods(uow);
             ImageMethods imageMethods = new ImageMethods(uow);
-           
-            List<Folder> folders = new List<Folder>();
-            List<Image> images = new List<Image>();
-            try
-            {
-                //GetAllImageInDirectoryTree casued a fatal error once. MySqlException Timeout expired before the operation completed
-                //pull current folder and sub folders from db
-                folders = await folderMethods.GetDirectoryTree(folderVm.FolderPath);
-                images = await imageMethods.GetAllImagesInDirectoryTree(folderVm.FolderPath);
-            }
-            catch (MySqlException ex)
-            {
-                Log.Error(ex, "Database error while preparing folder move for {FolderPath}", folderVm.FolderPath);
-                await MessageBoxHelper.ShowAsync(
-                    "Move Folder",
-                    $"Error moving the folder check the logs for more information."
-                );
-                return;
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Unexpected error while moving {FolderPath}", folderVm.FolderPath);
-                await MessageBoxHelper.ShowAsync(
-                    "Move Folder",
-                    $"Error moving the folder check the logs for more information."
-                );
-                return;
-            }
-           
-            //move folder in db
-            string destinationFolderPath = PathHelper.AddNewFolderNameToPathForDirectoryMoveFolder(newFolderPath, folderVm.FolderName);
-            //checks if user selected the current location of the folder
-            if (destinationFolderPath == folderVm.FolderPath)
-            {
-                await MessageBoxHelper.ShowAsync(
-                    "Move Folder",
-                    $"The folder is already in this location."
-                );
-                return;
-            }
-            //checks if a folder with that name already exists in the chosen location
-            if (Directory.Exists(destinationFolderPath))
-            {
-                await MessageBoxHelper.ShowAsync(
-                    "Move Folder",
-                    $"A folder with this name already exists in the destination location."
-                );
-                return;
-            }
 
-            //modify folder path and folder, cover image path, and images
-            folders = PathHelper.ModifyFolderPathsForFolderMove(folders, folderVm.FolderName, newFolderPath);
-            images = PathHelper.ModifyImagePathsForFolderMove(images, folderVm.FolderName, newFolderPath);
+            List<Folder> allFolders = new List<Folder>();
+            List<Image> allImages = new List<Image>();
 
-            //build sql string and update db
-            string folderMoveSql = SqlStringBuilder.BuildFolderSqlForFolderMove(folders);
-            string imageMoveSql = SqlStringBuilder.BuildImageSqlForFolderMove(images);
-
-            Folder moveToFolder = await folderMethods.GetFolderAtDirectory(newFolderPath);
-            Folder parentOfTheFolderToMove = await folderMethods.GetFolderAtDirectory(PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath));
-            //move images and folders in db do both in a transaction
-            bool success = await folderMethods.MoveFolder(folderMoveSql, imageMoveSql);
-            //move folder in filesystem if db move is successfull
-            if (success)
+            foreach (FolderViewModel folderVm in foldersToMove)
             {
                 try
                 {
-                    Directory.Move(folderVm.FolderPath, PathHelper.AddNewFolderNameToPathForDirectoryMoveFolder(newFolderPath, folderVm.FolderName));
-                    //update the moveToFolder and parentOfTheFolderToMove HasChildren propery
-                    moveToFolder.HasChildren = true;
-                    parentOfTheFolderToMove.HasChildren = Directory.GetDirectories(parentOfTheFolderToMove.FolderPath).Any();
-                    await folderMethods.UpdateFolder(moveToFolder);
-                    await folderMethods.UpdateFolder(parentOfTheFolderToMove);
+                    //GetAllImageInDirectoryTree casued a fatal error once. MySqlException Timeout expired before the operation completed
+                    //pull current folder and sub folders from db
+                    List<Folder> folders = await folderMethods.GetDirectoryTree(folderVm.FolderPath);
+                    List<Image> images = await imageMethods.GetAllImagesInDirectoryTree(folderVm.FolderPath);
+                    folders = PathHelper.ModifyFolderPathsForFolderMove(folders, folderVm.FolderName, newFolderPath);
+                    images = PathHelper.ModifyImagePathsForFolderMove(images, folderVm.FolderName, newFolderPath);
+                    allFolders.AddRange(folders);
+                    allImages.AddRange(images);
                 }
-                catch (Exception e)
+                catch (MySqlException ex)
                 {
+                    Log.Error(ex, "Database error while preparing folder move for {FolderPath}", folderVm.FolderPath);
                     await MessageBoxHelper.ShowAsync(
                         "Move Folder",
-                        $"Sorry something went wrong. \n {e}"
+                        $"Error moving the folder check the logs for more information."
                     );
                     return;
                 }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Unexpected error while moving {FolderPath}", folderVm.FolderPath);
+                    await MessageBoxHelper.ShowAsync(
+                        "Move Folder",
+                        $"Error moving the folder check the logs for more information."
+                    );
+                    return;
+                }
+
             }
-            else
+
+            if (allFolders.Count == 0 || allImages.Count == 0)
             {
-                await MessageBoxHelper.ShowAsync(
-                    "Move Folder",
-                    $"Sorry something went wrong"
-                );
+                await MessageBoxHelper.ShowAsync("Move Folders", "Could not find the folders or images to move.");
                 return;
             }
 
+            string folderMoveSql = SqlStringBuilder.BuildFolderSqlForFolderMove(allFolders);
+            string imageMoveSql = SqlStringBuilder.BuildImageSqlForFolderMove(allImages);
+            bool success = await folderMethods.MoveFolder(folderMoveSql, imageMoveSql);
+            if (!success)
+            {
+                await MessageBoxHelper.ShowAsync("Move Folders", "Sorry, something went wrong updating the database.");
+                return;
+            }
+            //physically move the folders in the filesystem
+            try
+            {
+                foreach (FolderViewModel folderVm in foldersToMove)
+                    MoveFolder(folderVm, newFolderPath);
+            }
+            catch (Exception ex)
+            {
+                await MessageBoxHelper.ShowAsync(
+                    "Move Folders",
+                    $"The database was updated, but a folder could not be moved on disk. Check the logs for details.\n{ex.Message}");
+                return;
+            }
+
+            //update the moveToFolder and parentOfTheFolderToMove HasChildren propery
+            Folder moveToFolder = await folderMethods.GetFolderAtDirectory(newFolderPath);
+            moveToFolder.HasChildren = true;
+            await folderMethods.UpdateFolder(moveToFolder);
+            //.Select(...) gets each folder's parent path, and .Distinct(...) removes duplicates
+            //thus since foldersToMove will always all be in the same directory UpdateFolder is only called once to pudate the perentOfTheFolderToMove
+            foreach (string parentPath in foldersToMove
+                         .Select(folder => PathHelper.RemoveOneFolderFromPath(folder.FolderPath))
+                         .Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                Folder parentOfTheFolderToMove = await folderMethods.GetFolderAtDirectory(parentPath);
+                parentOfTheFolderToMove.HasChildren = Directory.GetDirectories(parentPath).Any();
+                await folderMethods.UpdateFolder(parentOfTheFolderToMove);
+            }
         }
 
-
+        private void MoveFolder(FolderViewModel folderVm, string newFolderPath)
+        {
+            string destinationFolderPath = PathHelper.AddNewFolderNameToPathForDirectoryMoveFolder(newFolderPath, folderVm.FolderName);
+            try
+            {
+                Directory.Move(folderVm.FolderPath, destinationFolderPath);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Error moving folder from {SourcePath} to {DestinationPath}", folderVm.FolderPath, destinationFolderPath);
+                throw;
+            }
+        }
     }
 }
