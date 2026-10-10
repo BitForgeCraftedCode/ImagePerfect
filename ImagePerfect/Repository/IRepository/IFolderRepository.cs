@@ -23,6 +23,7 @@ namespace ImagePerfect.Repository.IRepository
         Task<(List<Folder> folders, List<FolderTag> tags)> GetAllFavoriteFolders();
         Task<List<Folder>> GetDirectoryTree(string directoryPath);
         Task<bool> AddCoverImage(string coverImagePath, int folderId);
+        Task<bool> UpdateFolderRating(int folderId, int rating);
         Task<bool> MoveFolder(string folderMoveSql, string imageMoveSql);
         Task<bool> RenameFolder(int folderId, string oldPath, string newPath, string newFolderName);
         Task<bool> UpdateFolderTags(Folder folder, string newTag);

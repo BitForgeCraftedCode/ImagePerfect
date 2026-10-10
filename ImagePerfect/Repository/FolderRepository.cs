@@ -542,6 +542,18 @@ namespace ImagePerfect.Repository
             return true;
         }
 
+        public async Task<bool> UpdateFolderRating(int folderId, int rating)
+        {
+            const string updateSql = @"UPDATE folders SET FolderRating = @rating WHERE FolderId = @folderId";
+            const string existsSql = @"SELECT EXISTS(SELECT 1 FROM folders WHERE FolderId = @folderId)";
+
+            MySqlTransaction txn = await _connection.BeginTransactionAsync();
+            await _connection.ExecuteAsync(updateSql, new { folderId, rating }, transaction: txn);
+            bool folderExists = await _connection.ExecuteScalarAsync<bool>(existsSql, new { folderId }, transaction: txn);
+            await txn.CommitAsync();
+            return folderExists;
+        }
+
         public async Task<bool> MoveFolder(string folderMoveSql, string imageMoveSql)
         {
             int rowsEffectedA = 0;

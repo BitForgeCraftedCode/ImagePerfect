@@ -29,8 +29,16 @@ namespace ImagePerfect.ViewModels
             await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
             FolderMethods folderMethods = new FolderMethods(uow);
 
-            Folder folder = FolderMapper.GetFolderFromVm(folderVm);
-            bool success = await folderMethods.UpdateFolder(folder);
+            bool success;
+            if (fieldUpdated == "Rating")
+            {
+                success = await folderMethods.UpdateFolderRating(folderVm.FolderId, folderVm.FolderRating);
+            }
+            else
+            {
+                Folder folder = FolderMapper.GetFolderFromVm(folderVm);
+                success = await folderMethods.UpdateFolder(folder);
+            }
             if (!success)
             {
                 await MessageBoxHelper.ShowAsync(
