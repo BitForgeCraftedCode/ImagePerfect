@@ -26,7 +26,15 @@ namespace ImagePerfect.ViewModels
             _configuration = config;
             _mainWindowViewModel = mainWindowViewModel;
         }
-
+        /*
+         * The logs here narrowed this down:
+         * DB update cover image for folder {FolderId}, Success={Success}
+         * DB read-back cover image for folder {FolderId} at {FolderPath}: Requested={RequestedCoverImagePath}, Stored={StoredCoverImagePath}, Matches={Matches}
+         * those two were always showing as true which told us the cover image path was being overwritten eleswhere by a stale Folder Object
+         * this happend when the user Saved Dir went into a folder copied cover image to containing 
+         * reloading Saved Dir than hit the folder rating on the folder without a cover. That would override the cover image back to null
+         * if this still happens check the remaing UpdateFolder calls in FolderMethods those use the generic repo and overwrite the whold object.
+         */
         public async Task CopyCoverImageToContainingFolder(FolderViewModel folderVm)
         {
             Log.Information("Starting CopyCoverImageToContainingFolder for FolderPath: {FolderPath}, CoverImagePath: {CoverImagePath}", folderVm.FolderPath, folderVm.CoverImagePath);
