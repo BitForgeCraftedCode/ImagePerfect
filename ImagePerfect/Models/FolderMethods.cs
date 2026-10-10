@@ -109,6 +109,11 @@ namespace ImagePerfect.Models
             return await _unitOfWork.Folder.UpdateFolderRating(folderId, rating);
         }
 
+        public async Task<bool> UpdateFolderDescription(int folderId, string? description)
+        {
+            return await _unitOfWork.Folder.UpdateFolderDescription(folderId, description);
+        }
+
         public async Task<bool> UpdateCoverImage(string coverImagePath, int folderId)
         {
             return await _unitOfWork.Folder.AddCoverImage(coverImagePath, folderId);

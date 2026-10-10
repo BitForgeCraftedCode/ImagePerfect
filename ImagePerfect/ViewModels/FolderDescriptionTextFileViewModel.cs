@@ -1,7 +1,6 @@
 ﻿using Avalonia.Controls;
 using ImagePerfect.Helpers;
 using ImagePerfect.Models;
-using ImagePerfect.ObjectMappers;
 using ImagePerfect.Repository;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
@@ -59,9 +58,7 @@ namespace ImagePerfect.ViewModels
                     return;
                 }
             }
-            containingFolder.FolderDescription = folderVm.FolderDescription;
-            //update db
-            await folderMethods.UpdateFolder(containingFolder);
+            await folderMethods.UpdateFolderDescription(containingFolder.FolderId, folderVm.FolderDescription);
 
         }
         public async Task GetFolderDescriptionFromTextFileOnCurrentPage(ItemsControl foldersItemsControl)
@@ -121,8 +118,7 @@ namespace ImagePerfect.ViewModels
                             fileContent = fileContent.Substring(0, 3000);
 
                         folder.FolderDescription = fileContent;
-                        //update db
-                        await folderMethods.UpdateFolder(FolderMapper.GetFolderFromVm(folder));
+                        await folderMethods.UpdateFolderDescription(folder.FolderId, fileContent);
                     }
                     catch (Exception ex) 
                     {
@@ -138,8 +134,7 @@ namespace ImagePerfect.ViewModels
                 Folder containingFolder = await folderMethods.GetFolderAtDirectory(PathHelper.RemoveOneFolderFromPath(allFolders[0].FolderPath));
                 if (string.IsNullOrEmpty(containingFolder.FolderDescription))
                 {
-                    containingFolder.FolderDescription = allFolders[0].FolderDescription;
-                    await folderMethods.UpdateFolder(containingFolder);
+                    await folderMethods.UpdateFolderDescription(containingFolder.FolderId, allFolders[0].FolderDescription);
                 }
             }
 

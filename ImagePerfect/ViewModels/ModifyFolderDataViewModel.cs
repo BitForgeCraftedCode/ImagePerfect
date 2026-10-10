@@ -34,6 +34,10 @@ namespace ImagePerfect.ViewModels
             {
                 success = await folderMethods.UpdateFolderRating(folderVm.FolderId, folderVm.FolderRating);
             }
+            else if (fieldUpdated == "Description")
+            {
+                success = await folderMethods.UpdateFolderDescription(folderVm.FolderId, folderVm.FolderDescription);
+            }
             else
             {
                 Folder folder = FolderMapper.GetFolderFromVm(folderVm);

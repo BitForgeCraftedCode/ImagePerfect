@@ -554,6 +554,18 @@ namespace ImagePerfect.Repository
             return folderExists;
         }
 
+        public async Task<bool> UpdateFolderDescription(int folderId, string? description)
+        {
+            const string updateSql = @"UPDATE folders SET FolderDescription = @description WHERE FolderId = @folderId";
+            const string existsSql = @"SELECT EXISTS(SELECT 1 FROM folders WHERE FolderId = @folderId)";
+
+            MySqlTransaction txn = await _connection.BeginTransactionAsync();
+            await _connection.ExecuteAsync(updateSql, new { folderId, description }, transaction: txn);
+            bool folderExists = await _connection.ExecuteScalarAsync<bool>(existsSql, new { folderId }, transaction: txn);
+            await txn.CommitAsync();
+            return folderExists;
+        }
+
         public async Task<bool> MoveFolder(string folderMoveSql, string imageMoveSql)
         {
             int rowsEffectedA = 0;
