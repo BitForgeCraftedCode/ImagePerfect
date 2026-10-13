@@ -33,9 +33,12 @@ namespace ImagePerfect.ViewModels
             try
             {
                 _mainWindowViewModel.ShowLoading = true;
+                await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+                FolderMethods folderMethods = new FolderMethods(uow);
+                Folder? rootFolder = await folderMethods.GetRootFolder();
                 foreach (FolderViewModel folder in foldersToMove)
                 {
-                    string? error = await ValidateFolderMove(folder, newFolderPath);
+                    string? error = await ValidateFolderMove(folder, newFolderPath, rootFolder);
                     if (error == null)
                         validFolders.Add(folder);
                     else
@@ -71,12 +74,8 @@ namespace ImagePerfect.ViewModels
             
         }
 
-        private async Task<string?> ValidateFolderMove(FolderViewModel folderVm, string newFolderPath)
+        private async Task<string?> ValidateFolderMove(FolderViewModel folderVm, string newFolderPath, Folder? rootFolder)
         {
-            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
-            FolderMethods folderMethods = new FolderMethods(uow);
-            ImageMethods imageMethods = new ImageMethods(uow);
-            Folder? rootFolder = await folderMethods.GetRootFolder();
             if (rootFolder == null)
                 return "You need to add a root library folder first before you can move a folder in it.";
             if (!newFolderPath.Contains(rootFolder.FolderPath, StringComparison.OrdinalIgnoreCase)) //add check to make sure user is picking folders within the root libary directory
