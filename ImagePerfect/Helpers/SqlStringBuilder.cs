@@ -122,6 +122,9 @@ namespace ImagePerfect.Helpers
 
         public static string BuildImageSqlForFolderMove(List<Image> images)
         {
+            if (images.Count == 0)
+                return string.Empty;
+
             StringBuilder sb = new StringBuilder("UPDATE images SET ImagePath = CASE ");
             foreach (Image image in images) 
             {

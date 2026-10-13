@@ -572,7 +572,10 @@ namespace ImagePerfect.Repository
             int rowsEffectedB = 0;  
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             rowsEffectedA = await _connection.ExecuteAsync(folderMoveSql, transaction: txn);
-            rowsEffectedB = await _connection.ExecuteAsync(imageMoveSql, transaction: txn);
+            if (!string.IsNullOrWhiteSpace(imageMoveSql))
+            {
+                rowsEffectedB = await _connection.ExecuteAsync(imageMoveSql, transaction: txn);
+            }
             await txn.CommitAsync();
             return rowsEffectedA > 0 && rowsEffectedB >= 0 ? true : false;
         }

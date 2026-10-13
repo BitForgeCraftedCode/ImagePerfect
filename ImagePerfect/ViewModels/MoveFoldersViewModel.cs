@@ -88,17 +88,6 @@ namespace ImagePerfect.ViewModels
                 return "The folder is already in this location.";
             if (Directory.Exists(destinationFolderPath)) //checks if a folder with that name already exists in the chosen location
                 return "A folder with this name already exists in the destination location.";
-            try
-            {
-                List<Image> images = await imageMethods.GetAllImagesInDirectoryTree(folderVm.FolderPath);
-                if (!images.Any())
-                    return "The folder must have images imported to move it.";
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Error validating folder move for {FolderPath}", folderVm.FolderPath);
-                return "Could not validate this folder; check the logs for more information.";
-            }
             return null;
         }
 
@@ -145,9 +134,9 @@ namespace ImagePerfect.ViewModels
 
             }
 
-            if (allFolders.Count == 0 || allImages.Count == 0)
+            if (allFolders.Count == 0)
             {
-                await MessageBoxHelper.ShowAsync("Move Folders", "Could not find the folders or images to move.");
+                await MessageBoxHelper.ShowAsync("Move Folders", "Could not find the folders to move.");
                 return;
             }
 
