@@ -45,6 +45,10 @@ namespace ImagePerfect.ViewModels
         //max value between CurrentFolderPage or CurrentImagePage
         private int _maxCurrentPage = 1;
 
+        //display total images and folders
+        private int _totalImagesInQuery = 0;
+        private int _totalFoldersInQuery = 1;
+
         //Filters -- if you add new filter variables be sure to update SavedDirectory Model and HistoryViewModel
         public enum Filters
         {
@@ -120,7 +124,16 @@ namespace ImagePerfect.ViewModels
             get => _filterInCurrentDirectory;
             set => this.RaiseAndSetIfChanged(ref _filterInCurrentDirectory, value);
         }
-
+        public int TotalImagesInQuery
+        {
+            get => _totalImagesInQuery;
+            set => this.RaiseAndSetIfChanged(ref _totalImagesInQuery, value);
+        }
+        public int TotalFoldersInQuery
+        {
+            get => _totalFoldersInQuery;
+            set => this.RaiseAndSetIfChanged(ref _totalFoldersInQuery, value);
+        }
         //pagination
         public int MaxCurrentPage
         {
@@ -263,6 +276,9 @@ namespace ImagePerfect.ViewModels
 
         private async Task SetDisplayImagesForRefreshImages((List<Image> images, List<ImageTag> tags) data)
         {
+            TotalImagesInQuery = data.images.Count;
+            if (currentFilter != Filters.None)
+                TotalFoldersInQuery = 0;
             displayImages = data.images;
             displayImageTags = data.tags;
             /*
@@ -461,6 +477,9 @@ namespace ImagePerfect.ViewModels
 
         private async Task SetDisplayFoldersForRefreshFolders((List<Folder> folders, List<FolderTag> tags) data)
         {
+            TotalFoldersInQuery = data.folders.Count;
+            if (currentFilter != Filters.None)
+                TotalImagesInQuery = 0;
             displayFolders = data.folders;
             displayFolderTags = data.tags;
             if (currentFilter == Filters.None) //dont clear images -- folder may have folders and images

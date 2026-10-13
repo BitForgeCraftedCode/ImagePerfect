@@ -1099,11 +1099,30 @@
 			</Grid>
 		</StackPanel>
 		<StackPanel Grid.Row="14" HorizontalAlignment="Stretch"  Classes="menu-bg-color" IsVisible="{Binding InitializeVm.HasRootLibrary}">
-			<Grid RowDefinitions="Auto" ColumnDefinitions="Auto,Auto,Auto,Auto" HorizontalAlignment="Center" Margin="0 0 0 10">
+			<Grid RowDefinitions="Auto"
+				  ColumnDefinitions="Auto,Auto,Auto,Auto,12,Auto,Auto,Auto,Auto"
+				  HorizontalAlignment="Center"
+				  Margin="0 0 0 10">
+				
 				<Label Grid.Row="0" Grid.Column="0">Total Pages:</Label>
-				<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ExplorerVm.MaxPage}" VerticalAlignment="Center"></TextBlock>
+				<TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding ExplorerVm.MaxPage}" VerticalAlignment="Center" />
+				
 				<Label Grid.Row="0" Grid.Column="2">Current Page:</Label>
-				<TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding ExplorerVm.MaxCurrentPage}" VerticalAlignment="Center"></TextBlock>
+				<TextBlock Grid.Row="0" Grid.Column="3" Text="{Binding ExplorerVm.MaxCurrentPage}" VerticalAlignment="Center" />
+
+				<Border Grid.Row="0"
+						Grid.Column="4"
+						Width="2"
+						Height="20"
+						Background="Black"
+						VerticalAlignment="Center"
+						HorizontalAlignment="Center" />
+
+				<Label ToolTip.Tip="Total number of images in query or page." Grid.Row="0" Grid.Column="5">Images:</Label>
+				<TextBlock Grid.Row="0" Grid.Column="6" Text="{Binding ExplorerVm.TotalImagesInQuery}" VerticalAlignment="Center" />
+				
+				<Label ToolTip.Tip="Total number of folders in query or page." Grid.Row="0" Grid.Column="7">Folders:</Label>
+				<TextBlock Grid.Row="0" Grid.Column="8" Text="{Binding ExplorerVm.TotalFoldersInQuery}" VerticalAlignment="Center" />
 			</Grid>
 		</StackPanel>
 	</Grid>
