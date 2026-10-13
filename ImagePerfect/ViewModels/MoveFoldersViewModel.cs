@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using Serilog;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -147,17 +148,30 @@ namespace ImagePerfect.ViewModels
                 await MessageBoxHelper.ShowAsync("Move Folders", "Sorry, something went wrong updating the database.");
                 return;
             }
-            //physically move the folders in the filesystem
-            try
-            {
-                foreach (FolderViewModel folderVm in foldersToMove)
-                    MoveFolder(folderVm, newFolderPath);
-            }
-            catch (Exception ex)
+            // Move the folders on disk in parallel. Each source is a distinct sibling, and validation
+            // confirmed that its destination does not already exist. Since all folders share
+            // one destination parent, their destination paths are distinct.
+            ConcurrentBag<string> failedFolderPaths = new ConcurrentBag<string>();
+            Parallel.ForEach(
+                foldersToMove,
+                new ParallelOptions { MaxDegreeOfParallelism = 4 },
+                folderVm =>
+                {
+                    try
+                    {
+                        MoveFolder(folderVm, newFolderPath);
+                    }
+                    catch
+                    {
+                        failedFolderPaths.Add(folderVm.FolderPath);
+                    }
+                });
+
+            if (!failedFolderPaths.IsEmpty)
             {
                 await MessageBoxHelper.ShowAsync(
                     "Move Folders",
-                    $"The database was updated, but a folder could not be moved on disk. Check the logs for details.\n{ex.Message}");
+                    $"The database was updated, but these folders could not be moved on disk. Check the logs for details.{Environment.NewLine}{string.Join(Environment.NewLine, failedFolderPaths)}");
                 return;
             }
 
