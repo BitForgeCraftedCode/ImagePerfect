@@ -107,7 +107,8 @@ namespace ImagePerfect.ViewModels
                     //GetAllImageInDirectoryTree casued a fatal error once. MySqlException Timeout expired before the operation completed
                     //pull current folder and sub folders from db
                     List<Folder> folders = await folderMethods.GetDirectoryTree(folderVm.FolderPath);
-                    List<Image> images = await imageMethods.GetAllImagesInDirectoryTree(folderVm.FolderPath);
+                    List<int> folderIds = folders.Select(f => f.FolderId).ToList();
+                    List<Image> images = await imageMethods.GetAllImagesInDirectoryTree(folderIds);
                     folders = PathHelper.ModifyFolderPathsForFolderMove(folders, folderVm.FolderName, newFolderPath);
                     images = PathHelper.ModifyImagePathsForFolderMove(images, folderVm.FolderName, newFolderPath);
                     allFolders.AddRange(folders);

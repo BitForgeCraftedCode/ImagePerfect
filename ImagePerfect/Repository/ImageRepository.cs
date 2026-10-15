@@ -222,11 +222,14 @@ namespace ImagePerfect.Repository
             await txn.CommitAsync();
             return (allImagesWithTag, tags);
         }
-        public async Task<List<Image>> GetAllImagesInDirectoryTree(string directoryPath)
+
+        public async Task<List<Image>> GetAllImagesInDirectoryTree(List<int> folderIds)
         {
-            string regExpString = PathHelper.GetRegExpStringDirectoryTree(directoryPath);
-            string sql = @"SELECT * FROM images WHERE REGEXP_LIKE(ImageFolderPath, @regExpString) ORDER BY FileName;";
-            List<Image> images = (await _connection.QueryAsync<Image>(sql, new { regExpString })).ToList();
+            if (folderIds.Count == 0)
+                return new List<Image>();
+
+            string sql = @"SELECT * FROM images WHERE FolderId IN @folderIds ORDER BY FileName;";
+            List<Image> images = (await _connection.QueryAsync<Image>(sql, new { folderIds })).ToList();
             return images;
         }
 

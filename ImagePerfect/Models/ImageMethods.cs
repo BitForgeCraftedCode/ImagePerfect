@@ -55,9 +55,9 @@ namespace ImagePerfect.Models
             return await _unitOfWork.Image.GetAllImagesWithTags(tagNames, filterInCurrentDirectory, currentDirectory);
         }
 
-        public async Task<List<Image>> GetAllImagesInDirectoryTree(string directoryPath)
+        public async Task<List<Image>> GetAllImagesInDirectoryTree(List<int> folderIds)
         {
-            return await _unitOfWork.Image.GetAllImagesInDirectoryTree(directoryPath);
+            return await _unitOfWork.Image.GetAllImagesInDirectoryTree(folderIds);
         }
 
         public async Task<Image> GetImageById(int imageId)
