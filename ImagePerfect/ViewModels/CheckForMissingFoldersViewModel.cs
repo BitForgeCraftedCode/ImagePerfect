@@ -1,12 +1,13 @@
-﻿using ImagePerfect.Models;
+using ImagePerfect.Helpers;
+using ImagePerfect.Models;
 using ImagePerfect.Repository;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ImagePerfect.ViewModels
@@ -16,6 +17,7 @@ namespace ImagePerfect.ViewModels
         private readonly MySqlDataSource _dataSource;
         private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
+
         public CheckForMissingFoldersViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel)
         {
             _dataSource = dataSource;
@@ -25,33 +27,122 @@ namespace ImagePerfect.ViewModels
 
         public async Task CheckDirectoryForMissingFolders()
         {
+            string currentDirectory = _mainWindowViewModel.ExplorerVm.CurrentDirectory;
             await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
             FolderMethods folderMethods = new FolderMethods(uow);
-            (List<Folder> folders, List<FolderTag> tags) result = await folderMethods.GetFoldersInDirectory(_mainWindowViewModel.ExplorerVm.CurrentDirectory, _mainWindowViewModel.ExplorerVm.LoadFoldersAscending);
+            Folder? rootFolder = await folderMethods.GetRootFolder();
+            if (rootFolder == null)
+                return;
+            if(PathHelper.RemoveOneFolderFromPath(rootFolder.FolderPath) == currentDirectory)
+            {
+                await MessageBoxHelper.ShowAsync(
+                    "Check for Missing Folders",
+                    $"You cannot check for missing folders from the root directory.");
+                return;
+            }
+
+            (List<Folder> folders, List<FolderTag> tags) result = await folderMethods.GetFoldersInDirectory(
+                currentDirectory,
+                _mainWindowViewModel.ExplorerVm.LoadFoldersAscending);
             List<Folder> databaseCurrentDirectoryFolders = result.folders;
 
-            HashSet<string> dbPaths = databaseCurrentDirectoryFolders.Select(f => f.FolderPath).ToHashSet(StringComparer.Ordinal);
-            HashSet<string> diskPaths = Directory.GetDirectories(_mainWindowViewModel.ExplorerVm.CurrentDirectory).ToHashSet(StringComparer.Ordinal);
-            /*
-             * compair both lists
-             * we want to get:
-             * Folders found on disk but absent from db
-             * db folders with no corresponding directory on disk
-             * show case conflicts as well
-             * So we must adhere to the Know limitaion below
-             * Known limitation: On Ubuntu/Linux, where the filesystem is case-sensitive, importing folders named e.g., Photos/BeachTrip and Photos/beachtrip causes both folders to show each other's contents.
-             * - When adding a library or new folders; any folders with the same name but different case will not be imported. 
-             * A log file "case_conflict_folders.txt" will list the date and folders not imported. From there users must rename the folders and then import them.
-             * 
-             * so we need
-             * 
-             * Exact match: The folder exists both on disk and in the database.
-                Case conflict: A folder differs only by case from another folder, either in the database or on disk.
-                Not imported: A folder exists on disk but has no matching database entry or case conflict.
-                Missing from disk: A database folder has no corresponding directory on disk and isn't explained by a case conflict.
-             */
+            HashSet<string> dbPaths = databaseCurrentDirectoryFolders
+                .Select(folder => folder.FolderPath)
+                .ToHashSet(StringComparer.Ordinal);
 
-            //log differences to Missing_Folders.txt in app root directory. Also display message to user. no need to log all the exact matches we can just say 200 matched folders
+            HashSet<string> diskPaths = Directory.GetDirectories(currentDirectory)
+                .ToHashSet(StringComparer.Ordinal);
+
+            HashSet<string> exactMatches = dbPaths
+                .Intersect(diskPaths, StringComparer.Ordinal)
+                .ToHashSet(StringComparer.Ordinal);
+
+            List<string> notImported = diskPaths
+                .Except(exactMatches, StringComparer.Ordinal)
+                .ToList();
+
+            List<string> missingFromDisk = dbPaths
+                .Except(exactMatches, StringComparer.Ordinal)
+                .ToList();
+
+            /*
+             * The goal is to find folder paths that differ only by letter case,
+             * including conflicts between the database and disk and conflicts that exist entirely on disk.
+             * Concat() combines the two collections into one sequence without removing duplicates between the two.
+             * so the list may look like this:
+             * 
+             * C:\Photos\BeachTrip   ← database
+             * C:\Photos\Vacation    ← database
+             * C:\Photos\BeachTrip   ← disk
+             * C:\Photos\beachtrip   ← disk
+             * C:\Photos\Summer      ← disk
+             * 
+             * GroupBy then groups (case insensitively) strings that are identical -- thus its now List of List and all my beachtrip folders will be in one group
+             * Select Distinct takes each group and removes exact duplicate strings so the BeachTrip that appears twice will now just be once (BeachTrip, beachtrip)
+             * Where filters out groups that contain only one distinct path Thus we have a list of lists where each inner list has a case conflict group
+             */
+            List<List<string>> caseConflictGroups = dbPaths.Concat(diskPaths)
+                .GroupBy(path => path, StringComparer.OrdinalIgnoreCase)
+                .Select(group => group.Distinct(StringComparer.Ordinal).ToList())
+                .Where(group => group.Count() > 1)
+                .ToList();
+
+
+            //flatten the nested lists into HashSet
+            HashSet<string> caseConflictPaths = caseConflictGroups
+                .SelectMany(group => group)
+                .ToHashSet(StringComparer.Ordinal);
+
+            //use that HashSet to remove case-conflict paths from the other two result lists so they aren't reported twice
+            notImported.RemoveAll(path => caseConflictPaths.Contains(path));
+            missingFromDisk.RemoveAll(path => caseConflictPaths.Contains(path));
+
+            List<string> differences = new List<string>();
+            if (caseConflictGroups.Count > 0)
+            {
+                differences.Add("Case conflicts:");
+                foreach (List<string> conflictGroup in caseConflictGroups)
+                {
+                    //Select() transforms each item
+                    //AddRange(List<string>) adds each string in the list to the end of the differences list
+                    differences.AddRange(conflictGroup.Select(path => $"  {path}"));
+                }
+            }
+            if (notImported.Count > 0)
+            {
+                differences.Add("Folders on disk but not in the database (not imported):");
+                differences.AddRange(notImported.Select(path => $"  {path}"));
+            }
+            if (missingFromDisk.Count > 0)
+            {
+                differences.Add("Folders in the database but missing from disk:");
+                differences.AddRange(missingFromDisk.Select(path => $"  {path}"));
+            }
+
+            if (differences.Count == 0)
+            {
+                await MessageBoxHelper.ShowAsync(
+                    "Check for Missing Folders",
+                    $"All {exactMatches.Count} direct child folders match between the database and disk.");
+                return;
+            }
+
+            string logPath = Path.Combine(Directory.GetCurrentDirectory(), "Missing_Folders.txt");
+            List<string> logLines = new List<string>
+            {
+                $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Folder check for: {currentDirectory}",
+                $"Exact matches: {exactMatches.Count}"
+            };
+            logLines.AddRange(differences);
+            logLines.Add(string.Empty);
+            await File.AppendAllLinesAsync(logPath, logLines);
+
+            string summary = $"Exact matches: {exactMatches.Count}\n" +
+                $"Case conflict groups: {caseConflictGroups.Count}\n" +
+                $"On disk but not in database: {notImported.Count}\n" +
+                $"In database but missing from disk: {missingFromDisk.Count}\n\n" +
+                $"Details were appended to:\n{logPath}";
+            await MessageBoxHelper.ShowAsync("Check for Missing Folders", summary);
         }
     }
 }
