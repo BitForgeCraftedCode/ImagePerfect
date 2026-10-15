@@ -71,6 +71,7 @@ namespace ImagePerfect.ViewModels
         private ReactiveCommand<RxVoid, Task> _createNewFolderCommand;
         private ReactiveCommand<RxVoid, Task> _openCurrentDirectoryWithExplorerCommand;
         private ReactiveCommand<FolderViewModel, Task> _renameFolderCommand;
+        private ReactiveCommand<RxVoid, Task> _checkCurrentDirectoryForMissingFoldersCommand;
         //image backing fields
         private ReactiveCommand<ImageViewModel, Task> _addImageTagsCommand;
         private ReactiveCommand<ListBox, Task> _addMultipleImageTagsCommand;
@@ -151,6 +152,7 @@ namespace ImagePerfect.ViewModels
             MoveFolderToTrash = new MoveFolderToTrashViewModel(_dataSource, _configuration, this);
             MoveFoldersVm = new MoveFoldersViewModel(_dataSource, _configuration, this);
             CreateNewFolder = new CreateNewFolderViewModel(_dataSource, _configuration, this);
+            CheckForMissingFoldersVm = new CheckForMissingFoldersViewModel(_dataSource, _configuration, this);
 
             InitializeWindowCommands();
             InitializeToggleUICommands();
@@ -334,6 +336,9 @@ namespace ImagePerfect.ViewModels
             });
             _renameFolderCommand = ReactiveCommand.Create(async (FolderViewModel folderVm) => {
                 await ModifyFolderDataVm.RenameFolder(folderVm);
+            });
+            _checkCurrentDirectoryForMissingFoldersCommand = ReactiveCommand.Create(async () => { 
+                await CheckForMissingFoldersVm.CheckDirectoryForMissingFolders();
             });
         }
 
@@ -655,6 +660,7 @@ namespace ImagePerfect.ViewModels
         public MoveFolderToTrashViewModel MoveFolderToTrash { get; }
         public MoveFoldersViewModel MoveFoldersVm { get; }
         public CreateNewFolderViewModel CreateNewFolder { get; }
+        public CheckForMissingFoldersViewModel CheckForMissingFoldersVm { get; }
         public ToggleUIViewModel ToggleUI { get; } = new ToggleUIViewModel();
 
         //pass in this MainWindowViewModel so we can refresh UI
@@ -764,6 +770,8 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<RxVoid, Task> OpenCurrentDirectoryWithExplorerCommand { get => _openCurrentDirectoryWithExplorerCommand; }
 
         public ReactiveCommand<FolderViewModel, Task> RenameFolderCommand { get => _renameFolderCommand; }
+
+        public ReactiveCommand<RxVoid, Task> CheckCurrentDirectoryForMissingFoldersCommand { get => _checkCurrentDirectoryForMissingFoldersCommand; }
 
         //Image Commands
         public ReactiveCommand<ImageViewModel, Task> AddImageTagsCommand { get => _addImageTagsCommand; }

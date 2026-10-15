@@ -146,6 +146,13 @@
 							</ControlTemplate>
 						</MenuItem.Template>
 					</MenuItem>
+					<MenuItem>
+						<MenuItem.Template>
+							<ControlTemplate>
+								<Button Content="Missing Folders" Command="{Binding CheckCurrentDirectoryForMissingFoldersCommand}" Classes="main-btn" Width="235" ToolTip.Tip="Checks the current directory for missing folders." />
+							</ControlTemplate>
+						</MenuItem.Template>
+					</MenuItem>
 				</MenuItem>
 				<MenuItem Header="_Library Management">
 					<!--

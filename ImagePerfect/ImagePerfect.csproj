@@ -81,6 +81,9 @@
     <None Update="images.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="Missing_Folders.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
 	<None Update="ExternalTools\**\*.*">
 		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	</None>
