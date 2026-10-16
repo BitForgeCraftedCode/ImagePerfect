@@ -26,7 +26,7 @@ public partial class PickNewFoldersView : ReactiveUserControl<PickNewFoldersView
                 new FolderPickerOpenOptions()
                 {
                     AllowMultiple = true,
-                    Title = "Select New Folders",
+                    Title = "Select New Folders From One Parent Directory",
                     SuggestedStartLocation = startLocation
                 }
             );

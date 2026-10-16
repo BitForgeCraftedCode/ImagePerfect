@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using ReactiveUI;
 using ReactiveUI.Primitives;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -109,11 +110,14 @@ namespace ImagePerfect.ViewModels
                 return;
             }
             //check if any folders are already in db
-            List<Folder> allFoldersInDb = await folderMethods.GetAllFolders();
+            (List<Folder> folders, List<FolderTag> tags) result = await folderMethods.GetFoldersInDirectory(
+                parentDirectory,
+                _mainWindowViewModel.ExplorerVm.LoadFoldersAscending);
+            List<Folder> databaseCurrentDirectoryFolders = result.folders;
             List<string> foldersNotToAdd = new List<string>();
             for (int i = 0; i < _NewFolders.Count; i++) 
             {
-                foreach (Folder folder in allFoldersInDb)
+                foreach (Folder folder in databaseCurrentDirectoryFolders)
                 {
                     if (folder.FolderPath == PathHelper.FormatPathFromFolderPicker(_NewFolders[i]))
                     {
@@ -133,6 +137,44 @@ namespace ImagePerfect.ViewModels
                 );
                 _mainWindowViewModel.ShowLoading = false;
                 return;
+            }
+            //check for case conflicts
+            List<string> dbPaths = databaseCurrentDirectoryFolders.Select(folder => folder.FolderPath).ToList();
+            List<string> formattedNewFolderPaths = _NewFolders.Select(x => PathHelper.FormatPathFromFolderPicker(x)).ToList();
+            List<List<string>> caseConflictGroups = CaseConflictsHelper.FindCaseConflictGroups(dbPaths, formattedNewFolderPaths);
+            
+            if (caseConflictGroups.Count > 0)
+            {
+                List<string> differences = new List<string>();
+                differences.Add("Case conflicts:");
+                foreach (List<string> conflictGroup in caseConflictGroups)
+                {
+                    //Select() transforms each item
+                    //AddRange(List<string>) adds each string in the list to the end of the differences list
+                    differences.AddRange(conflictGroup.Select(path => $"  {path}"));
+                }
+                //flatten the nested lists into HashSet
+                HashSet<string> caseConflictPaths = caseConflictGroups
+                    .SelectMany(group => group)
+                    .ToHashSet(StringComparer.Ordinal);
+
+                //remove conflicting picker paths, comparing their formatted form to the conflict paths
+                _NewFolders.RemoveAll(path => caseConflictPaths.Contains(PathHelper.FormatPathFromFolderPicker(path)));
+                string logPath = Path.Combine(Directory.GetCurrentDirectory(), "case_conflict_folders.txt");
+                List<string> logLines = new List<string>
+                {
+                    $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Folder check for: {parentDirectory}",
+                };
+                logLines.AddRange(differences);
+                logLines.Add(string.Empty);
+                await File.AppendAllLinesAsync(logPath, logLines);
+                await MessageBoxHelper.ShowAsync("Add new folders", "Case conflicts were found check case_conflict_folders.txt for a list of folders not added.");
+                
+                if (_NewFolders.Count == 0)
+                {
+                    _mainWindowViewModel.ShowLoading = false;
+                    return;
+                }
             }
             //build csv
             bool csvIsSet = await FolderCsvMethods.AddNewFoldersCsv(_NewFolders, false);
