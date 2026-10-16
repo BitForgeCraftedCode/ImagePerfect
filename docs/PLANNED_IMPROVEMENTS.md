@@ -5,7 +5,6 @@
 
 - Restore images and folders from trash
 - Slideshow maker
-- Scan for new folders in file system (Possible Pro Feature)
 - Backup and restore MySQL database assist (Possible Pro Feature)
 - Rsync intergration for Ubuntu Robocopy for Windows. To assist with photo backups.
 - Allow editing of history list and save history points to database
