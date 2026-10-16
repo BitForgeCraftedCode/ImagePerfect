@@ -138,7 +138,7 @@ namespace ImagePerfect.ViewModels
                 _mainWindowViewModel.ShowLoading = false;
                 return;
             }
-            //check for case conflicts
+            //check for case conflicts. Just in case there is a folder with the same name but different case already in db
             List<string> dbPaths = databaseCurrentDirectoryFolders.Select(folder => folder.FolderPath).ToList();
             List<string> formattedNewFolderPaths = _NewFolders.Select(x => PathHelper.FormatPathFromFolderPicker(x)).ToList();
             List<List<string>> caseConflictGroups = CaseConflictsHelper.FindCaseConflictGroups(dbPaths, formattedNewFolderPaths);
