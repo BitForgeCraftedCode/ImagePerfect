@@ -52,7 +52,7 @@ namespace ImagePerfect.Models
             foreach (string folderPath in foldersPaths) 
             { 
                 DirectoryInfo folderInfo = new DirectoryInfo(folderPath);
-                IEnumerable<string> folderFiles = Directory.EnumerateFiles(folderPath).Where(s => s.ToLower().EndsWith(".jpeg") || s.ToLower().EndsWith(".jpg") || s.ToLower().EndsWith(".png") || s.ToLower().EndsWith(".gif"));
+                IEnumerable<string> folderFiles = Directory.EnumerateFiles(folderPath).Where(s => s.ToLower().EndsWith(".jpeg") || s.ToLower().EndsWith(".jpg") || s.ToLower().EndsWith(".png") || s.ToLower().EndsWith(".gif") || s.ToLower().EndsWith(".webp") || s.ToLower().EndsWith(".tif"));
                 folders.Add(
                         new FolderCsv 
                         { 
@@ -74,7 +74,7 @@ namespace ImagePerfect.Models
                 foreach (string folderDirectory in folderDirectories)
                 {
                     DirectoryInfo info = new DirectoryInfo(folderDirectory);
-                    IEnumerable<string> files = Directory.EnumerateFiles(folderDirectory).Where(s => s.ToLower().EndsWith(".jpeg") || s.ToLower().EndsWith(".jpg") || s.ToLower().EndsWith(".png") || s.ToLower().EndsWith(".gif"));
+                    IEnumerable<string> files = Directory.EnumerateFiles(folderDirectory).Where(s => s.ToLower().EndsWith(".jpeg") || s.ToLower().EndsWith(".jpg") || s.ToLower().EndsWith(".png") || s.ToLower().EndsWith(".gif") || s.ToLower().EndsWith(".webp") || s.ToLower().EndsWith(".tif"));
                     folders.Add(
                         new FolderCsv
                         {

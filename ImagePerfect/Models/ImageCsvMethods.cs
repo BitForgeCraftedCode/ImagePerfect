@@ -51,7 +51,7 @@ namespace ImagePerfect.Models
             string imageCsvPath = GetCsvFilePath(imageFolderId);
 
             //DirectoryInfo imageFolderInfo = new DirectoryInfo(imageFolderPath);
-            IEnumerable<string> imageFolderFiles = Directory.EnumerateFiles(imageFolderPath).Where(s => s.ToLower().EndsWith(".jpeg") || s.ToLower().EndsWith(".jpg") || s.ToLower().EndsWith(".png") || s.ToLower().EndsWith(".gif"));
+            IEnumerable<string> imageFolderFiles = Directory.EnumerateFiles(imageFolderPath).Where(s => s.ToLower().EndsWith(".jpeg") || s.ToLower().EndsWith(".jpg") || s.ToLower().EndsWith(".png") || s.ToLower().EndsWith(".gif") || s.ToLower().EndsWith(".webp") || s.ToLower().EndsWith(".tif"));
             List<ImageCsv> images = new List<ImageCsv>();
             foreach (string imagePath in imageFolderFiles)
             {

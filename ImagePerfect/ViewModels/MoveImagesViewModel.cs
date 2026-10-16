@@ -122,7 +122,7 @@ namespace ImagePerfect.ViewModels
                     }
                     //update imagesFolder HasFiles, AreImagesImported, and FolderContentMetaDataScanned
                     //set all back to false if moved all images to trash
-                    IEnumerable<string> folderFiles = Directory.EnumerateFiles(imagesFolder.FolderPath).Where(s => s.ToLower().EndsWith(".jpeg") || s.ToLower().EndsWith(".jpg") || s.ToLower().EndsWith(".png") || s.ToLower().EndsWith(".gif"));
+                    IEnumerable<string> folderFiles = Directory.EnumerateFiles(imagesFolder.FolderPath).Where(s => s.ToLower().EndsWith(".jpeg") || s.ToLower().EndsWith(".jpg") || s.ToLower().EndsWith(".png") || s.ToLower().EndsWith(".gif") || s.ToLower().EndsWith(".webp") || s.ToLower().EndsWith(".tif"));
                     if (!folderFiles.Any())
                     {
                         imagesFolder.HasFiles = false;
@@ -249,7 +249,7 @@ namespace ImagePerfect.ViewModels
                     }
                     //update imagesCurrentFolder HasFiles, AreImagesImported, and FolderContentMetaDataScanned
                     //set all back to false if moved all images to new folder
-                    IEnumerable<string> folderFiles = Directory.EnumerateFiles(imagesCurrentFolder.FolderPath).Where(s => s.ToLower().EndsWith(".jpeg") || s.ToLower().EndsWith(".jpg") || s.ToLower().EndsWith(".png") || s.ToLower().EndsWith(".gif"));
+                    IEnumerable<string> folderFiles = Directory.EnumerateFiles(imagesCurrentFolder.FolderPath).Where(s => s.ToLower().EndsWith(".jpeg") || s.ToLower().EndsWith(".jpg") || s.ToLower().EndsWith(".png") || s.ToLower().EndsWith(".gif") || s.ToLower().EndsWith(".webp") || s.ToLower().EndsWith(".tif"));
                     if (!folderFiles.Any())
                     {
                         imagesCurrentFolder.HasFiles = false;
