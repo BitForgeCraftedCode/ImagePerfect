@@ -25,6 +25,7 @@ namespace ImagePerfect.ViewModels
 
         private FiltersWindow? _filtersWindow;
         private SettingsWindow? _settingsWindow;
+        private BackUpWindow? _backUpWindow;
         private bool _showLoading;
         private bool _suppressImageRefresh = false;
         private int _totalImages = 0;
@@ -35,6 +36,7 @@ namespace ImagePerfect.ViewModels
         //open Window backing fields
         private ReactiveCommand<RxVoid, RxVoid> _openSettingsWindowCommand;
         private ReactiveCommand<RxVoid, RxVoid> _openFiltersWindowCommand;
+        private ReactiveCommand<RxVoid, RxVoid> _openBackUpWindowCommand;
         //toggleUI backing fields
         private ReactiveCommand<RxVoid, RxVoid> _toggleManageImagesCommand;
         private ReactiveCommand<string, RxVoid> _toggleFiltersCommand;
@@ -202,7 +204,9 @@ namespace ImagePerfect.ViewModels
         private SettingsWindow? GetSettingsWindow() => _settingsWindow;
         private void SetSettingsWindow(SettingsWindow? w) => _settingsWindow = w;
         private FiltersWindow? GetFiltersWindow() => _filtersWindow;
-        private void SetFiltersWindow(FiltersWindow? w) => _filtersWindow = w;   
+        private void SetFiltersWindow(FiltersWindow? w) => _filtersWindow = w;
+        private BackUpWindow? GetBackUpWidow() => _backUpWindow;
+        private void SetBackUpWindow(BackUpWindow? w) => _backUpWindow = w;
         private void InitializeWindowCommands()
         {
             _openSettingsWindowCommand = ReactiveCommand.Create(() =>
@@ -218,6 +222,13 @@ namespace ImagePerfect.ViewModels
                     GetFiltersWindow,
                     SetFiltersWindow,
                     () => new FiltersWindow(this));
+            });
+
+            _openBackUpWindowCommand = ReactiveCommand.Create(() => {
+                OpenOrActivateWindow(
+                    GetBackUpWidow,
+                    SetBackUpWindow,
+                    () => new BackUpWindow(this));
             });
         }
         
@@ -701,6 +712,7 @@ namespace ImagePerfect.ViewModels
         public ReactiveCommand<RxVoid, RxVoid> OpenSettingsWindowCommand { get => _openSettingsWindowCommand; }
 
         public ReactiveCommand<RxVoid, RxVoid> OpenFiltersWindowCommand { get => _openFiltersWindowCommand; }
+        public ReactiveCommand<RxVoid, RxVoid> OpenBackUpWindowCommand { get => _openBackUpWindowCommand; }
 
         //ToggleUI Commands
         public ReactiveCommand<RxVoid, RxVoid> ToggleManageImagesCommand { get => _toggleManageImagesCommand; }

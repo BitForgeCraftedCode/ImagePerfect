@@ -153,6 +153,13 @@
 							</ControlTemplate>
 						</MenuItem.Template>
 					</MenuItem>
+					<MenuItem>
+						<MenuItem.Template>
+							<ControlTemplate>
+								<Button Content="BackUp Images" Command="{Binding OpenBackUpWindowCommand}" Classes="main-btn" Width="235" />
+							</ControlTemplate>
+						</MenuItem.Template>
+					</MenuItem>
 				</MenuItem>
 				<MenuItem Header="_Library Management">
 					<!--

@@ -1,0 +1,16 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:vm="using:ImagePerfect.ViewModels"
+		xmlns:v="using:ImagePerfect.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="ImagePerfect.Views.BackUpWindow"
+		x:DataType="vm:MainWindowViewModel"
+		Icon="/Assets/icons8-image-256.ico"
+		Topmost="False"
+		ShowInTaskbar="True"
+		WindowState="Maximized"
+        Title="Back Up Photos">
+	Back Up photos!!
+</Window>
