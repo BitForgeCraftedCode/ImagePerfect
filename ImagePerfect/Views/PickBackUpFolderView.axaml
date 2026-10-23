@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+			 xmlns:vm="using:ImagePerfect.ViewModels"
+			 x:DataType="vm:BackUpViewModel"
+             x:Class="ImagePerfect.Views.PickBackUpFolderView"
+             x:Name="PickBackUpRoot">
+    <!--
+	ElementName tells those two bindings: "Find ButtonText and FolderType on the control named PickBackUpRoot." 
+	Without it, the bindings would try to find those properties on the button's DataContext, which is the backup view model - and those properties aren't on that view model
+	-->
+    <Button Content="{Binding ButtonText, ElementName=PickBackUpRoot}"
+          Command="{Binding PickFolderCommand}"
+          CommandParameter="{Binding FolderType, ElementName=PickBackUpRoot}"
+          Classes="main-btn"
+		  HorizontalContentAlignment="Center"
+		  VerticalContentAlignment="Center"
+          Width="235" />
+</UserControl>

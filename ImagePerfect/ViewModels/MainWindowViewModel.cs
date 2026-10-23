@@ -155,6 +155,7 @@ namespace ImagePerfect.ViewModels
             MoveFoldersVm = new MoveFoldersViewModel(_dataSource, _configuration, this);
             CreateNewFolder = new CreateNewFolderViewModel(_dataSource, _configuration, this);
             CheckForMissingFoldersVm = new CheckForMissingFoldersViewModel(_dataSource, _configuration, this);
+            BackUpVm = new BackUpViewModel();
 
             InitializeWindowCommands();
             InitializeToggleUICommands();
@@ -228,7 +229,7 @@ namespace ImagePerfect.ViewModels
                 OpenOrActivateWindow(
                     GetBackUpWidow,
                     SetBackUpWindow,
-                    () => new BackUpWindow(this));
+                    () => new BackUpWindow(BackUpVm));
             });
         }
         
@@ -672,6 +673,7 @@ namespace ImagePerfect.ViewModels
         public MoveFoldersViewModel MoveFoldersVm { get; }
         public CreateNewFolderViewModel CreateNewFolder { get; }
         public CheckForMissingFoldersViewModel CheckForMissingFoldersVm { get; }
+        public BackUpViewModel BackUpVm { get; }
         public ToggleUIViewModel ToggleUI { get; } = new ToggleUIViewModel();
 
         //pass in this MainWindowViewModel so we can refresh UI
@@ -681,7 +683,10 @@ namespace ImagePerfect.ViewModels
 
         public PickFoldersToExtractZipsViewModel PickZipFolders { get => new PickFoldersToExtractZipsViewModel(_dataSource, _configuration, this); }
 
-        /* all other pickers on every access creates a new picker (PickMoveToFolder is special)
+        /* all other pickers on every access creates a new picker 
+         * (for example each time you read PickRootFolder it creates a new VM) the only place we do that is in the UI <v:PickRootFolderView DataContext="{Binding PickRootFolder}" x:Name="PickRootFolder"/>
+         * this is also why other VMs are created in MainWindowViewModel constructor so calling MainWindowViewModel.HistorVm elsewhere wont create a new VM
+         * (PickMoveToFolder is special)
          * ??= (null-coalescing assignment operator) used to assign the value of the right-hand operand to the left-hand operand only if the left-hand operand evaluates to null
          * Since the picker subscribes to ExplorerVm.PropertyChanged, creating multiple instances could leave multiple listeners updating unused view models. 
          * Caching keeps one listener and one CanMoveFolders value for the lifetime of the main window

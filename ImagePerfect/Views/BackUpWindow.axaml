@@ -6,11 +6,27 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="ImagePerfect.Views.BackUpWindow"
-		x:DataType="vm:MainWindowViewModel"
+		x:DataType="vm:BackUpViewModel"
 		Icon="/Assets/icons8-image-256.ico"
 		Topmost="False"
 		ShowInTaskbar="True"
 		WindowState="Maximized"
-        Title="Back Up Photos">
-	Back Up photos!!
+		Title="Back Up Images">
+	<StackPanel Spacing="16" Margin="24" HorizontalAlignment="Center" VerticalAlignment="Top">
+		<TextBlock Text="Images Backup Linux Only" FontSize="28" FontWeight="Bold" />
+		<TextBlock Text="Choose the source and destination folders for your backup." />
+		<StackPanel Spacing="6">
+			<v:PickBackUpFolderView ButtonText="Get Source Folder" FolderType="Source" />
+			<TextBlock Text="{Binding SourceFolderPath}" TextWrapping="Wrap" />
+		</StackPanel>
+		<StackPanel Spacing="6">
+			<v:PickBackUpFolderView ButtonText="Get Destination Folder" FolderType="Destination" />
+			<TextBlock Text="{Binding DestinationFolderPath}" TextWrapping="Wrap" />
+		</StackPanel>
+		<StackPanel Spacing="6">
+			<TextBlock Text="After selecting both folders, copy this command into a Linux terminal and run it. It mirrors the source folder's contents to the destination, deleting destination files that aren’t in the source." 
+					   TextWrapping="Wrap" />
+			<SelectableTextBlock Padding="10" Text="{Binding RsyncCommand}" TextWrapping="Wrap" />
+		</StackPanel>
+	</StackPanel>
 </Window>

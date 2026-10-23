@@ -17,7 +17,25 @@ namespace ImagePerfect.ViewModels
         private readonly MySqlDataSource _dataSource;
         private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
-           
+        /*
+         * The Interaction and Folder Picker work like this:
+         * 
+         * ReactiveUI interactions let a view model request a UI-specific action—such as
+         * opening a dialog or file picker—without putting UI code in the view model.
+         *  
+         * Interactions act as a request/response bridge: the view model sends a request with a string input and waits for a nullable list 
+         * of paths in return. Here, the request string is the picker title, "Select Root Library Folder"
+         * 
+         * When the view is active, its code-behind registers InteractionHandler to handle SelectFolderInteraction
+         * The handler gets the window's TopLevel, calls StorageProvider.OpenFolderPickerAsync with the request string as the title and
+         * AllowMultiple = false, then returns the selected folder paths through context.SetOutput(...).
+         * 
+         * Flow
+         * 1. The view is activated as part of Avalonia's view lifecycle when it enters the active UI (for example, when its window is shown). 
+         * At that point, WhenActivated runs and registers InteractionHandler
+         * 2. The user clicks the button -> runs the command.
+         * 3. The command raises the interaction -> the handler opens the picker and returns its result to the waiting view-model code
+         */
         public PickRootFolderViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel) 
 		{
             _dataSource = dataSource;

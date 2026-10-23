@@ -7,10 +7,9 @@ namespace ImagePerfect.Views;
 
 public partial class BackUpWindow : Window
 {
-    public BackUpWindow(MainWindowViewModel mainVm)
+    public BackUpWindow(BackUpViewModel backupVm)
     {
         InitializeComponent();
-        // Bind directly to the existing MainWindowViewModel
-        DataContext = mainVm;
+        DataContext = backupVm;
     }
 }

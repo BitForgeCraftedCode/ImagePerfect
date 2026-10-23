@@ -200,6 +200,18 @@ namespace ImagePerfect.Helpers
             #endif
         }
 
+        public static string FormatPathForImageBackUpFolder(string path)
+        {
+            if (path.StartsWith("file:///"))
+                path = path.Substring("file:///".Length);
+            #if WINDOWS
+                path = path.Replace('/', '\\');
+            #else
+                if (!path.StartsWith("/"))
+                    path = "/" + path;
+            #endif
+            return path;
+        }
         public static string FormatPathFromFolderPicker(string path)
         {
             if (path.StartsWith("file:///"))
