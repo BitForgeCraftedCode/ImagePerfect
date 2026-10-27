@@ -1,6 +1,8 @@
 [← Back to Docs Index](README.md)
 
 <a id="quick-start-windows"></a>
+
+<!--
 ## 🚀 Quick Start Windows
 ### Option 1: Easiest Install (Recommended)
 1. **Download the Installer**: 📥 Get [ImagePerfect v1.02-beta](https://github.com/BitForgeCraftedCode/ImagePerfect/releases/tag/v1.02-beta)
@@ -30,6 +32,11 @@
 >**Official Releases Only**: Always download installers from the official GitHub [release page](https://github.com/BitForgeCraftedCode/ImagePerfect/releases) to avoid tampered copies.
 
 ### Option 2: Manual Setup (Advanced Users)
+
+-->
+### Manual Setup
+
+Note: I will publish a Windows installer soon. For now set up is done manually.
 
 1. **Install and Configure MySQL**: Follow the [MySQL setup instructions](MYSQL_SERVER_SETUP_WINDOWS.md) and execute the schema commands.
 2. **Build and Install ImagePerfect**: [Follow The Build And Install Directions](BUILD_INSTALL_DIRECTIONS.md)

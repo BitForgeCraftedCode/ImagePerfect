@@ -5,6 +5,7 @@
 
 - Restore images and folders from trash
 - Slideshow maker
+- Image enhancement tools (Possible Pro Feature)
 - Backup and restore MySQL database assist (Possible Pro Feature)
 - Rsync intergration for Ubuntu Robocopy for Windows. To assist with photo backups.
 - Allow editing of history list and save history points to database
@@ -13,4 +14,3 @@
 - GIF creation support (Possible Pro Feature)
 - Find duplicate images (Possible Pro Feature)
 - Facial recognition (Possible Pro Feature)
-- Image enhancement tools (Possible Pro Feature)
