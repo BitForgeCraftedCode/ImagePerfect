@@ -138,7 +138,7 @@ namespace ImagePerfect.ViewModels
             _showLoading = false;
 
             HistoryVm = new HistoryViewModel(_dataSource, _configuration, this);
-            DirectoryNavigationVm = new DirectoryNavigationViewModel(this);
+            DirectoryNavigationVm = new DirectoryNavigationViewModel(_dataSource, _configuration, this);
             ExplorerVm = new ExplorerViewModel(_dataSource, _configuration, this);
             ModifyFolderDataVm = new ModifyFolderDataViewModel(_dataSource, _configuration, this);
             ModifyImageDataVm = new ModifyImageDataViewModel(_dataSource, _configuration, this);

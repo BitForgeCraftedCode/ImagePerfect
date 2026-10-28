@@ -53,6 +53,10 @@ namespace ImagePerfect.Repository
             return (allImagesInFolder, tags);
         }
 
+        // ImageFolderPath is not indexed. These path-based queries can scan the images
+        // table and may time out on large libraries. Directory navigation now resolves
+        // the folder first and loads images by FolderId. Consider replacing other callers
+        // with FolderId-based lookups where possible.
         public async Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesInFolder(string folderPath, bool ascending)
         {
             string order = ascending ? "ASC" : "DESC";
