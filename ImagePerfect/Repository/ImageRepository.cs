@@ -53,21 +53,32 @@ namespace ImagePerfect.Repository
             return (allImagesInFolder, tags);
         }
 
-        // ImageFolderPath is not indexed. These path-based queries can scan the images
-        // table and may time out on large libraries. Directory navigation now resolves
-        // the folder first and loads images by FolderId. Consider replacing other callers
-        // with FolderId-based lookups where possible.
+        // ImageFolderPath is not indexed, so filtering images by path can scan the
+        // entire images table and time out on large libraries.
+        // So this: SELECT * FROM images WHERE ImageFolderPath = @folderPath can cause a sql time out
+        // Resolve the folder ID first, then use the indexed FolderId column to load its images. (there should be way less folders than images in any given dataset)
+        // This was significantly faster on the large production library.
         public async Task<(List<Image> images, List<ImageTag> tags)> GetAllImagesInFolder(string folderPath, bool ascending)
         {
             string order = ascending ? "ASC" : "DESC";
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
 
-            string sql1 = $@"SELECT * FROM images WHERE ImageFolderPath = @folderPath ORDER BY FileName {order}";
-            List<Image> allImagesInFolder = (await _connection.QueryAsync<Image>(sql1, new { folderPath }, transaction: txn)).ToList();
+            string sql = $@"SELECT folders.FolderId FROM folders WHERE FolderPath = @folderPath";
+
+            int? folderId = await _connection.QuerySingleOrDefaultAsync<int?>(sql, new { folderPath }, transaction: txn);
+            //will be null if nav back from within root folder
+            if (folderId is null)
+            {
+                await txn.CommitAsync();
+                return (new List<Image>(), new List<ImageTag>());
+            }
+
+            string sql1 = $@"SELECT * FROM images WHERE FolderId = @folderId ORDER BY FileName {order}";
+            List<Image> allImagesInFolder = (await _connection.QueryAsync<Image>(sql1, new { folderId }, transaction: txn)).ToList();
             string sql2 = $@"SELECT tags.TagId, tags.TagName, images.ImageId FROM images
                             JOIN image_tags_join ON image_tags_join.ImageId = images.ImageId
-                            JOIN tags ON image_tags_join.TagId = tags.TagId WHERE images.ImageFolderPath = @folderPath ORDER BY images.FileName {order};";
-            List<ImageTag> tags = (await _connection.QueryAsync<ImageTag>(sql2, new { folderPath }, transaction: txn)).ToList();
+                            JOIN tags ON image_tags_join.TagId = tags.TagId WHERE images.FolderId = @folderId ORDER BY images.FileName {order};";
+            List<ImageTag> tags = (await _connection.QueryAsync<ImageTag>(sql2, new { folderId }, transaction: txn)).ToList();
             await txn.CommitAsync();
             return (allImagesInFolder, tags);
         }

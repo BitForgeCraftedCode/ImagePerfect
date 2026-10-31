@@ -1,21 +1,13 @@
 using ImagePerfect.Helpers;
-using ImagePerfect.Models;
-using ImagePerfect.Repository;
-using Microsoft.Extensions.Configuration;
-using MySqlConnector;
 using System.Threading.Tasks;
 
 namespace ImagePerfect.ViewModels
 {
 	public class DirectoryNavigationViewModel : ViewModelBase
 	{
-        private readonly MySqlDataSource _dataSource;
-        private readonly IConfiguration _configuration;
         private readonly MainWindowViewModel _mainWindowViewModel;
-        public DirectoryNavigationViewModel(MySqlDataSource dataSource, IConfiguration config, MainWindowViewModel mainWindowViewModel) 
+        public DirectoryNavigationViewModel(MainWindowViewModel mainWindowViewModel) 
 		{
-            _dataSource = dataSource;
-            _configuration = config;
             _mainWindowViewModel = mainWindowViewModel;
         }
 
@@ -25,13 +17,6 @@ namespace ImagePerfect.ViewModels
             {
                 await _mainWindowViewModel.HistoryVm.UpdateSavedHistoryDirectoryCache();
             }
-        }
-
-        private async Task<Folder> GetFolderAtDirectory(string path)
-        {
-            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
-            FolderMethods folderMethods = new FolderMethods(uow);
-            return await folderMethods.GetFolderAtDirectory(path);
         }
 
         public async Task ReLoadSavedDirectory(string savedDirectory)
@@ -65,14 +50,12 @@ namespace ImagePerfect.ViewModels
             _mainWindowViewModel.ExplorerVm.ResetPagination();
 
             string newPath = PathHelper.RemoveOneFolderFromPath(_mainWindowViewModel.ExplorerVm.CurrentDirectory);
-            //get newPath folder
-            Folder backFolder = await GetFolderAtDirectory(newPath);
             //set the current directory -- used to add new folder to location
             _mainWindowViewModel.ExplorerVm.CurrentDirectory = newPath;
             //refresh UI
             _mainWindowViewModel.ExplorerVm.currentFilter = ExplorerViewModel.Filters.None;
             await _mainWindowViewModel.ExplorerVm.RefreshFolders();
-            await _mainWindowViewModel.ExplorerVm.RefreshImages("", backFolder.FolderId);
+            await _mainWindowViewModel.ExplorerVm.RefreshImages(newPath);
         }
 
         //opens the previous directory location -- from image button
@@ -86,14 +69,12 @@ namespace ImagePerfect.ViewModels
                 Not every folder has a folder so this is the quickest way for now to back out of a folder that only has images
              */
             string newPath = PathHelper.RemoveOneFolderFromPath(imageVm.ImageFolderPath);
-            //get newPath folder
-            Folder backFolder = await GetFolderAtDirectory(newPath);
             //set the current directory -- used to add new folder to location
             _mainWindowViewModel.ExplorerVm.CurrentDirectory = newPath;
             //refresh UI
             _mainWindowViewModel.ExplorerVm.currentFilter = ExplorerViewModel.Filters.None;
             await _mainWindowViewModel.ExplorerVm.RefreshFolders();
-            await _mainWindowViewModel.ExplorerVm.RefreshImages("", backFolder.FolderId);
+            await _mainWindowViewModel.ExplorerVm.RefreshImages(newPath);
         }
 
         //opens the previous directory location -- from folder button
@@ -108,14 +89,12 @@ namespace ImagePerfect.ViewModels
                 but you want to go back to hiking so you must remove two folders to get /pictures/hiking/
              */
             string newPath = PathHelper.RemoveTwoFoldersFromPath(currentFolder.FolderPath);
-            //get newPath folder
-            Folder backFolder = await GetFolderAtDirectory(newPath);
             //set the current directory -- used to add new folder to location
             _mainWindowViewModel.ExplorerVm.CurrentDirectory = newPath;
             //refresh UI
             _mainWindowViewModel.ExplorerVm.currentFilter = ExplorerViewModel.Filters.None;
             await _mainWindowViewModel.ExplorerVm.RefreshFolders();
-            await _mainWindowViewModel.ExplorerVm.RefreshImages("", backFolder.FolderId);
+            await _mainWindowViewModel.ExplorerVm.RefreshImages(newPath);
         }
 
         //opens the next directory location
