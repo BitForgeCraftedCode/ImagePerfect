@@ -59,8 +59,7 @@ Written in **C#**, using **Avalonia UI**, **MySQL**, and the **MVVM** architectu
 
 > 💡 Future Plans:
 Image Perfect is — and will always be — free and open source at its core.
-In the future, I may offer an optional Pro version with extra features like duplicate detection or AI-powered facial recognition to help fund development.
-Your feedback now helps shape what both the free and Pro versions might look like — so please share your thoughts!
+In the future, I plan to offer an optional Pro version with extra features like duplicate detection or AI-powered facial recognition to help fund development.
 
 <a id="core-features"></a>
 ## 👀 Core Features

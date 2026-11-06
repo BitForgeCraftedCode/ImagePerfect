@@ -119,7 +119,13 @@ namespace ImagePerfect.Helpers
             
             return sb.ToString();
         }
-
+        /*
+         * A parameterized query keeps the SQL structure separate from the path values. 
+         * It would use placeholders such as @path0 in the SQL and pass the actual paths as parameters to Dapper. 
+         * Dapper sends those values separately, so quotes are handled safely.
+         * 
+         * consider changing the builder to produce both the SQL and its parameter values, then passing both to ExecuteAsync.
+         */
         public static string BuildImageSqlForFolderMove(List<Image> images)
         {
             if (images.Count == 0)
