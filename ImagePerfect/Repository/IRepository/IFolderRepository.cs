@@ -25,7 +25,7 @@ namespace ImagePerfect.Repository.IRepository
         Task<bool> AddCoverImage(string coverImagePath, int folderId);
         Task<bool> UpdateFolderRating(int folderId, int rating);
         Task<bool> UpdateFolderDescription(int folderId, string? description);
-        Task<bool> MoveFolder(string folderMoveSql, string imageMoveSql);
+        Task<bool> MoveFolder(string folderMoveSql, List<string> imageMoveBatchesSql);
         Task<bool> RenameFolder(int folderId, string oldPath, string newPath, string newFolderName);
         Task<bool> UpdateFolderTags(Folder folder, string newTag);
         Task<bool> AddTagToAllFoldersInCurrentDirectory(List<string> folderInsertTagSqlBatches);

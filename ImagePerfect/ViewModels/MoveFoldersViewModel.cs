@@ -142,8 +142,13 @@ namespace ImagePerfect.ViewModels
             }
 
             string folderMoveSql = SqlStringBuilder.BuildFolderSqlForFolderMove(allFolders);
-            string imageMoveSql = SqlStringBuilder.BuildImageSqlForFolderMove(allImages);
-            bool success = await folderMethods.MoveFolder(folderMoveSql, imageMoveSql);
+            const int imageBatchSize = 1000;
+            List<string> imageMoveBatchesSql = new List<string>();
+            foreach (var batch in allImages.Chunk(imageBatchSize))
+            {
+                imageMoveBatchesSql.Add(SqlStringBuilder.BuildImageSqlForFolderMove(batch.ToList()));   
+            }
+            bool success = await folderMethods.MoveFolder(folderMoveSql, imageMoveBatchesSql);
             if (!success)
             {
                 await MessageBoxHelper.ShowAsync("Move Folders", "Sorry, something went wrong updating the database.");

@@ -566,15 +566,18 @@ namespace ImagePerfect.Repository
             return folderExists;
         }
 
-        public async Task<bool> MoveFolder(string folderMoveSql, string imageMoveSql)
+        public async Task<bool> MoveFolder(string folderMoveSql, List<string> imageMoveBatchesSql)
         {
             int rowsEffectedA = 0;
-            int rowsEffectedB = 0;  
+            int rowsEffectedB = 0;
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
             rowsEffectedA = await _connection.ExecuteAsync(folderMoveSql, transaction: txn);
-            if (!string.IsNullOrWhiteSpace(imageMoveSql))
+            if (imageMoveBatchesSql.Count > 0)
             {
-                rowsEffectedB = await _connection.ExecuteAsync(imageMoveSql, transaction: txn);
+                foreach (string batch in imageMoveBatchesSql) 
+                {
+                    rowsEffectedB += await _connection.ExecuteAsync(batch, transaction: txn);
+                } 
             }
             await txn.CommitAsync();
             return rowsEffectedA > 0 && rowsEffectedB >= 0 ? true : false;

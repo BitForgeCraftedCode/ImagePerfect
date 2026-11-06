@@ -119,9 +119,9 @@ namespace ImagePerfect.Models
             return await _unitOfWork.Folder.AddCoverImage(coverImagePath, folderId);
         }
 
-        public async Task<bool> MoveFolder(string folderMoveSql, string imageMoveSql)
+        public async Task<bool> MoveFolder(string folderMoveSql, List<string> imageMoveBatchesSql)
         {
-            return await _unitOfWork.Folder.MoveFolder(folderMoveSql, imageMoveSql);
+            return await _unitOfWork.Folder.MoveFolder(folderMoveSql, imageMoveBatchesSql);
         }
 
         public async Task<bool> RenameFolder(int folderId, string oldPath, string newPath, string newFolderName)
