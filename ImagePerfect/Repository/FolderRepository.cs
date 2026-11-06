@@ -3,6 +3,7 @@ using ImagePerfect.Helpers;
 using ImagePerfect.Models;
 using ImagePerfect.Repository.IRepository;
 using MySqlConnector;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -571,12 +572,54 @@ namespace ImagePerfect.Repository
             int rowsEffectedA = 0;
             int rowsEffectedB = 0;
             MySqlTransaction txn = await _connection.BeginTransactionAsync();
-            rowsEffectedA = await _connection.ExecuteAsync(folderMoveSql, transaction: txn);
+            Stopwatch folderStopwatch = Stopwatch.StartNew();
+            try
+            {
+                rowsEffectedA = await _connection.ExecuteAsync(folderMoveSql, transaction: txn);
+                folderStopwatch.Stop();
+                Log.Information(
+                    "Folder move folder update completed: {RowsAffected} rows in {ElapsedMilliseconds} ms",
+                    rowsEffectedA,
+                    folderStopwatch.ElapsedMilliseconds);
+            }
+            catch (Exception ex)
+            {
+                folderStopwatch.Stop();
+                Log.Error(
+                    ex,
+                    "Folder move folder update failed after {ElapsedMilliseconds} ms",
+                    folderStopwatch.ElapsedMilliseconds);
+                throw;
+            }
             if (imageMoveBatchesSql.Count > 0)
             {
-                foreach (string batch in imageMoveBatchesSql) 
+                for (int i = 0; i < imageMoveBatchesSql.Count; i++)
                 {
-                    rowsEffectedB += await _connection.ExecuteAsync(batch, transaction: txn);
+                    string batch = imageMoveBatchesSql[i];
+                    Stopwatch stopwatch = Stopwatch.StartNew();
+                    try
+                    {
+                        int rowsAffected = await _connection.ExecuteAsync(batch, transaction: txn);
+                        stopwatch.Stop();
+                        rowsEffectedB += rowsAffected;
+                        Log.Information(
+                            "Folder move image batch {BatchNumber}/{BatchCount} completed: {RowsAffected} rows in {ElapsedMilliseconds} ms",
+                            i + 1,
+                            imageMoveBatchesSql.Count,
+                            rowsAffected,
+                            stopwatch.ElapsedMilliseconds);
+                    }
+                    catch (Exception ex)
+                    {
+                        stopwatch.Stop();
+                        Log.Error(
+                            ex,
+                            "Folder move image batch {BatchNumber}/{BatchCount} failed after {ElapsedMilliseconds} ms",
+                            i + 1,
+                            imageMoveBatchesSql.Count,
+                            stopwatch.ElapsedMilliseconds);
+                        throw;
+                    }
                 } 
             }
             await txn.CommitAsync();
