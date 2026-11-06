@@ -57,6 +57,7 @@ namespace ImagePerfect.Repository
 
         public IFolderRepository Folder { get; private set; } = null!;
         public IImageRepository Image { get; private set; } = null!;
+        public IImageTrashRepository ImageTrash { get; private set; } = null!;
         public ISettingsRepository Settings { get; private set; } = null!;
         public ISaveDirectoryRepository SaveDirectory { get; private set; } = null!;
         public UnitOfWork(MySqlDataSource dataSource, IConfiguration config)
@@ -79,6 +80,7 @@ namespace ImagePerfect.Repository
 
             Folder = new FolderRepository(_connection);
             Image = new ImageRepository(_connection, _configuration);
+            ImageTrash = new ImageTrashRepository(_connection, _configuration);
             Settings = new SettingsRepository(_connection);
             SaveDirectory = new SaveDirectoryRepository(_connection);
         }

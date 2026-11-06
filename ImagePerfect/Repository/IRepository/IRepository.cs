@@ -22,7 +22,7 @@ namespace ImagePerfect.Repository.IRepository
         Task<IEnumerable<T>> GetAllWhere(string column, string value);
         Task<T> GetById(int? id);
         Task<T> GetRandomRow();
-        Task<bool> Add(T entity);
+        Task<bool> Add(T entity, bool excludeKey = true);
         Task<bool> Update(T entity);
         Task<bool> Delete(int? id);
         Task<bool> DeleteAll();

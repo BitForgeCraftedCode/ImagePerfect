@@ -54,12 +54,12 @@ namespace ImagePerfect.Repository
             return singleDbRow;
         }
 
-        public async Task<bool> Add(T entity)
+        public async Task<bool> Add(T entity, bool excludeKey = true)
         {
             int rowsEffected = 0;
             string tableName = GetTableName();
-            string columns = GetColumns(excludeKey: true);
-            string properties = GetPropertyNames(excludeKey: true);
+            string columns = GetColumns(excludeKey);
+            string properties = GetPropertyNames(excludeKey);
             string query = $"INSERT INTO {tableName} ({columns}) VALUES ({properties})";
 
             rowsEffected = await _connection.ExecuteAsync(query, entity);

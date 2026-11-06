@@ -305,3 +305,22 @@ with recursive
         where locate(',', rest) > 0
 )
 select distinct word from words order by word
+
+/*
+new trash tables
+need to add this to home DB
+*/
+
+CREATE TABLE `images_trash` (
+  `ImageId` bigint unsigned NOT NULL,
+  `ImagePath` varchar(2000) NOT NULL,
+  `FileName` varchar(500) NOT NULL,
+  `ImageRating` tinyint unsigned DEFAULT NULL,
+  `ImageFolderPath` varchar(2000) NOT NULL,
+  `ImageMetaDataScanned` tinyint(1) DEFAULT NULL,
+  `FolderId` bigint unsigned DEFAULT NULL,
+  `DateTaken` date DEFAULT NULL,
+  `DateTrashed` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`ImageId`),
+  KEY `idx_DateTrashed` (`DateTrashed`)
+);

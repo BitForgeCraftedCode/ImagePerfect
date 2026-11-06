@@ -5,6 +5,7 @@ namespace ImagePerfect.Repository.IRepository
     {
         IFolderRepository Folder { get; }
         IImageRepository Image { get; }
+        IImageTrashRepository ImageTrash { get; }
         ISettingsRepository Settings { get; }
         ISaveDirectoryRepository SaveDirectory { get; }
     }

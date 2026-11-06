@@ -36,6 +36,7 @@ namespace ImagePerfect.ViewModels
                 await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
                 ImageMethods imageMethods = new ImageMethods(uow);
                 FolderMethods folderMethods = new FolderMethods(uow);
+                //ImageTrashMethods imageTrashMethods = new ImageTrashMethods(uow);
                 _mainWindowViewModel.ShowLoading = true;
                 (List<Folder> folders, List<FolderTag> tags) folderResult = await folderMethods.GetFoldersInDirectory(imageVm.ImageFolderPath, _mainWindowViewModel.ExplorerVm.LoadFoldersAscending);
                 _mainWindowViewModel.ExplorerVm.displayFolders = folderResult.folders;
@@ -59,6 +60,9 @@ namespace ImagePerfect.ViewModels
                 }
                 if (File.Exists(imageVm.ImagePath))
                 {
+                    //add image to image trash table
+                    //ImageTrash trashedImage = ImageTrashHelper.GetImageTrashModel(imageVm);
+                    //await imageTrashMethods.Add(trashedImage);
                     //delete image from db
                     bool success = await imageMethods.DeleteImage(imageVm.ImageId);
 
