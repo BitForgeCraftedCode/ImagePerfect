@@ -6,8 +6,7 @@
 ### Improvements to core before V1
 
 - Restore images and folders from trash
-- in SqlStringBuilder build parameterized queries. currently a folder named Vacation's will break things
-- GetAllImagesAtRating is timing out for large datasets fix this and similar endpoints
+- GetAllImagesAtRating is timing out for large datasets fix this and similar endpoints - i added index need to test on large db
 - Improve user guide and documentation
 - make a stable installer that packages EXIFTOOL and MySQL
 - do a full bug audit
