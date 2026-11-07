@@ -28,6 +28,8 @@ CREATE TABLE `folders` (
   `FolderContentMetaDataScanned` tinyint(1) DEFAULT NULL,
   `AreImagesImported` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`FolderId`),
+  KEY `idx_folders_rating_path` (`FolderRating`,`FolderPath`(255)),
+  KEY `idx_folders_path` (`FolderPath`(255)),
   FULLTEXT KEY `fulltext` (`FolderName`,`FolderPath`,`FolderDescription`)
 );
 
@@ -57,6 +59,8 @@ CREATE TABLE `images` (
   PRIMARY KEY (`ImageId`),
   KEY `FolderId` (`FolderId`),
   KEY `idx_date_parts` (`DateTakenYear`,`DateTakenMonth`,`DateTakenDay`),
+  KEY `idx_images_rating_folder_path` (`ImageRating`,`ImageFolderPath`(255)),
+  KEY `idx_images_folder_path` (`ImageFolderPath`(255)),
   FULLTEXT KEY `fulltext` (`ImagePath`),
   CONSTRAINT `images_ibfk_1` FOREIGN KEY (`FolderId`) REFERENCES `folders` (`FolderId`) ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -66,7 +70,7 @@ UPDATE folders SET FolderContentMetaDataScanned = 0 WHERE FolderId >= 1;
 
 UPDATE images SET ImageMetaDataScanned = 0 WHERE ImageId >= 1;
 
-CREATE TABLE image_dates (
+CREATE TABLE `image_dates` (
   `DateTaken` date NOT NULL,
   `Year` smallint NOT NULL,
   `Month` tinyint NOT NULL,
@@ -78,15 +82,15 @@ CREATE TABLE image_dates (
   KEY `idx_year_month` (`YearMonth`)
 );
 
-CREATE TABLE `tags`(
-	`TagId` bigint unsigned NOT NULL AUTO_INCREMENT,
+CREATE TABLE `tags` (
+  `TagId` bigint unsigned NOT NULL AUTO_INCREMENT,
   `TagName` varchar(100) NOT NULL,
   PRIMARY KEY (`TagId`),
   UNIQUE KEY `tags_uq` (`TagName`)
 );
 
-CREATE TABLE `folder_tags_join`(
-	`FolderId` bigint unsigned NOT NULL,
+CREATE TABLE `folder_tags_join` (
+  `FolderId` bigint unsigned NOT NULL,
   `TagId` bigint unsigned NOT NULL,
   PRIMARY KEY (`FolderId`,`TagId`),
   KEY `folder_tags_join_idfk_2` (`TagId`),
@@ -98,8 +102,8 @@ CREATE TABLE `folder_tags_join`(
 ON DELETE CASCADE to delete all image_tags_join when an image is deleted
 ON DELETE CASCADE to delete all image_tags_join when an tag is deleted
 */
-CREATE TABLE `image_tags_join`(
-	`ImageId` bigint unsigned NOT NULL,
+CREATE TABLE `image_tags_join` (
+  `ImageId` bigint unsigned NOT NULL,
   `TagId` bigint unsigned NOT NULL,
   PRIMARY KEY (`ImageId`,`TagId`),
   KEY `image_tags_join_ibfk_2` (`TagId`),
@@ -125,14 +129,14 @@ CREATE TABLE `settings` (
 INSERT INTO settings (MaxImageWidth, FolderPageSize, ImagePageSize, HistoryPointsSize) VALUES (500, 20, 60, 20);
 
 CREATE TABLE `folder_saved_favorites` (
-	`SavedId` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `SavedId` bigint unsigned NOT NULL AUTO_INCREMENT,
   `FolderId` bigint unsigned DEFAULT NULL,
   PRIMARY KEY (`SavedId`),
   UNIQUE KEY `folderid_uq` (`FolderId`)
 );
 
 CREATE TABLE `saved_directory` (
-	`SavedDirectoryId` enum('1') NOT NULL,
+  `SavedDirectoryId` enum('1') NOT NULL,
   `SavedDirectory` varchar(2000) NOT NULL,
   `SavedFolderPage` int unsigned NOT NULL,
   `SavedTotalFolderPages` int unsigned NOT NULL,
@@ -307,7 +311,7 @@ with recursive
 select distinct word from words order by word
 
 /*
-new trash tables
+new trash tables and index
 need to add this to home DB
 */
 
@@ -324,3 +328,15 @@ CREATE TABLE `images_trash` (
   PRIMARY KEY (`ImageId`),
   KEY `idx_DateTrashed` (`DateTrashed`)
 );
+
+CREATE INDEX idx_images_rating_folder_path
+    ON images (ImageRating, ImageFolderPath(255));
+
+CREATE INDEX idx_images_folder_path
+    ON images (ImageFolderPath(255));
+
+CREATE INDEX idx_folders_rating_path
+    ON folders (FolderRating, FolderPath(255));
+
+CREATE INDEX idx_folders_path
+    ON folders (FolderPath(255));
