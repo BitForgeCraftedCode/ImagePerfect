@@ -58,32 +58,42 @@ namespace ImagePerfect.Helpers
             sb.Append(");");
             return sb.ToString();
         }
-        public static string BuildFolderSqlForFolderMove(List<Folder> folders)
+        public static (string Sql, Dapper.DynamicParameters Parameters) BuildFolderSqlForFolderMove(List<Folder> folders)
         {
+            Dapper.DynamicParameters parameters = new Dapper.DynamicParameters();
+            if (folders.Count == 0)
+                return (string.Empty, parameters);
+
             //need two sql string one that updates both folder path and coverimage path
             //and one just for folder path where there are no cover images
             int coverImageCount = 0;
-            foreach(Folder folder in folders)
+            foreach (Folder folder in folders)
             {
-                if(folder.CoverImagePath != "")
+                if (folder.CoverImagePath != "")
                 {
                     coverImageCount = coverImageCount + 1;
                 }
             }
 
             StringBuilder sb = new StringBuilder("UPDATE folders SET FolderPath = CASE ");
-            foreach (Folder folder in folders)
+            for (int i = 0; i < folders.Count; i++)
             {
-                sb.Append($"WHEN FolderId = {folder.FolderId} THEN '{PathHelper.FormatPathForDbStorage(folder.FolderPath)}' ");
+                Folder folder = folders[i];
+                string folderPathParameter = $"folderPath{i}";
+                parameters.Add(folderPathParameter, folder.FolderPath);
+                sb.Append($"WHEN FolderId = {folder.FolderId} THEN @{folderPathParameter} ");
             }
             if (coverImageCount > 0)
             {
                 sb.Append("ELSE FolderPath End, CoverImagePath = CASE ");
-                foreach (Folder folder in folders)
+                for (int i = 0; i < folders.Count; i++)
                 {
+                    Folder folder = folders[i];
                     if (folder.CoverImagePath != "")
                     {
-                        sb.Append($"WHEN FolderId = {folder.FolderId} THEN '{PathHelper.FormatPathForDbStorage(folder.CoverImagePath)}' ");
+                        string coverImagePathParameter = $"coverImagePath{i}";
+                        parameters.Add(coverImagePathParameter, folder.CoverImagePath);
+                        sb.Append($"WHEN FolderId = {folder.FolderId} THEN @{coverImagePathParameter} ");
                     }
                 }
                 sb.Append("ELSE CoverImagePath END WHERE FolderId IN (");
@@ -116,35 +126,39 @@ namespace ImagePerfect.Helpers
                 }
                 sb.Append(");");
             }
-            
-            return sb.ToString();
+
+            return (sb.ToString(), parameters);
         }
         /*
-         * A parameterized query keeps the SQL structure separate from the path values. 
-         * It would use placeholders such as @path0 in the SQL and pass the actual paths as parameters to Dapper. 
-         * Dapper sends those values separately, so quotes are handled safely.
-         * 
-         * consider changing the builder to produce both the SQL and its parameter values, then passing both to ExecuteAsync.
+         * A parameterized query prevents a folder named Vacation's from breaking the query
+         * Id's are database stored and users do not edit them so there is no query breaking risk
          */
-        public static string BuildImageSqlForFolderMove(List<Image> images)
+        public static (string Sql, Dapper.DynamicParameters Parameters) BuildImageSqlForFolderMove(List<Image> images)
         {
+            Dapper.DynamicParameters parameters = new Dapper.DynamicParameters();
             if (images.Count == 0)
-                return string.Empty;
+                return (string.Empty, parameters);
 
             StringBuilder sb = new StringBuilder("UPDATE images SET ImagePath = CASE ");
-            foreach (Image image in images) 
+            for (int i = 0; i < images.Count; i++)
             {
-                sb.Append($"WHEN ImageId = {image.ImageId} THEN '{PathHelper.FormatPathForDbStorage(image.ImagePath)}' ");
+                Image image = images[i];
+                string imagePathParameter = $"imagePath{i}";
+                parameters.Add(imagePathParameter, image.ImagePath);
+                sb.Append($"WHEN ImageId = {image.ImageId} THEN @{imagePathParameter} ");
             }
             sb.Append("ELSE ImagePath END, ImageFolderPath = CASE ");
-            foreach (Image image in images)
+            for (int i = 0; i < images.Count; i++)
             {
-                sb.Append($"WHEN ImageId = {image.ImageId} THEN '{PathHelper.FormatPathForDbStorage(image.ImageFolderPath)}' ");
+                Image image = images[i];
+                string imageFolderPathParameter = $"imageFolderPath{i}";
+                parameters.Add(imageFolderPathParameter, image.ImageFolderPath);
+                sb.Append($"WHEN ImageId = {image.ImageId} THEN @{imageFolderPathParameter} ");
             }
             sb.Append("ELSE ImageFolderPath END WHERE ImageId IN (");
-            for(int i = 0; i < images.Count; i++)
+            for (int i = 0; i < images.Count; i++)
             {
-                if(i < images.Count - 1)
+                if (i < images.Count - 1)
                 {
                     sb.Append($"{images[i].ImageId},");
                 }
@@ -154,7 +168,7 @@ namespace ImagePerfect.Helpers
                 }
             }
             sb.Append(");");
-            return sb.ToString();
+            return (sb.ToString(), parameters);
         }
 
         public static string BuildSqlForBulkInsertImageRating(List<Image> images)

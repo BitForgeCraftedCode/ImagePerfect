@@ -119,7 +119,7 @@ namespace ImagePerfect.Models
             return await _unitOfWork.Folder.AddCoverImage(coverImagePath, folderId);
         }
 
-        public async Task<bool> MoveFolder(string folderMoveSql, List<string> imageMoveBatchesSql)
+        public async Task<bool> MoveFolder((string Sql, Dapper.DynamicParameters Parameters) folderMoveSql, List<(string Sql, Dapper.DynamicParameters Parameters)> imageMoveBatchesSql)
         {
             return await _unitOfWork.Folder.MoveFolder(folderMoveSql, imageMoveBatchesSql);
         }

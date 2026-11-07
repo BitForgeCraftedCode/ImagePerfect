@@ -141,9 +141,9 @@ namespace ImagePerfect.ViewModels
                 return;
             }
 
-            string folderMoveSql = SqlStringBuilder.BuildFolderSqlForFolderMove(allFolders);
+            (string Sql, Dapper.DynamicParameters Parameters) folderMoveSql = SqlStringBuilder.BuildFolderSqlForFolderMove(allFolders);
             const int imageBatchSize = 1000;
-            List<string> imageMoveBatchesSql = new List<string>();
+            List<(string Sql, Dapper.DynamicParameters Parameters)> imageMoveBatchesSql = new List<(string Sql, Dapper.DynamicParameters Parameters)>();
             foreach (var batch in allImages.Chunk(imageBatchSize))
             {
                 imageMoveBatchesSql.Add(SqlStringBuilder.BuildImageSqlForFolderMove(batch.ToList()));   

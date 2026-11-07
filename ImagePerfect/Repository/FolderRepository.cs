@@ -567,7 +567,7 @@ namespace ImagePerfect.Repository
             return folderExists;
         }
 
-        public async Task<bool> MoveFolder(string folderMoveSql, List<string> imageMoveBatchesSql)
+        public async Task<bool> MoveFolder((string Sql, DynamicParameters Parameters) folderMoveSql, List<(string Sql, DynamicParameters Parameters)> imageMoveBatchesSql)
         {
             int rowsEffectedA = 0;
             int rowsEffectedB = 0;
@@ -575,7 +575,7 @@ namespace ImagePerfect.Repository
             Stopwatch folderStopwatch = Stopwatch.StartNew();
             try
             {
-                rowsEffectedA = await _connection.ExecuteAsync(folderMoveSql, transaction: txn);
+                rowsEffectedA = await _connection.ExecuteAsync(folderMoveSql.Sql, folderMoveSql.Parameters, transaction: txn);
                 folderStopwatch.Stop();
                 Log.Information(
                     "Folder move folder update completed: {RowsAffected} rows in {ElapsedMilliseconds} ms",
@@ -595,11 +595,12 @@ namespace ImagePerfect.Repository
             {
                 for (int i = 0; i < imageMoveBatchesSql.Count; i++)
                 {
-                    string batch = imageMoveBatchesSql[i];
+                    string batch = imageMoveBatchesSql[i].Sql;
+                    DynamicParameters parameters = imageMoveBatchesSql[i].Parameters;
                     Stopwatch stopwatch = Stopwatch.StartNew();
                     try
                     {
-                        int rowsAffected = await _connection.ExecuteAsync(batch, transaction: txn);
+                        int rowsAffected = await _connection.ExecuteAsync(batch, parameters, transaction: txn);
                         stopwatch.Stop();
                         rowsEffectedB += rowsAffected;
                         Log.Information(
