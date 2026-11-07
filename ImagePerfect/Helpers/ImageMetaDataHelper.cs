@@ -184,12 +184,15 @@ namespace ImagePerfect.Helpers
                 {
                     if (prop.Tag == IptcTag.Keywords)
                     {
-                        ImageTag imageTag = new() 
-                        { 
-                            TagName = prop.Value,
-                            ImageId = image.ImageId,
-                        };
-                        newTags.Add(imageTag);
+                        if (TagValidationHelper.IsTagValid(prop.Value))
+                        {
+                            ImageTag imageTag = new()
+                            {
+                                TagName = prop.Value,
+                                ImageId = image.ImageId,
+                            };
+                            newTags.Add(imageTag);
+                        }
                     }
                 }
             }

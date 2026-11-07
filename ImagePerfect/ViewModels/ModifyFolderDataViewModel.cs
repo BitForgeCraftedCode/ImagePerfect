@@ -53,6 +53,7 @@ namespace ImagePerfect.ViewModels
             }
         }
 
+        //used to remove a folder tag
         public async Task EditFolderTag(FolderViewModel folderVm)
         {
             await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
@@ -91,7 +92,14 @@ namespace ImagePerfect.ViewModels
             {
                 return;
             }
-
+            if (!TagValidationHelper.IsTagValid(folderVm.NewTag))
+            {
+                await MessageBoxHelper.ShowAsync(
+                   "Invalid Tag",
+                   "Tags can contain only ASCII letters and numbers (A-Z, a-z, 0-9)."
+               );
+                return;
+            }
             await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
             FolderMethods folderMethods = new FolderMethods(uow);
 

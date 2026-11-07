@@ -102,6 +102,14 @@ namespace ImagePerfect.ViewModels
             {
                 return;
             }
+            if (!TagValidationHelper.IsTagValid(imageVm.NewTag))
+            {
+                await MessageBoxHelper.ShowAsync(
+                    "Invalid Tag",
+                    "Tags can contain only ASCII letters and numbers (A-Z, a-z, 0-9)."
+                );
+                return;
+            }   
             //add NewTag to ImageTags -- KEEP!! THIS IS NEEDED TO WRITE METADATA
             if (string.IsNullOrEmpty(imageVm.ImageTags))
             {
@@ -159,6 +167,15 @@ namespace ImagePerfect.ViewModels
             //no tag selected or no edited text for new tag or new tag equals old tag just return
             if (selectedTag == null || string.IsNullOrEmpty(newTag) || string.Equals(selectedTag.TagName.Trim(), newTag, StringComparison.Ordinal))
                 return;
+
+            if (!TagValidationHelper.IsTagValid(newTag))
+            {
+                await MessageBoxHelper.ShowAsync(
+                    "Invalid Tag",
+                    "Tags can contain only ASCII letters and numbers (A-Z, a-z, 0-9)."
+                );
+                return;
+            }
 
             await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
             ImageMethods imageMethods = new ImageMethods(uow);

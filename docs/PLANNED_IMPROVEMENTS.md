@@ -6,7 +6,6 @@
 ### Improvements to core before V1
 
 - Restore images and folders from trash
-- improve tagging safety look into what happens if special chars are input. I dont think i accounted for this. though is to just not allow them on tags
 - in SqlStringBuilder build parameterized queries. currently a folder named Vacation's will break things
 - GetAllImagesAtRating is timing out for large datasets fix this and similar endpoints
 - Improve user guide and documentation
@@ -15,6 +14,7 @@
 - improve error logging
 - add RAW image support
 - remove logging from copy cover image to containing folder (this feature has been completely debugged)
+- add parallel foreach to initial folder import.
 
 
 ### Pro features list
