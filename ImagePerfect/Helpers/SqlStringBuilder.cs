@@ -26,27 +26,37 @@ namespace ImagePerfect.Helpers
             return sb.ToString();
         }
 
-        public static string BuildSqlForMoveImagesToNewFolder(List<ImageViewModel> imagesToMove)
+        public static (string Sql, Dapper.DynamicParameters Parameters) BuildSqlForMoveImagesToNewFolder(List<ImageViewModel> imagesToMove)
         {
+            Dapper.DynamicParameters parameters = new Dapper.DynamicParameters();
+            if (imagesToMove.Count == 0)
+                return (string.Empty, parameters);
+
             StringBuilder sb = new StringBuilder("UPDATE images SET ImagePath = CASE ");
-            foreach (ImageViewModel image in imagesToMove) 
+            for (int i = 0; i < imagesToMove.Count; i++)
             {
-                sb.Append($"WHEN ImageId = {image.ImageId} THEN '{PathHelper.FormatPathForDbStorage(image.ImagePath)}' ");
+                ImageViewModel image = imagesToMove[i];
+                string imagePathParameter = $"imagePath{i}";
+                parameters.Add(imagePathParameter, image.ImagePath);
+                sb.Append($"WHEN ImageId = {image.ImageId} THEN @{imagePathParameter} ");
             }
             sb.Append("ELSE ImagePath END, ImageFolderPath = CASE ");
-            foreach(ImageViewModel image in imagesToMove)
+            for (int i = 0; i < imagesToMove.Count; i++)
             {
-                sb.Append($"WHEN ImageId = {image.ImageId} THEN '{PathHelper.FormatPathForDbStorage(image.ImageFolderPath)}' ");
+                ImageViewModel image = imagesToMove[i];
+                string imageFolderPathParameter = $"imageFolderPath{i}";
+                parameters.Add(imageFolderPathParameter, image.ImageFolderPath);
+                sb.Append($"WHEN ImageId = {image.ImageId} THEN @{imageFolderPathParameter} ");
             }
             sb.Append("ELSE ImageFolderPath END, FolderId = CASE ");
-            foreach(ImageViewModel image in imagesToMove)
+            foreach (ImageViewModel image in imagesToMove)
             {
                 sb.Append($"WHEN ImageId = {image.ImageId} THEN {image.FolderId} ");
             }
             sb.Append($"ELSE FolderId END WHERE ImageId IN (");
-            for(int i = 0; i < imagesToMove.Count; i++)
+            for (int i = 0; i < imagesToMove.Count; i++)
             {
-                if(i < imagesToMove.Count - 1)
+                if (i < imagesToMove.Count - 1)
                 {
                     sb.Append($"{imagesToMove[i].ImageId},");
                 }
@@ -56,7 +66,7 @@ namespace ImagePerfect.Helpers
                 }
             }
             sb.Append(");");
-            return sb.ToString();
+            return (sb.ToString(), parameters);
         }
         public static (string Sql, Dapper.DynamicParameters Parameters) BuildFolderSqlForFolderMove(List<Folder> folders)
         {

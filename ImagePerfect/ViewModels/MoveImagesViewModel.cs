@@ -229,9 +229,9 @@ namespace ImagePerfect.ViewModels
                 _mainWindowViewModel.ShowLoading = true;
                 //modify ImagePath, ImageFolderPath and FolderId for each image in imagesToMove 
                 List<ImageViewModel> imagesToMoveModifiedPaths = PathHelper.ModifyImagePathsForMoveImagesToNewFolder(imagesToMove, imagesNewFolder);
-                
+
                 //get image move sql
-                string imageMoveSql = SqlStringBuilder.BuildSqlForMoveImagesToNewFolder(imagesToMoveModifiedPaths);
+                (string Sql, Dapper.DynamicParameters Parameters) imageMoveSql = SqlStringBuilder.BuildSqlForMoveImagesToNewFolder(imagesToMoveModifiedPaths);
                 //move images in db
                 bool success = await imageMethods.MoveSelectedImageToNewFolder(imageMoveSql);
                 //move images on disk

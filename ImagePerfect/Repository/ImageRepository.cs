@@ -325,9 +325,9 @@ namespace ImagePerfect.Repository
             return rowsEffected > 0 ? true : false;
         }
 
-        public async Task<bool> MoveSelectedImageToNewFolder(string sql)
+        public async Task<bool> MoveSelectedImageToNewFolder((string Sql, DynamicParameters Parameters) sql)
         {
-            int rowsEffected = await _connection.ExecuteAsync(sql);
+            int rowsEffected = await _connection.ExecuteAsync(sql.Sql, sql.Parameters);
             return rowsEffected > 0 ? true : false;
         }
 

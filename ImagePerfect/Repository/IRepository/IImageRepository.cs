@@ -25,7 +25,7 @@ namespace ImagePerfect.Repository.IRepository
         Task<bool> UpdateImageTagsAndRatingFromMetaData(List<Image> imagesPlusUpdatedMetaData, int folderId);
         Task<bool> DeleteImageTag(ImageTag tag);
         Task<bool> DeleteSelectedImages(string sql);
-        Task<bool> MoveSelectedImageToNewFolder(string sql);
+        Task<bool> MoveSelectedImageToNewFolder((string Sql, Dapper.DynamicParameters Parameters) sql);
         Task<bool> RemoveTagOnAllImages(Tag selectedTag);
         Task<bool> EditTagOnAllImagesAndFolders(Tag selectedTag, string newTag);
         Task<int> GetTotalImages();
