@@ -15,6 +15,14 @@
 - remove logging from copy cover image to containing folder (this feature has been completely debugged)
 - add parallel foreach to initial folder import.
 
+To Do 
+
+- Pull and build latest code 
+- add new sql table and index to production db
+- test folder move for time out
+- test GetAllImageAtRating and GetAllImageInFolderAndSubFolders for time out
+- Run the Explain ANALYZE on the same folder and see if the new index's improved it
+
 
 ### Pro features list
 
