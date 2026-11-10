@@ -4,6 +4,7 @@ using ImagePerfect.Repository;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using ReactiveUI;
+using Serilog;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -90,6 +91,7 @@ namespace ImagePerfect.ViewModels
                 }
                 catch (Exception e)
                 {
+                    Log.Error(e, "Error creating a new folder");
                     await MessageBoxHelper.ShowAsync(
                         "New Folder",
                         $"Error {e}."

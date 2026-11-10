@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using ImagePerfect.Helpers;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace ImagePerfect.ViewModels
 {
@@ -38,6 +39,7 @@ namespace ImagePerfect.ViewModels
                 }
                 catch (Exception ex) 
                 {
+                    Log.Error(ex, "Error opening image in external viewer.");
                     await MessageBoxHelper.ShowAsync(
                         "Error",
                         $"Failed to launch external viewer:\n{ex.Message}"
@@ -88,6 +90,7 @@ namespace ImagePerfect.ViewModels
                 }
                 catch (Exception ex) 
                 {
+                    Log.Error(ex, "Error opening directory in default file manager.");
                     await MessageBoxHelper.ShowAsync(
                         "Open Directory Error",
                         $"Failed to open directory in default file manager:\n{ex.Message}.\n\n" +

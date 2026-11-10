@@ -4,6 +4,7 @@ using ImagePerfect.Models;
 using ImagePerfect.Repository;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -142,7 +143,7 @@ namespace ImagePerfect.ViewModels
             {
                 string errorMsg = string.Empty;
                 errorMsg += "Some text files failed to be read: \n\n" + string.Join("\n\n", errors);
-
+                Log.Error(errorMsg);
                 await MessageBoxHelper.ShowAsync(
                     "Add text file to folder description",
                     errorMsg,
@@ -181,7 +182,7 @@ namespace ImagePerfect.ViewModels
             {
                 string errorMsg = string.Empty;
                 errorMsg += "Some text files failed to be written: \n\n" + string.Join("\n\n", errors);
-
+                Log.Error(errorMsg);
                 await MessageBoxHelper.ShowAsync(
                     "Back up folder description",
                     errorMsg,
