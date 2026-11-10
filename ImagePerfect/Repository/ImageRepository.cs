@@ -345,12 +345,12 @@ namespace ImagePerfect.Repository
             await conn.OpenAsync();
             await using MySqlTransaction txn = await conn.BeginTransactionAsync();
 
-            string bulkImageRating = SqlStringBuilder.BuildSqlForBulkInsertImageRating(imagesPlusUpdatedMetaData);
+            (string Sql, DynamicParameters Parameters) bulkImageRating = SqlStringBuilder.BuildSqlForBulkInsertImageRating(imagesPlusUpdatedMetaData);
             string updateFolderContentMetaDataScanned = @"UPDATE folders set FolderContentMetaDataScanned = 1 WHERE FolderId = @folderId";
 
             try
             {
-                await conn.ExecuteAsync(bulkImageRating, transaction: txn);
+                await conn.ExecuteAsync(bulkImageRating.Sql, bulkImageRating.Parameters, transaction: txn);
                 await conn.ExecuteAsync(updateFolderContentMetaDataScanned, new { folderId }, transaction: txn);
 
                 //get a list of distinct tags

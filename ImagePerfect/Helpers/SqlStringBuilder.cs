@@ -181,10 +181,11 @@ namespace ImagePerfect.Helpers
             return (sb.ToString(), parameters);
         }
 
-        public static string BuildSqlForBulkInsertImageRating(List<Image> images)
+        public static (string Sql, Dapper.DynamicParameters Parameters) BuildSqlForBulkInsertImageRating(List<Image> images)
         {
+            Dapper.DynamicParameters parameters = new Dapper.DynamicParameters();
             StringBuilder sb = new StringBuilder("UPDATE images SET ImageRating = CASE ");
-            foreach (Image image in images) 
+            foreach (Image image in images)
             {
                 sb.Append($"WHEN ImageId = {image.ImageId} THEN {image.ImageRating} ");
             }
@@ -194,11 +195,14 @@ namespace ImagePerfect.Helpers
                 sb.Append($"WHEN ImageId = {image.ImageId} THEN 1 ");
             }
             sb.Append("ELSE ImageMetaDataScanned END, DateTaken = CASE ");
-            foreach(Image image in images)
+            for (int i = 0; i < images.Count; i++)
             {
-                if(image.DateTaken != null)
+                Image image = images[i];
+                if (image.DateTaken != null)
                 {
-                    sb.Append($"WHEN ImageId = {image.ImageId} THEN '{image.DateTaken?.ToString("yyyy-MM-dd HH:mm:ss")}' ");
+                    string dateTakenParameter = $"dateTaken{i}";
+                    parameters.Add(dateTakenParameter, image.DateTaken.Value.ToString("yyyy-MM-dd HH:mm:ss"));
+                    sb.Append($"WHEN ImageId = {image.ImageId} THEN @{dateTakenParameter} ");
                 }
                 else
                 {
@@ -206,7 +210,7 @@ namespace ImagePerfect.Helpers
                 }
             }
             sb.Append("ELSE DateTaken END WHERE ImageId IN (");
-            for (int i = 0; i < images.Count; i++) 
+            for (int i = 0; i < images.Count; i++)
             {
                 if (i < images.Count - 1)
                 {
@@ -218,9 +222,9 @@ namespace ImagePerfect.Helpers
                 }
             }
             sb.Append(");");
-            return sb.ToString();
+            return (sb.ToString(), parameters);
         }
-
+        
         public static (string Sql, Dapper.DynamicParameters Parameters) BuildSqlForBulkInsertImageTags(List<string> allTags)
         {
             Dapper.DynamicParameters parameters = new Dapper.DynamicParameters();
