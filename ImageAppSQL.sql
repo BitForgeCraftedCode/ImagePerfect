@@ -310,11 +310,6 @@ with recursive
 )
 select distinct word from words order by word
 
-/*
-new trash tables and index
-need to add this to home DB
-*/
-
 CREATE TABLE `images_trash` (
   `ImageId` bigint unsigned NOT NULL,
   `ImagePath` varchar(2000) NOT NULL,
@@ -328,15 +323,3 @@ CREATE TABLE `images_trash` (
   PRIMARY KEY (`ImageId`),
   KEY `idx_DateTrashed` (`DateTrashed`)
 );
-
-CREATE INDEX idx_images_rating_folder_path
-    ON images (ImageRating, ImageFolderPath(255));
-
-CREATE INDEX idx_images_folder_path
-    ON images (ImageFolderPath(255));
-
-CREATE INDEX idx_folders_rating_path
-    ON folders (FolderRating, FolderPath(255));
-
-CREATE INDEX idx_folders_path
-    ON folders (FolderPath(255));

@@ -6,7 +6,6 @@
 ### Improvements to core before V1
 
 - Restore images and folders from trash
-- GetAllImagesAtRating is timing out for large datasets fix this and similar endpoints - i added index need to test on large db
 - Improve user guide and documentation
 - make a stable installer that packages EXIFTOOL and MySQL
 - do a full bug audit
@@ -14,15 +13,6 @@
 - add RAW image support
 - remove logging from copy cover image to containing folder (this feature has been completely debugged)
 - add parallel foreach to initial folder import.
-
-To Do 
-
-- Pull and build latest code 
-- add new sql table and index to production db
-- test folder move for time out
-- test GetAllImageAtRating and GetAllImageInFolderAndSubFolders for time out
-- Run the Explain ANALYZE on the same folder and see if the new index's improved it
-
 
 ### Pro features list
 
