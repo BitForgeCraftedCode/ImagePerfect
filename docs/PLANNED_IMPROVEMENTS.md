@@ -11,7 +11,6 @@
 - do a full bug audit
 - improve error logging
 - add RAW image support
-- remove logging from copy cover image to containing folder (this feature has been completely debugged)
 - add parallel foreach to initial folder import.
 
 ### Pro features list

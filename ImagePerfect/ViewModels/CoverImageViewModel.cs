@@ -27,17 +27,13 @@ namespace ImagePerfect.ViewModels
             _mainWindowViewModel = mainWindowViewModel;
         }
         /*
-         * The logs here narrowed this down:
-         * DB update cover image for folder {FolderId}, Success={Success}
-         * DB read-back cover image for folder {FolderId} at {FolderPath}: Requested={RequestedCoverImagePath}, Stored={StoredCoverImagePath}, Matches={Matches}
-         * those two were always showing as true which told us the cover image path was being overwritten eleswhere by a stale Folder Object
+         * the cover image path was being overwritten eleswhere by a stale Folder Object
          * this happend when the user Saved Dir went into a folder copied cover image to containing 
          * reloading Saved Dir than hit the folder rating on the folder without a cover. That would override the cover image back to null
          * if this still happens check the remaing UpdateFolder calls in FolderMethods those use the generic repo and overwrite the whold object.
          */
         public async Task CopyCoverImageToContainingFolder(FolderViewModel folderVm)
         {
-            Log.Information("Starting CopyCoverImageToContainingFolder for FolderPath: {FolderPath}, CoverImagePath: {CoverImagePath}", folderVm.FolderPath, folderVm.CoverImagePath);
             if (PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath) == _mainWindowViewModel.InitializeVm.RootFolderLocation)
             {
                 await MessageBoxHelper.ShowAsync(
@@ -59,8 +55,6 @@ namespace ImagePerfect.ViewModels
 
             string coverImageCurrentPath = folderVm.CoverImagePath;
             string coverImageNewPath = PathHelper.GetCoverImagePathForCopyCoverImageToContainingFolder(folderVm);
-            //Folder containingFolder = await folderMethods.GetFolderAtDirectory(PathHelper.RemoveOneFolderFromPath(folderVm.FolderPath));
-            Log.Information("Calculated new cover path: {NewPath}", coverImageNewPath);
 
             Folder containingFolder = null;
             try
@@ -71,7 +65,6 @@ namespace ImagePerfect.ViewModels
                     Log.Warning("No containing folder found for path: {FolderPath}", folderVm.FolderPath);
                     return;
                 }
-                Log.Information("Found containing folder: {ContainingFolderPath} (ID: {FolderId})", containingFolder.FolderPath, containingFolder.FolderId);
             }
             catch (Exception ex)
             {
@@ -101,17 +94,6 @@ namespace ImagePerfect.ViewModels
             {
                 //add cover image path to containing folder
                 bool success = await folderMethods.UpdateCoverImage(coverImageNewPath, containingFolder.FolderId);
-                Log.Information("DB update cover image for folder {FolderId}, Success={Success}", containingFolder.FolderId, success);
-                //oddly sometimes the above reports success but folder doesnt have the new cover. 
-                //get the folder and log info
-                Folder updatedContainingFolder = await folderMethods.GetFolderById(containingFolder.FolderId);
-                Log.Information(
-                    "DB read-back cover image for folder {FolderId} at {FolderPath}: Requested={RequestedCoverImagePath}, Stored={StoredCoverImagePath}, Matches={Matches}",
-                    containingFolder.FolderId,
-                    containingFolder.FolderPath,
-                    coverImageNewPath,
-                    updatedContainingFolder.CoverImagePath,
-                    string.Equals(updatedContainingFolder.CoverImagePath, coverImageNewPath, StringComparison.Ordinal));
                 if (!success)
                 {
                     Log.Warning("Failed to update cover image in DB for folder {FolderId}", containingFolder.FolderId);
@@ -123,7 +105,6 @@ namespace ImagePerfect.ViewModels
                 }
                 //copy file in file system
                 File.Copy(coverImageCurrentPath, coverImageNewPath);
-                Log.Information("Copied cover image from {Source} to {Destination}", coverImageCurrentPath, coverImageNewPath);
             }
             catch (Exception ex) 
             {
