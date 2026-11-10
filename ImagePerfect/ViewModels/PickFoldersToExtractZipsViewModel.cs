@@ -115,6 +115,7 @@ namespace ImagePerfect.ViewModels
                         }
                         catch (Exception ex)
                         {
+                            Log.Warning(ex, "Failed to extract zip. ZipPath={ZipPath}", zipFile);
                             string failedMsg = $"{zipFile} failed to extract. Reason: {ex.Message}";
                             extractionErrors.Add(failedMsg);
                         }
@@ -139,7 +140,7 @@ namespace ImagePerfect.ViewModels
                     {
                         //create a TRASH folder in each groupParentFolder
                         string parentDir = groupParentFolder.Key;
-                        string trashDir = Path.Combine(parentDir, Path.GetFileName(parentDir) + "TRASH");
+                        string trashDir = Path.Combine(parentDir, Path.GetFileName(parentDir) + "_TRASH");
                         Directory.CreateDirectory(trashDir);
 
                         //move each zip into the TRASH folder
@@ -152,6 +153,7 @@ namespace ImagePerfect.ViewModels
                             }
                             catch (Exception ex)
                             {
+                                Log.Warning(ex, "Failed to move zip to trash. ZipPath={ZipPath}", zipFile);
                                 moveErrors.Add($"{zipFile} could not be moved. Reason: {ex.Message}");
                             }
 
@@ -165,6 +167,7 @@ namespace ImagePerfect.ViewModels
                         }
                         catch (Exception ex)
                         {
+                            Log.Warning(ex, "Failed to move zip trash folder to global trash. SourcePath={SourcePath}", trashDir);
                             moveErrors.Add($"{trashDir} could not be moved to global trash. Reason: {ex.Message}");
                         }
 
