@@ -7,7 +7,6 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Processing;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Runtime.InteropServices;
@@ -48,12 +47,12 @@ namespace ImagePerfect.Helpers
             }
             catch (HttpRequestException ex)
             {
-                Console.WriteLine($"An error occurred while downloading image '{url}' : {ex.Message}");
+                //Console.WriteLine($"An error occurred while downloading image '{url}' : {ex.Message}");
                 return null;
             }
         }
 
-        //need to rotate portrait images and resize for screen
+        //need to rotate portrait images and resize for screen -- method no longer used remove it when i completly factor out ImageSharp
         public static async Task<Bitmap> FormatImage(string path)
         {
             if (File.Exists(path))
@@ -313,11 +312,13 @@ namespace ImagePerfect.Helpers
                 }
                 catch(Exception ex)
                 {
+                    Serilog.Log.Error(ex, "Image File corrupted or libvips cannot decode it.");
                     return LoadFromResource(new Uri("avares://ImagePerfect/Assets/missing_image.png"));
                 }
             }
             else
             {
+                Serilog.Log.Information("Image file is missing");
                 return LoadFromResource(new Uri("avares://ImagePerfect/Assets/missing_image.png"));
             }
         }
