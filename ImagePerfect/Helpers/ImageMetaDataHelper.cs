@@ -38,7 +38,7 @@ namespace ImagePerfect.Helpers
                         ImageSharp.ImageInfo imageInfo = await ImageSharp.Image.IdentifyAsync(img.ImagePath);
                         UpdateMetadata(imageInfo, img);
                     }
-                    catch
+                    catch (Exception ex)
                     {
                         /* want to continue scaning the rest if exception -- like a corrupted image file
                          * 
@@ -48,6 +48,9 @@ namespace ImagePerfect.Helpers
                          * The delegate (async (img, ct) => { ... }) is the entire body of what runs per item.
                          * Once you return, you’re done with that iteration, and Parallel.ForEachAsync moves on to the next image automatically.
                          */
+                        Serilog.Log.Warning(ex,
+                            "Skipping image during metadata scan. ImagePath={ImagePath}",
+                            img.ImagePath);
                         return;
                     }
                     
