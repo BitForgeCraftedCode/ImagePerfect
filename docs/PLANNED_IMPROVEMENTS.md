@@ -9,7 +9,7 @@
 - Improve user guide and documentation
 - make a stable installer that packages EXIFTOOL and MySQL
 - do a full bug audit
-- improve error logging
+- improve error logging (gave this a first pass and improved some things. Really the best way is to go through VMs one by one. Repository classes one by one and any helper methods one by one)
 - add RAW image support
 - add parallel foreach to initial folder import.
 
