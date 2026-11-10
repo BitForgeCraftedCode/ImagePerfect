@@ -312,13 +312,13 @@ namespace ImagePerfect.Helpers
                 }
                 catch(Exception ex)
                 {
-                    Serilog.Log.Error(ex, "Image File corrupted or libvips cannot decode it.");
+                    Serilog.Log.Error(ex, "Image File corrupted or libvips cannot decode it: {ImagePath}", path);
                     return LoadFromResource(new Uri("avares://ImagePerfect/Assets/missing_image.png"));
                 }
             }
             else
             {
-                Serilog.Log.Information("Image file is missing");
+                Serilog.Log.Information("Image file is missing: {ImagePath}", path);
                 return LoadFromResource(new Uri("avares://ImagePerfect/Assets/missing_image.png"));
             }
         }

@@ -5,6 +5,7 @@ using ImagePerfect.Repository.IRepository;
 using ImagePerfect.ViewModels;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -398,6 +399,10 @@ namespace ImagePerfect.Repository
             }
             catch (Exception ex)
             {
+                Log.Error(
+                    ex,
+                    "Failed to update image tags and ratings from metadata for folder {FolderId})",
+                    folderId);
                 await txn.RollbackAsync();
                 await conn.CloseAsync();
                 return false;
@@ -534,8 +539,14 @@ namespace ImagePerfect.Repository
                 await txn.CommitAsync();
                 return imageRowsAffected + folderRowsAffected + tagRowsAffected > 0;
             }
-            catch
+            catch (Exception ex)
             {
+                Log.Error(
+                    ex,
+                    "Failed to edit or merge tag {OldTagId} ({OldTagName}) into {NewTagName}",
+                    selectedTag.TagId,
+                    selectedTag.TagName,
+                    newTag);
                 await txn.RollbackAsync();
                 return false;
             }
@@ -620,8 +631,14 @@ namespace ImagePerfect.Repository
                 await txn.CommitAsync();
                 return imageRowsEffected > 0;
             }
-            catch
+            catch (Exception ex)
             {
+                Log.Error(
+                    ex,
+                    "Failed to update database paths while renaming image {ImageId} from {OldPath} to {NewPath}",
+                    imageId,
+                    oldPath,
+                    newPath);
                 await txn.RollbackAsync();
                 throw;
             }
