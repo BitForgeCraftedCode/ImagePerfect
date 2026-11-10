@@ -689,8 +689,9 @@ namespace ImagePerfect.Repository
                 await txn.CommitAsync();
                 return folderRowsEffected > 0 && imageRowsEffected >= 0;
             }
-            catch
+            catch (Exception ex) 
             {
+                Log.Error(ex, "Rename folder db method failed.");
                 await txn.RollbackAsync();
                 throw;
             }
