@@ -3,7 +3,6 @@ using ImagePerfect.Helpers;
 using ImagePerfect.Repository.IRepository;
 using ImagePerfect.ViewModels;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -73,7 +72,7 @@ namespace ImagePerfect.Models
             if (hasImages) 
             { 
                 using(StreamWriter writer = new StreamWriter(imageCsvPath))
-                using(CsvWriter csv = new CsvWriter(writer, CultureInfo.InvariantCulture)) 
+                using(CsvWriter csv = CsvWriter.Create(writer)) 
                 { 
                     await csv.WriteRecordsAsync(images); 
                 }

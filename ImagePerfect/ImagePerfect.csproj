@@ -26,7 +26,7 @@
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.6" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.6" />
     <PackageReference Include="CliWrap" Version="3.10.5" />
-    <PackageReference Include="CsvHelper" Version="33.1.0" />
+    <PackageReference Include="CsvHelper" Version="34.0.0" />
     <PackageReference Include="Dapper" Version="2.1.89" />
     <PackageReference Include="MessageBox.Avalonia" Version="12.1.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.14" />

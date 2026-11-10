@@ -1,6 +1,9 @@
-﻿namespace ImagePerfect.Models
+﻿using CsvHelper;
+
+namespace ImagePerfect.Models
 {
-    public class ImageCsv
+    [CsvRecord]
+    public partial class ImageCsv
     {
         public int ImageId { get; set; }
         public string ImagePath {  get; set; }

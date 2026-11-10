@@ -1,8 +1,11 @@
 ﻿
 
+using CsvHelper;
+
 namespace ImagePerfect.Models
 {
-    public class FolderCsv
+    [CsvRecord]
+    public partial class FolderCsv
     {
         public int FolderId { get; set; }
         public string FolderName { get; set; } = string.Empty;

@@ -3,7 +3,6 @@ using ImagePerfect.Helpers;
 using ImagePerfect.Repository.IRepository;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -37,14 +36,14 @@ namespace ImagePerfect.Models
             string folderCsvPath = GetCsvPath("folders.csv");
             List<FolderCsv> records;
             using (StreamReader reader = new StreamReader(folderCsvPath))
-            using (CsvReader csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+            using (CsvReader csv = CsvReader.Create(reader))
             {
                 records = await csv.GetRecordsAsync<FolderCsv>().ToListAsync();
 
                 records.Clear();
             }
             using (StreamWriter writer = new StreamWriter(folderCsvPath))
-            using (CsvWriter csvWriter = new CsvWriter(writer, CultureInfo.InvariantCulture))
+            using (CsvWriter csvWriter = CsvWriter.Create(writer))
             {
                 await csvWriter.WriteRecordsAsync(records);
             }
@@ -139,7 +138,7 @@ namespace ImagePerfect.Models
 
                 //write the folders list to the csv file
                 using (StreamWriter writer = new StreamWriter(folderCsvPath))
-                using (CsvWriter csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                using (CsvWriter csv = CsvWriter.Create(writer))
                 {
                     await csv.WriteRecordsAsync(folders);
                 }
