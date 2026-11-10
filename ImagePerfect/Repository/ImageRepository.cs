@@ -364,8 +364,8 @@ namespace ImagePerfect.Repository
                 }
 
                 //bulk insert all distinct tags into tags table -- IGNORE duplicates
-                string bulkInsertTags = SqlStringBuilder.BuildSqlForBulkInsertImageTags(allTags);
-                await conn.ExecuteAsync(bulkInsertTags, transaction: txn);
+                (string Sql, DynamicParameters Parameters) bulkInsertTags = SqlStringBuilder.BuildSqlForBulkInsertImageTags(allTags);
+                await conn.ExecuteAsync(bulkInsertTags.Sql, bulkInsertTags.Parameters, transaction: txn);
 
                 //get all tag id's 
                 string getAllTagIds = @"SELECT TagId, TagName FROM tags WHERE TagName IN @tagNames";

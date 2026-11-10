@@ -221,21 +221,28 @@ namespace ImagePerfect.Helpers
             return sb.ToString();
         }
 
-        public static string BuildSqlForBulkInsertImageTags(List<string> allTags)
+        public static (string Sql, Dapper.DynamicParameters Parameters) BuildSqlForBulkInsertImageTags(List<string> allTags)
         {
+            Dapper.DynamicParameters parameters = new Dapper.DynamicParameters();
+            if (allTags.Count == 0)
+                return (string.Empty, parameters);
+
             StringBuilder sb = new StringBuilder("INSERT IGNORE INTO tags (TagName) VALUES ");
-            for(int i = 0; i < allTags.Count; i++)
+            for (int i = 0; i < allTags.Count; i++)
             {
-                if(i < allTags.Count - 1)
+                string tagParameter = $"tag{i}";
+                parameters.Add(tagParameter, allTags[i]);
+                sb.Append($"(@{tagParameter})");
+                if (i < allTags.Count - 1)
                 {
-                    sb.Append($"('{allTags[i]}'),");
+                    sb.Append(",");
                 }
                 else
                 {
-                    sb.Append($"('{allTags[i]}');");
+                    sb.Append(";");
                 }
             }
-            return sb.ToString();
+            return (sb.ToString(), parameters);
         }
 
         public static string BuildSqlForBulkInsertImageTagsJoin(List<(int imageId, int tagId)> imageTagJoins)
