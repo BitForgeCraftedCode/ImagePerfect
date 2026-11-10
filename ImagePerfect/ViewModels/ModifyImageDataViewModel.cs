@@ -456,6 +456,7 @@ namespace ImagePerfect.ViewModels
                 }
 
                 imageVm.FileName = oldFileName;
+                Serilog.Log.Error(e, "Error renaming image.");
                 await ShowRenameImageMessage($"Sorry something went wrong.\n{e.Message}");
             }
             finally
@@ -494,6 +495,7 @@ namespace ImagePerfect.ViewModels
             }
             catch (Exception e)
             {
+                Serilog.Log.Error(e, "Error rotating the image.");
                 await ShowRotateImageMessage($"The image could not be rotated.\n{e.Message}");
             }
             finally

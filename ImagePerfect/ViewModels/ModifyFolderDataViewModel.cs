@@ -4,6 +4,7 @@ using ImagePerfect.ObjectMappers;
 using ImagePerfect.Repository;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -295,6 +296,7 @@ namespace ImagePerfect.ViewModels
                     Directory.Move(newPath, oldPath);
                 }
                 folderVm.FolderName = currentFolder.FolderName;
+                Log.Error(e, "Error renaming the folder");
                 await ShowRenameFolderMessage($"Sorry something went wrong.\n{e.Message}");
             }
             finally
