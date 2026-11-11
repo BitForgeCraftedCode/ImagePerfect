@@ -61,43 +61,83 @@ namespace ImagePerfect.ViewModels
                 );
                 return;
             }
-            await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
-            FolderMethods folderMethods = new FolderMethods(uow);
-            //add dir to database -- also need to update parent folders HasChildren bool value
-            Folder newFolder = new Folder
+            bool directoryCreated = false;
+            bool databaseInsertSucceeded = false;
+            try
             {
-                FolderName = NewFolderName,
-                FolderPath = newFolderPath,
-                HasChildren = false,
-                CoverImagePath = "",
-                FolderDescription = "",
-                FolderRating = 0,
-                HasFiles = false,
-                IsRoot = false,
-                FolderContentMetaDataScanned = false,
-                AreImagesImported = false,
-            };
-            bool success = await folderMethods.CreateNewFolder(newFolder);
-
-            //create on disk
-            if (success)
-            {
-                try
+                await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+                FolderMethods folderMethods = new FolderMethods(uow);
+                //add dir to database -- also need to update parent folders HasChildren bool value
+                Folder newFolder = new Folder
                 {
-                    Directory.CreateDirectory(newFolderPath);
-                    //refresh UI
-                    _mainWindowViewModel.ExplorerVm.currentFilter = ExplorerViewModel.Filters.None;
-                    await _mainWindowViewModel.ExplorerVm.RefreshFolders("", uow);
+                    FolderName = NewFolderName,
+                    FolderPath = newFolderPath,
+                    HasChildren = false,
+                    CoverImagePath = "",
+                    FolderDescription = "",
+                    FolderRating = 0,
+                    HasFiles = false,
+                    IsRoot = false,
+                    FolderContentMetaDataScanned = false,
+                    AreImagesImported = false,
+                };
+                //first create on disk
+                Directory.CreateDirectory(newFolderPath);
+                directoryCreated = true;
+                databaseInsertSucceeded = await folderMethods.CreateNewFolder(newFolder);
+                if (databaseInsertSucceeded)
+                {
+                    try
+                    {
+                        //refresh UI
+                        _mainWindowViewModel.ExplorerVm.currentFilter = ExplorerViewModel.Filters.None;
+                        await _mainWindowViewModel.ExplorerVm.RefreshFolders("", uow);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "Folder was created, but refreshing the view failed for {FolderPath}", newFolderPath);
+                    }
                 }
-                catch (Exception e)
+                else
                 {
-                    Log.Error(e, "Error creating a new folder");
+                    TryRemoveCreatedDirectory(newFolderPath, directoryCreated);
                     await MessageBoxHelper.ShowAsync(
-                        "New Folder",
-                        $"Error {e}."
+                        "Create New Folder",
+                        $"Could not save the folder to the library. The new directory was removed. Please try again."
                     );
-                    return;
                 }
+            }
+            catch(Exception ex)
+            {
+                Log.Error(ex, "Failed to create folder at {FolderPath}", newFolderPath);
+                if (directoryCreated && !databaseInsertSucceeded)
+                {
+                    TryRemoveCreatedDirectory(newFolderPath, directoryCreated);
+                }
+
+                await MessageBoxHelper.ShowAsync(
+                    "Create New Folder",
+                    "Could not create the folder. Check the logs for details.");
+                return;
+            }
+        }
+
+        private static void TryRemoveCreatedDirectory(string folderPath, bool directoryCreated)
+        {
+            if (!directoryCreated)
+            {
+                return;
+            }
+
+            try
+            {
+                Directory.Delete(folderPath);
+            }
+            catch (Exception cleanupException)
+            {
+                Log.Error(cleanupException,
+                    "Failed to remove folder at {FolderPath} after creation failed",
+                    folderPath);
             }
         }
 	}
