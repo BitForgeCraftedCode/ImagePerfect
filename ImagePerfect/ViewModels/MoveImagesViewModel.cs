@@ -4,6 +4,8 @@ using ImagePerfect.ObjectMappers;
 using ImagePerfect.Repository;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
+using Serilog;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -28,57 +30,124 @@ namespace ImagePerfect.ViewModels
         public async Task MoveImageToTrash(ImageViewModel imageVm) 
         {
             bool boxResult = await MessageBoxHelper.ShowYesNoAsync(
-                "Delete Image",
-                $"Are you sure you want to delete your image?"
+                "Move Image To Trash",
+                $"Are you sure you want to move image to trash?"
             );
             if (boxResult)
             {
-                await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
-                ImageMethods imageMethods = new ImageMethods(uow);
-                FolderMethods folderMethods = new FolderMethods(uow);
-                //ImageTrashMethods imageTrashMethods = new ImageTrashMethods(uow);
-                _mainWindowViewModel.ShowLoading = true;
-                (List<Folder> folders, List<FolderTag> tags) folderResult = await folderMethods.GetFoldersInDirectory(imageVm.ImageFolderPath, _mainWindowViewModel.ExplorerVm.LoadFoldersAscending);
-                _mainWindowViewModel.ExplorerVm.displayFolders = folderResult.folders;
-                (List<Image> images, List<ImageTag> tags) imageResultA = await imageMethods.GetAllImagesInFolder(imageVm.FolderId, _mainWindowViewModel.ExplorerVm.LoadImagesAscending);
-                _mainWindowViewModel.ExplorerVm.displayImages = imageResultA.images;
-                if (_mainWindowViewModel.ExplorerVm.displayImages.Count == 1 && _mainWindowViewModel.ExplorerVm.displayFolders.Count == 0)
+                string imageFileTrashPath = string.Empty;
+                bool imageMoved = false;
+                bool databaseDeleteSucceeded = false;
+                try
                 {
-                    await MessageBoxHelper.ShowAsync(
-                        "Delete Image",
-                        $"This is the last image in the folder go back and delete the folder."
-                    );
-                    return;
-                }
-                Folder? rootFolder = await folderMethods.GetRootFolder();
-                string trashFolderPath = PathHelper.GetTrashFolderPath(rootFolder.FolderPath);
+                    await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+                    ImageMethods imageMethods = new ImageMethods(uow);
+                    FolderMethods folderMethods = new FolderMethods(uow);
 
-                //create ImagePerfectTRASH if it doesnt exist
-                if (!Directory.Exists(trashFolderPath))
-                {
-                    Directory.CreateDirectory(trashFolderPath);
-                }
-                if (File.Exists(imageVm.ImagePath))
-                {
-                    //add image to image trash table
-                    //ImageTrash trashedImage = ImageTrashHelper.GetImageTrashModel(imageVm);
-                    //await imageTrashMethods.Add(trashedImage);
-                    //delete image from db
-                    bool success = await imageMethods.DeleteImage(imageVm.ImageId);
+                    _mainWindowViewModel.ShowLoading = true;
+                    (List<Folder> folders, List<FolderTag> tags) folderResult = await folderMethods.GetFoldersInDirectory(imageVm.ImageFolderPath, _mainWindowViewModel.ExplorerVm.LoadFoldersAscending);
+                    _mainWindowViewModel.ExplorerVm.displayFolders = folderResult.folders;
+                    (List<Image> images, List<ImageTag> tags) imageResultA = await imageMethods.GetAllImagesInFolder(imageVm.FolderId, _mainWindowViewModel.ExplorerVm.LoadImagesAscending);
+                    _mainWindowViewModel.ExplorerVm.displayImages = imageResultA.images;
+                    if (_mainWindowViewModel.ExplorerVm.displayImages.Count == 1 && _mainWindowViewModel.ExplorerVm.displayFolders.Count == 0)
+                    {
+                        await MessageBoxHelper.ShowAsync(
+                            "Move Image To Trash",
+                            $"This is the last image in the folder go back and delete the folder."
+                        );
+                        return;
+                    }
+                    Folder? rootFolder = await folderMethods.GetRootFolder();
+                    string trashFolderPath = PathHelper.GetTrashFolderPath(rootFolder.FolderPath);
+                    imageFileTrashPath = PathHelper.GetImageFileTrashPath(imageVm, trashFolderPath);
 
-                    if (success)
+                    //create ImagePerfectTRASH if it doesnt exist
+                    if (!Directory.Exists(trashFolderPath))
+                    {
+                        Directory.CreateDirectory(trashFolderPath);
+                    }
+                    if (File.Exists(imageVm.ImagePath))
                     {
                         //move file to trash folder
-                        string newImagePath = PathHelper.GetImageFileTrashPath(imageVm, trashFolderPath);
-                        File.Move(imageVm.ImagePath, newImagePath);
+                        File.Move(imageVm.ImagePath, imageFileTrashPath);
+                        imageMoved = true;
 
-                        //refresh UI
-                        if(!_mainWindowViewModel.SuppressImageRefresh)
-                            await _mainWindowViewModel.ExplorerVm.RefreshImages("", imageVm.FolderId, uow);
-                        _mainWindowViewModel.ShowLoading = false;
+                        //delete image from db
+                        databaseDeleteSucceeded = await imageMethods.DeleteImage(imageVm.ImageId);
+
+                        if (databaseDeleteSucceeded)
+                        {
+                            try
+                            {
+                                //refresh UI
+                                if (!_mainWindowViewModel.SuppressImageRefresh)
+                                    await _mainWindowViewModel.ExplorerVm.RefreshImages("", imageVm.FolderId, uow);
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Error(ex, "Image was moved to trash but refreshing the view failed");
+                            }
+                        }
+                        else
+                        {
+                            //move image back
+                            bool imageRestored = TryMoveImageBackFromTrash(imageFileTrashPath, imageVm.ImagePath);
+                            await MessageBoxHelper.ShowAsync(
+                                "Move Image To Trash",
+                                imageRestored
+                                    ? "Could not move the image to trash. Please try again."
+                                    : $"Could not move the image to trash or restore it. The image may still be at: {imageFileTrashPath}"
+                            );
+                        }
+                    }
+                    else
+                    {
+                        await MessageBoxHelper.ShowAsync(
+                            "Move Image To Trash",
+                            "The selected image does not exist on disk."
+                        );
                     }
                 }
-                _mainWindowViewModel.ShowLoading = false;
+                catch(Exception ex)
+                {
+                    Log.Error(ex, "Failed to move the image to trash. {imagePath}", imageVm.ImagePath);
+                    //needed only if the file was moved and the database deletion did not succeed
+                    if (imageMoved && !databaseDeleteSucceeded)
+                    {
+                        //move image back
+                        bool imageRestored = TryMoveImageBackFromTrash(imageFileTrashPath, imageVm.ImagePath);
+                        if (!imageRestored)
+                        {
+                            await MessageBoxHelper.ShowAsync(
+                                "Move Image To Trash",
+                                $"The operation failed and the image could not be restored. The image may still be at: {imageFileTrashPath}"
+                            );
+                            return;
+                        }
+                    }
+                    await MessageBoxHelper.ShowAsync(
+                        "Move Image To Trash",
+                        "Error moving the image to trash. Check the logs for details."
+                    );
+                }
+                finally
+                {
+                    _mainWindowViewModel.ShowLoading = false;
+                }
+            }
+        }
+
+        private static bool TryMoveImageBackFromTrash(string imageFileTrashPath, string imageFileOriginalPath)
+        {
+            try
+            {
+                File.Move(imageFileTrashPath, imageFileOriginalPath);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Failed to move image back from trash afeter move to trash failed. {imagePath}", imageFileOriginalPath);
+                return false;
             }
         }
 
