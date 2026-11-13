@@ -153,6 +153,7 @@
 							</ControlTemplate>
 						</MenuItem.Template>
 					</MenuItem>
+					<!--
 					<MenuItem>
 						<MenuItem.Template>
 							<ControlTemplate>
@@ -160,6 +161,7 @@
 							</ControlTemplate>
 						</MenuItem.Template>
 					</MenuItem>
+					-->
 				</MenuItem>
 				<MenuItem Header="_Library Management">
 					<!--
