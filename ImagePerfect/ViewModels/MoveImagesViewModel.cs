@@ -169,47 +169,107 @@ namespace ImagePerfect.ViewModels
             );
             if (boxResult)
             {
-                await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
-                ImageMethods imageMethods = new ImageMethods(uow);
-                FolderMethods folderMethods = new FolderMethods(uow);
-                _mainWindowViewModel.ShowLoading = true;
-                Folder imagesFolder = await folderMethods.GetFolderAtDirectory(imagesToDelete[0].ImageFolderPath);
-                Folder? rootFolder = await folderMethods.GetRootFolder();
-                string trashFolderPath = PathHelper.GetTrashFolderPath(rootFolder.FolderPath);
-
-                //create ImagePerfectTRASH if it doesnt exist
-                if (!Directory.Exists(trashFolderPath))
+                List<(string OriginalPath, string TrashPath)> movedImages = new List<(string OriginalPath, string TrashPath)>();
+                bool databaseDeleteSucceeded = false;
+                try
                 {
-                    Directory.CreateDirectory(trashFolderPath);
-                }
+                    await using UnitOfWork uow = await UnitOfWork.CreateAsync(_dataSource, _configuration);
+                    ImageMethods imageMethods = new ImageMethods(uow);
+                    FolderMethods folderMethods = new FolderMethods(uow);
+                    _mainWindowViewModel.ShowLoading = true;
+                    Folder imagesFolder = await folderMethods.GetFolderAtDirectory(imagesToDelete[0].ImageFolderPath);
+                    Folder? rootFolder = await folderMethods.GetRootFolder();
+                    string trashFolderPath = PathHelper.GetTrashFolderPath(rootFolder.FolderPath);
 
-                string sql = SqlStringBuilder.BuildSqlForMoveImagesToTrash(imagesToDelete);
-                bool success = await imageMethods.DeleteSelectedImages(sql);
-                if (success)
-                {
+                    //create ImagePerfectTRASH if it doesnt exist
+                    if (!Directory.Exists(trashFolderPath))
+                    {
+                        Directory.CreateDirectory(trashFolderPath);
+                    }
+                    // Validate files exists
                     foreach (ImageViewModel image in imagesToDelete)
                     {
-                        //move file to trash folder
-                        string newImagePath = PathHelper.GetImageFileTrashPath(image, trashFolderPath);
-                        File.Move(image.ImagePath, newImagePath);
+                        if (!File.Exists(image.ImagePath))
+                        {
+                            await MessageBoxHelper.ShowAsync("Move Images To Trash", "One or more image files is missing from the folder");
+                            return;
+                        }
                     }
-                    //update imagesFolder HasFiles, AreImagesImported, and FolderContentMetaDataScanned
-                    //set all back to false if moved all images to trash
-                    IEnumerable<string> folderFiles = Directory.EnumerateFiles(imagesFolder.FolderPath).Where(s => s.ToLower().EndsWith(".jpeg") || s.ToLower().EndsWith(".jpg") || s.ToLower().EndsWith(".png") || s.ToLower().EndsWith(".gif") || s.ToLower().EndsWith(".webp") || s.ToLower().EndsWith(".tif"));
-                    if (!folderFiles.Any())
+                    // Move each file first and keep its paths so the batch can be rolled back.
+                    foreach (ImageViewModel image in imagesToDelete)
                     {
-                        imagesFolder.HasFiles = false;
-                        imagesFolder.AreImagesImported = false;
-                        imagesFolder.FolderContentMetaDataScanned = false;
-                        await folderMethods.UpdateFolder(imagesFolder);
+                        string trashPath = PathHelper.GetImageFileTrashPath(image, trashFolderPath);
+                        File.Move(image.ImagePath, trashPath);
+                        movedImages.Add((image.ImagePath, trashPath));
                     }
-                    //refresh UI
-                    if (!_mainWindowViewModel.SuppressImageRefresh)
-                        await _mainWindowViewModel.ExplorerVm.RefreshImages("", imagesToDelete[0].FolderId, uow);
+                    string sql = SqlStringBuilder.BuildSqlForMoveImagesToTrash(imagesToDelete);
+                    databaseDeleteSucceeded = await imageMethods.DeleteSelectedImages(sql);
+                    if (!databaseDeleteSucceeded)
+                    {
+                        List<string> failedRestores = RestoreImagesFromTrash(movedImages);
+                        string message = failedRestores.Count == 0
+                            ? "Could not move the selected images to trash. Please try again."
+                            : $"Could not move the selected images to trash or restore all of them. These files may still be in trash:\n{string.Join("\n", failedRestores)}";
+                        await MessageBoxHelper.ShowAsync("Move Images To Trash", message);
+                        return;
+                    }
+
+                    try
+                    {
+                        //update imagesFolder HasFiles, AreImagesImported, and FolderContentMetaDataScanned
+                        //set all back to false if moved all images to trash
+                        IEnumerable<string> folderFiles = Directory.EnumerateFiles(imagesFolder.FolderPath).Where(s => s.ToLower().EndsWith(".jpeg") || s.ToLower().EndsWith(".jpg") || s.ToLower().EndsWith(".png") || s.ToLower().EndsWith(".gif") || s.ToLower().EndsWith(".webp") || s.ToLower().EndsWith(".tif"));
+                        if (!folderFiles.Any())
+                        {
+                            imagesFolder.HasFiles = false;
+                            imagesFolder.AreImagesImported = false;
+                            imagesFolder.FolderContentMetaDataScanned = false;
+                            await folderMethods.UpdateFolder(imagesFolder);
+                        }
+                        if (!_mainWindowViewModel.SuppressImageRefresh)
+                            await _mainWindowViewModel.ExplorerVm.RefreshImages("", imagesToDelete[0].FolderId, uow);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Error(ex, "Images were moved to trash but folder metadata or the view could not be refreshed");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Failed to move selected images to trash");
+                    if (!databaseDeleteSucceeded && movedImages.Count > 0)
+                    {
+                        List<string> failedRestores = RestoreImagesFromTrash(movedImages);
+                        if (failedRestores.Count > 0)
+                        {
+                            await MessageBoxHelper.ShowAsync(
+                                "Move Images To Trash",
+                                $"The operation failed and some images could not be restored. These files may still be in trash:\n{string.Join("\n", failedRestores)}"
+                            );
+                            return;
+                        }
+                    }
+                    await MessageBoxHelper.ShowAsync(
+                        "Move Images To Trash",
+                        "Error moving the selected images to trash. Check the logs for details."
+                    );
+                }
+                finally
+                {
                     _mainWindowViewModel.ShowLoading = false;
                 }
-                _mainWindowViewModel.ShowLoading = false;
             }
+        }
+
+        private static List<string> RestoreImagesFromTrash(List<(string OriginalPath, string TrashPath)> movedImages)
+        {
+            List<string> failedRestores = new List<string>();
+            foreach ((string originalPath, string trashPath) in movedImages)
+            {
+                if (!TryMoveImageBackFromTrash(trashPath, originalPath))
+                    failedRestores.Add(trashPath);
+            }
+            return failedRestores;
         }
 
         public async Task MoveAllImagesInFolderUpOneDirectory(FolderViewModel folderVm)
