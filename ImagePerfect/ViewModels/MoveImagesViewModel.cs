@@ -45,22 +45,10 @@ namespace ImagePerfect.ViewModels
                     FolderMethods folderMethods = new FolderMethods(uow);
 
                     _mainWindowViewModel.ShowLoading = true;
-                    (List<Folder> folders, List<FolderTag> tags) folderResult = await folderMethods.GetFoldersInDirectory(imageVm.ImageFolderPath, _mainWindowViewModel.ExplorerVm.LoadFoldersAscending);
-                    _mainWindowViewModel.ExplorerVm.displayFolders = folderResult.folders;
-                    (List<Image> images, List<ImageTag> tags) imageResultA = await imageMethods.GetAllImagesInFolder(imageVm.FolderId, _mainWindowViewModel.ExplorerVm.LoadImagesAscending);
-                    _mainWindowViewModel.ExplorerVm.displayImages = imageResultA.images;
-                    if (_mainWindowViewModel.ExplorerVm.displayImages.Count == 1 && _mainWindowViewModel.ExplorerVm.displayFolders.Count == 0)
-                    {
-                        await MessageBoxHelper.ShowAsync(
-                            "Move Image To Trash",
-                            $"This is the last image in the folder go back and delete the folder."
-                        );
-                        return;
-                    }
                     Folder? rootFolder = await folderMethods.GetRootFolder();
                     string trashFolderPath = PathHelper.GetTrashFolderPath(rootFolder.FolderPath);
                     imageFileTrashPath = PathHelper.GetImageFileTrashPath(imageVm, trashFolderPath);
-
+                    Folder imagesFolder = await folderMethods.GetFolderAtDirectory(imageVm.ImageFolderPath);
                     //create ImagePerfectTRASH if it doesnt exist
                     if (!Directory.Exists(trashFolderPath))
                     {
@@ -79,6 +67,16 @@ namespace ImagePerfect.ViewModels
                         {
                             try
                             {
+                                //update imagesFolder HasFiles, AreImagesImported, and FolderContentMetaDataScanned
+                                //set all back to false if moved all images to trash
+                                IEnumerable<string> folderFiles = Directory.EnumerateFiles(imagesFolder.FolderPath).Where(s => s.ToLower().EndsWith(".jpeg") || s.ToLower().EndsWith(".jpg") || s.ToLower().EndsWith(".png") || s.ToLower().EndsWith(".gif") || s.ToLower().EndsWith(".webp") || s.ToLower().EndsWith(".tif"));
+                                if (!folderFiles.Any())
+                                {
+                                    imagesFolder.HasFiles = false;
+                                    imagesFolder.AreImagesImported = false;
+                                    imagesFolder.FolderContentMetaDataScanned = false;
+                                    await folderMethods.UpdateFolder(imagesFolder);
+                                }
                                 //refresh UI
                                 if (!_mainWindowViewModel.SuppressImageRefresh)
                                     await _mainWindowViewModel.ExplorerVm.RefreshImages("", imageVm.FolderId, uow);
