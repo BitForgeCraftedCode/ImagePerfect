@@ -159,7 +159,7 @@ namespace ImagePerfect.ViewModels
             List<string> errors = new List<string>();
             foreach (FolderViewModel folder in allFolders) 
             {
-                if (folder.HasFiles == true && folder.AreImagesImported == true && string.IsNullOrEmpty(folder.FolderDescription) == false)
+                if (string.IsNullOrEmpty(folder.FolderDescription) == false)
                 {
 
                     string pathToFile = Path.Combine(folder.FolderPath, "folderDescription.txt");
