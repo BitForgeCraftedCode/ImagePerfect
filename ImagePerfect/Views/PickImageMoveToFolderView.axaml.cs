@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using Avalonia.Platform.Storage;
 using System.Linq;
 using ReactiveUI.Avalonia;
+using ReactiveUI.Binding;
 
 namespace ImagePerfect.Views;
 

@@ -4,6 +4,7 @@ using ImagePerfect.Repository;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using ReactiveUI;
+using ReactiveUI.Binding;
 using ReactiveUI.Primitives;
 using Serilog;
 using System;

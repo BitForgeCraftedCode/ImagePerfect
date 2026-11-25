@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using ReactiveUI.Avalonia;
+using ReactiveUI.Binding;
 
 
 namespace ImagePerfect.Views;

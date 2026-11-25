@@ -7,6 +7,7 @@ using ImagePerfect.Repository;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
 using ReactiveUI;
+using ReactiveUI.Binding;
 using Serilog;
 using System;
 using System.Collections.Concurrent;

@@ -1,5 +1,6 @@
 using ImagePerfect.Helpers;
 using ReactiveUI;
+using ReactiveUI.Binding;
 using System.Threading.Tasks;
 
 namespace ImagePerfect.ViewModels;

@@ -1,5 +1,6 @@
 using ImagePerfect.Helpers;
 using ReactiveUI;
+using ReactiveUI.Binding;
 using ReactiveUI.Primitives;
 using System.Collections.Generic;
 using System.Reactive.Linq;

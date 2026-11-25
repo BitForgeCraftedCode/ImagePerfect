@@ -4,6 +4,7 @@ using Avalonia.Platform.Storage;
 using ImagePerfect.ViewModels;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
+using ReactiveUI.Binding;
 using System.Linq;
 using System.Threading.Tasks;
 
